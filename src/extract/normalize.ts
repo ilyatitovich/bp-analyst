@@ -110,16 +110,73 @@ export function normalizeTrack(
   };
 }
 
+function trackRichness(track: Track): number {
+  return [track.camelot, track.bpm, track.isrc, track.genre?.name, track.label?.name].filter(Boolean).length;
+}
+
+function normalizeName(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+export function trackIdentity(track: Track): string {
+  const artists = track.artists
+    .map((artist) => normalizeName(artist.name))
+    .filter(Boolean)
+    .sort()
+    .join(',');
+  return `${artists}\0${normalizeName(track.title)}`;
+}
+
+export function uniqueTracks(tracks: Track[]): Track[] {
+  const betterById = new Map<number, Track>();
+  const idOrder: number[] = [];
+
+  for (const track of tracks) {
+    const existing = betterById.get(track.id);
+    if (!existing) {
+      betterById.set(track.id, track);
+      idOrder.push(track.id);
+      continue;
+    }
+    if (trackRichness(track) > trackRichness(existing)) {
+      betterById.set(track.id, track);
+    }
+  }
+
+  const betterByName = new Map<string, Track>();
+  const nameOrder: string[] = [];
+
+  for (const id of idOrder) {
+    const track = betterById.get(id)!;
+    const key = trackIdentity(track);
+    const existing = betterByName.get(key);
+    if (!existing) {
+      betterByName.set(key, track);
+      nameOrder.push(key);
+      continue;
+    }
+    if (trackRichness(track) > trackRichness(existing)) {
+      betterByName.set(key, track);
+    }
+  }
+
+  return nameOrder.map((key, index) => {
+    const track = betterByName.get(key)!;
+    return { ...track, position: index + 1 };
+  });
+}
+
 export function buildSnapshot(
   tracks: Track[],
   context: NormalizeContext,
 ): ExtractionSnapshot {
+  const unique = uniqueTracks(tracks);
   return {
     pageUrl: context.pageUrl,
     pageTitle: context.pageTitle,
     extractedAt: new Date().toISOString(),
     source: context.source,
-    trackCount: tracks.length,
-    tracks,
+    trackCount: unique.length,
+    tracks: unique,
   };
 }

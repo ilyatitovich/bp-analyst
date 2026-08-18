@@ -20,7 +20,13 @@ export function mergeSnapshots(
   incoming: ExtractionSnapshot | null,
 ): ExtractionSnapshot | null {
   if (!incoming) return current;
-  if (!current || current.pageUrl !== incoming.pageUrl) return incoming;
+  if (!current || current.pageUrl !== incoming.pageUrl) {
+    return buildSnapshot(incoming.tracks, {
+      pageUrl: incoming.pageUrl,
+      pageTitle: incoming.pageTitle,
+      source: incoming.source,
+    });
+  }
 
   const currentIds = new Set(current.tracks.map((track) => track.id));
   const overlap = incoming.tracks.filter((track) => currentIds.has(track.id)).length;

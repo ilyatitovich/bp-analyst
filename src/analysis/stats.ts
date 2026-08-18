@@ -22,14 +22,22 @@ export type TrackStats = {
 };
 
 function histogram(values: string[], limit = 12): Bucket[] {
-  const counts = new Map<string, number>();
+  const counts = new Map<string, { label: string; count: number }>();
   for (const value of values) {
-    counts.set(value, (counts.get(value) ?? 0) + 1);
+    const label = value.trim();
+    if (!label) continue;
+    const key = label.toLowerCase();
+    const existing = counts.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      counts.set(key, { label, count: 1 });
+    }
   }
 
-  const buckets = Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([label, count]) => ({ label, count }));
+  const buckets = Array.from(counts.values()).sort(
+    (a, b) => b.count - a.count || a.label.localeCompare(b.label),
+  );
 
   return limit > 0 ? buckets.slice(0, limit) : buckets;
 }

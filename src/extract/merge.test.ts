@@ -75,4 +75,22 @@ describe('mergeSnapshots', () => {
     expect(merged?.tracks.at(-1)?.id).toBe(20);
     expect(merged?.tracks.at(-1)?.position).toBe(20);
   });
+
+  it('drops duplicate ids from a single payload', () => {
+    const incoming = snapshot([track(1, 1), track(1, 2), track(2, 3)]);
+    const merged = mergeSnapshots(null, incoming);
+    expect(merged?.trackCount).toBe(2);
+    expect(merged?.tracks.map((item) => item.id)).toEqual([1, 2]);
+  });
+
+  it('drops the same title by the same artists even when ids and mix differ', () => {
+    const incoming = snapshot([
+      track(10, 1, { title: 'Beat Goes On', mixName: 'Extended Mix', artists: [{ name: 'Rafael' }] }),
+      track(99, 2, { title: 'Beat Goes On', mixName: 'Radio Edit', artists: [{ name: 'Rafael' }] }),
+      track(11, 3, { title: 'Beat Goes On', artists: [{ name: 'Other Artist' }] }),
+    ]);
+    const merged = mergeSnapshots(null, incoming);
+    expect(merged?.trackCount).toBe(2);
+    expect(merged?.tracks.map((item) => item.artists[0]?.name)).toEqual(['Rafael', 'Other Artist']);
+  });
 });

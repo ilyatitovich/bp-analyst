@@ -49,7 +49,10 @@ describe('computeTrackStats', () => {
     expect(stats.camelotHistogram).toHaveLength(24);
     expect(stats.scaleHistogram.find((bucket) => bucket.label === 'A maj')?.count).toBe(2);
     expect(stats.scaleHistogram.find((bucket) => bucket.label === 'A min')?.count).toBe(1);
-    expect(stats.labelDistribution[0]).toEqual({ label: 'Label One', count: 2 });
+    expect(stats.labelDistribution).toEqual([
+      { label: 'Label One', count: 2 },
+      { label: 'Label Two', count: 1 },
+    ]);
     expect(stats.bpmHistogram.map((bucket) => bucket.label)).toEqual([
       '105-109',
       '110-114',

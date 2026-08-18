@@ -12,6 +12,7 @@ import { formatTrackKey } from "../analysis/camelot";
 import { buildCsvFilename, downloadCsv, tracksToCsv } from "../export/csv";
 import { STORAGE_KEYS, type KeyNotation } from "../messaging/protocol";
 import { extensionStorage, extensionStorageArea } from "../messaging/storage";
+import { uniqueTracks } from "../extract/normalize";
 import { type ExtractionSnapshot, type Track } from "../types/track";
 
 function useStorageState() {
@@ -292,19 +293,19 @@ function TrackTable({
 
 export function App() {
   const { snapshot, keyNotation, setKeyNotation } = useStorageState();
-  const tracks = snapshot?.tracks ?? [];
-  const stats = useMemo(
-    () => computeTrackStats(snapshot?.tracks ?? []),
+  const tracks = useMemo(
+    () => uniqueTracks(snapshot?.tracks ?? []),
     [snapshot],
   );
+  const stats = useMemo(() => computeTrackStats(tracks), [tracks]);
 
   const exportCsv = useCallback(() => {
     if (!snapshot) return;
     downloadCsv(
       buildCsvFilename(snapshot.pageUrl),
-      tracksToCsv(snapshot.tracks),
+      tracksToCsv(tracks),
     );
-  }, [snapshot]);
+  }, [snapshot, tracks]);
 
   const [refreshing, setRefreshing] = useState(false);
   const refreshStartedAt = useRef(snapshot?.extractedAt ?? null);
@@ -356,7 +357,7 @@ export function App() {
             {refreshing
               ? "Reloading Beatport page…"
               : snapshot
-                ? `${snapshot.trackCount} tracks from ${snapshot.source}`
+                ? `${tracks.length} tracks from ${snapshot.source}`
                 : "Waiting for a Beatport page snapshot."}
           </p>
         </div>
