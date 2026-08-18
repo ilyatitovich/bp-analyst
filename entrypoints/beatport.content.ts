@@ -3,6 +3,7 @@ import { filterTracks } from '../src/analysis/filters';
 import { extractSnapshotFromApiPayload } from '../src/extract/api-payload';
 import { extractSnapshotFromDom } from '../src/extract/dom';
 import { extractSnapshotFromNextData } from '../src/extract/next-data';
+import { mergeSnapshots, pickLargestSnapshot } from '../src/extract/merge';
 import { applyRowHighlights } from '../src/highlight/rows';
 import { STORAGE_KEYS } from '../src/messaging/protocol';
 import { extensionStorage, extensionStorageArea } from '../src/messaging/storage';
@@ -48,22 +49,28 @@ async function publishSnapshot(snapshot: ExtractionSnapshot | null): Promise<voi
   await syncHighlights();
 }
 
-async function extractAndPublish(payload?: unknown): Promise<void> {
-  const snapshot =
-    (payload ? extractSnapshotFromApiPayload(payload, getContext('api-payload')) : null) ??
-    extractSnapshotFromNextData(getContext('next-data')) ??
-    extractSnapshotFromDom(getContext('dom'));
+async function extractAndPublish(payload?: unknown, reset = false): Promise<void> {
+  if (reset) {
+    currentSnapshot = null;
+  }
 
+  const incoming = pickLargestSnapshot(
+    payload ? extractSnapshotFromApiPayload(payload, getContext('api-payload')) : null,
+    extractSnapshotFromNextData(getContext('next-data')),
+    extractSnapshotFromDom(getContext('dom')),
+  );
+
+  const snapshot = mergeSnapshots(currentSnapshot, incoming);
   await publishSnapshot(snapshot);
 }
 
-function scheduleExtraction(payload?: unknown): void {
+function scheduleExtraction(payload?: unknown, reset = false): void {
   if (refreshTimer !== null) {
     window.clearTimeout(refreshTimer);
   }
   refreshTimer = window.setTimeout(() => {
     refreshTimer = null;
-    void extractAndPublish(payload);
+    void extractAndPublish(payload, reset);
   }, 150);
 }
 
@@ -79,7 +86,7 @@ export default defineContentScript({
     });
 
     window.addEventListener(LOCATION_EVENT, () => {
-      scheduleExtraction();
+      scheduleExtraction(undefined, true);
     });
 
     browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {

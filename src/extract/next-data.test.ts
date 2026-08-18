@@ -60,4 +60,45 @@ describe('extractSnapshotFromNextDataObject', () => {
     expect(snapshot?.tracks[0].label?.name).toBe('Maccabi House');
     expect(snapshot?.tracks[0].trackUrl).toBe('https://www.beatport.com/track/beat-goes-on/29486878');
   });
+
+  it('uses the largest track query instead of a top-10 widget', () => {
+    const smallTrack = nextDataFixture.props.pageProps.dehydratedState.queries[0].state.data.results[0];
+    const snapshot = extractSnapshotFromNextDataObject(
+      {
+        props: {
+          pageProps: {
+            dehydratedState: {
+              queries: [
+                {
+                  state: {
+                    data: {
+                      results: [smallTrack, { ...smallTrack, id: 2, name: 'Other' }],
+                    },
+                  },
+                },
+                {
+                  state: {
+                    data: {
+                      results: Array.from({ length: 100 }, (_, index) => ({
+                        ...smallTrack,
+                        id: index + 10,
+                        name: `Track ${index + 10}`,
+                      })),
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+      {
+        pageUrl: 'https://www.beatport.com/genre/tech-house/11/top-100',
+        pageTitle: 'Tech House Top 100',
+        source: 'next-data',
+      },
+    );
+
+    expect(snapshot?.trackCount).toBe(100);
+  });
 });

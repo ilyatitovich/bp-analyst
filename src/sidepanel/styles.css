@@ -12,6 +12,7 @@
 body {
   margin: 0;
   background: #0f1115;
+  min-width: 300px;
 }
 
 button,

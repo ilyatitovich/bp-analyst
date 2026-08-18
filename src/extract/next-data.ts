@@ -1,15 +1,18 @@
 import { buildSnapshot, looksLikeRawTrack, normalizeTrack, type NormalizeContext } from './normalize';
 import type { ExtractionSnapshot } from '../types/track';
 
+type QueryData = {
+  results?: unknown[];
+  pages?: Array<{ results?: unknown[] }>;
+};
+
 type NextData = {
   props?: {
     pageProps?: {
       dehydratedState?: {
         queries?: Array<{
           state?: {
-            data?: {
-              results?: unknown[];
-            };
+            data?: QueryData;
           };
         }>;
       };
@@ -17,18 +20,24 @@ type NextData = {
   };
 };
 
+function collectQueryResults(data: QueryData | undefined): unknown[] {
+  if (!data) return [];
+  if (Array.isArray(data.pages)) {
+    return data.pages.flatMap((page) => (Array.isArray(page?.results) ? page.results : []));
+  }
+  return Array.isArray(data.results) ? data.results : [];
+}
+
 export function extractSnapshotFromNextDataObject(
   parsed: NextData,
   context: NormalizeContext,
 ): ExtractionSnapshot | null {
   const queries = parsed.props?.pageProps?.dehydratedState?.queries ?? [];
-  const trackQuery = queries.find((query) => {
-    const results = query.state?.data?.results;
-    return Array.isArray(results) && results.some(looksLikeRawTrack);
-  });
-
-  const results = trackQuery?.state?.data?.results;
-  if (!Array.isArray(results)) return null;
+  const ranked = queries
+    .map((query) => collectQueryResults(query.state?.data).filter(looksLikeRawTrack))
+    .sort((left, right) => right.length - left.length);
+  const results = ranked[0];
+  if (!results?.length) return null;
 
   const tracks = results
     .map((item, index) => normalizeTrack(item as Parameters<typeof normalizeTrack>[0], context, index + 1))
