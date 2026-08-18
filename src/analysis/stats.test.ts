@@ -178,4 +178,34 @@ describe('computeTrackStats', () => {
     expect(stats.bpmMedian).toBe(128);
     expect(stats.bpmP75).toBe(128);
   });
+
+  it('computes top-5 label and artist concentration as a share of the page', () => {
+    const stats = computeTrackStats([
+      { ...baseTrack, id: 1, label: { name: 'Anjunadeep' }, artists: [{ name: 'Alpha' }] },
+      { ...baseTrack, id: 2, label: { name: 'Anjunadeep' }, artists: [{ name: 'Alpha' }, { name: 'Beta' }] },
+      { ...baseTrack, id: 3, label: { name: 'Toolroom' }, artists: [{ name: 'Gamma' }] },
+      { ...baseTrack, id: 4, label: { name: 'Defected' }, artists: [{ name: 'Delta' }] },
+      { ...baseTrack, id: 5, label: { name: 'Crosstown' }, artists: [{ name: 'Echo' }] },
+      { ...baseTrack, id: 6, label: { name: 'Hot Creations' }, artists: [{ name: 'Foxtrot' }] },
+      { ...baseTrack, id: 7, label: { name: 'Zulu' }, artists: [{ name: 'Golf' }] },
+      { ...baseTrack, id: 8, label: null, artists: [] },
+    ]);
+
+    expect(stats.labelConcentration).toEqual([
+      { label: 'Anjunadeep', count: 2 },
+      { label: 'Crosstown', count: 1 },
+      { label: 'Defected', count: 1 },
+      { label: 'Hot Creations', count: 1 },
+      { label: 'Toolroom', count: 1 },
+    ]);
+    expect(stats.labelConcentrationShare).toBe(6 / 8);
+    expect(stats.artistConcentration.map((item) => item.label)).toEqual([
+      'Alpha',
+      'Beta',
+      'Delta',
+      'Echo',
+      'Foxtrot',
+    ]);
+    expect(stats.artistConcentrationShare).toBe(5 / 8);
+  });
 });

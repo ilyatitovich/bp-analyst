@@ -34,6 +34,10 @@ export type TrackStats = {
   lengthHistogram: Bucket[];
   keyConcentrationKeys: string[];
   keyConcentrationShare: number | null;
+  labelConcentration: Bucket[];
+  labelConcentrationShare: number | null;
+  artistConcentration: Bucket[];
+  artistConcentrationShare: number | null;
   bpmHistogram: Bucket[];
   camelotHistogram: Bucket[];
   scaleHistogram: Bucket[];
@@ -262,6 +266,23 @@ function share(count: number, total: number): number | null {
   return count / total;
 }
 
+const CONCENTRATION_TOP_N = 5;
+
+function topBuckets(buckets: Bucket[], n: number): Bucket[] {
+  return buckets.filter((bucket) => bucket.count > 0).slice(0, n);
+}
+
+function pageConcentration(
+  tracks: Track[],
+  buckets: Bucket[],
+  trackMatches: (track: Track, names: Set<string>) => boolean,
+): { items: Bucket[]; share: number | null } {
+  const items = topBuckets(buckets, CONCENTRATION_TOP_N);
+  const names = new Set(items.map((item) => item.label.toLowerCase()));
+  const matching = tracks.filter((track) => trackMatches(track, names)).length;
+  return { items, share: share(matching, tracks.length) };
+}
+
 function countedHistogram(labels: string[], order: readonly string[]): Bucket[] {
   const counts = new Map<string, number>(order.map((label) => [label, 0]));
   for (const label of labels) {
@@ -346,6 +367,18 @@ export function computeTrackStats(
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
     .slice(0, 3);
   const top3Count = topKeys.reduce((sum, bucket) => sum + bucket.count, 0);
+  const labelDistribution = histogram(
+    tracks.flatMap((track) => (track.label?.name ? [track.label.name] : [])),
+    0,
+  );
+  const artistDistribution = histogram(artists, 0);
+  const labels = pageConcentration(tracks, labelDistribution, (track, names) => {
+    const name = track.label?.name?.trim();
+    return Boolean(name && names.has(name.toLowerCase()));
+  });
+  const artistNames = pageConcentration(tracks, artistDistribution, (track, names) =>
+    track.artists.some((artist) => names.has(artist.name.trim().toLowerCase())),
+  );
 
   return {
     count: tracks.length,
@@ -369,12 +402,16 @@ export function computeTrackStats(
     lengthHistogram: countedHistogram(lengthLabels, LENGTH_BANDS),
     keyConcentrationKeys: topKeys.map((bucket) => bucket.label),
     keyConcentrationShare: share(top3Count, keyedTotal),
+    labelConcentration: labels.items,
+    labelConcentrationShare: labels.share,
+    artistConcentration: artistNames.items,
+    artistConcentrationShare: artistNames.share,
     bpmHistogram: createBpmHistogram(bpms),
     camelotHistogram: keyHistograms.camelot,
     scaleHistogram: keyHistograms.scale,
     camelotDistribution: keyHistograms.camelot.filter((bucket) => bucket.count > 0),
     genreDistribution: histogram(tracks.flatMap((track) => (track.genre?.name ? [track.genre.name] : []))),
-    labelDistribution: histogram(tracks.flatMap((track) => (track.label?.name ? [track.label.name] : [])), 0),
-    artistDistribution: histogram(artists, 0),
+    labelDistribution,
+    artistDistribution,
   };
 }

@@ -1,4 +1,4 @@
-import type { TrackStats } from "../analysis/stats";
+import type { Bucket, TrackStats } from "../analysis/stats";
 
 function formatShare(share: number | null): string {
   if (share === null) return "-";
@@ -73,6 +73,35 @@ function BriefStat({
   );
 }
 
+function ConcentrationGroup({
+  title,
+  share,
+  items,
+}: {
+  title: string;
+  share: number | null;
+  items: Bucket[];
+}) {
+  if (!items.length) return null;
+
+  return (
+    <div>
+      <p className="brief-group-label brief-group-heading">
+        <span>{title}</span>
+        <strong className="brief-group-share">{formatShare(share)}</strong>
+      </p>
+      <div className="brief-chips">
+        {items.map((item) => (
+          <span className="brief-chip brief-chip-static" key={item.label}>
+            <span>{item.label}</span>
+            <strong>{item.count}</strong>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function MarketBrief({
   stats,
   trackCount,
@@ -110,7 +139,7 @@ export function MarketBrief({
   return (
     <section className="panel-card">
       <div className="chart-header">
-        <h3>Market brief</h3>
+        <h3>Market Brief</h3>
         {coverage ? <span className="muted">{coverage}</span> : null}
       </div>
 
@@ -157,6 +186,16 @@ export function MarketBrief({
       </div>
 
       <div className="brief-groups">
+        <ConcentrationGroup
+          title="Top 5 labels"
+          share={stats.labelConcentrationShare}
+          items={stats.labelConcentration}
+        />
+        <ConcentrationGroup
+          title="Top 5 artists"
+          share={stats.artistConcentrationShare}
+          items={stats.artistConcentration}
+        />
         <div>
           <p className="brief-group-label">Mix type</p>
           <div className="brief-chips">

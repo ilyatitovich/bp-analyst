@@ -1,5 +1,5 @@
-import { getCompatibleCamelotKeys, resolveCamelot } from './camelot';
-import { classifyMixType, isPublishedWithinDays } from './stats';
+import { CAMELOT_KEYS, getCompatibleCamelotKeys, resolveCamelot } from './camelot';
+import { classifyMixType, isPublishedWithinDays, parsePublishDate } from './stats';
 import type { Track, TrackFilters } from '../types/track';
 
 const BPM_BUCKET_PATTERN = /^(\d+)-(\d+)$/;
@@ -27,6 +27,93 @@ export function toggleListValue(values: string[], value: string): string[] {
   return values.includes(value)
     ? values.filter((item) => item !== value)
     : [...values, value];
+}
+
+export type TrackSortColumn = 'position' | 'bpm' | 'key' | 'date' | 'label';
+export type TrackSortDirection = 'asc' | 'desc';
+
+export type TrackSort = {
+  column: TrackSortColumn;
+  direction: TrackSortDirection;
+};
+
+export const DEFAULT_TRACK_SORT: TrackSort = {
+  column: 'position',
+  direction: 'asc',
+};
+
+const CAMELOT_INDEX = new Map(CAMELOT_KEYS.map((key, index) => [key, index]));
+
+export function defaultSortDirection(column: TrackSortColumn): TrackSortDirection {
+  return column === 'date' ? 'desc' : 'asc';
+}
+
+export function nextTrackSort(current: TrackSort, column: TrackSortColumn): TrackSort {
+  if (current.column === column) {
+    return { column, direction: current.direction === 'asc' ? 'desc' : 'asc' };
+  }
+  return { column, direction: defaultSortDirection(column) };
+}
+
+function compareNullableNumber(
+  a: number | null,
+  b: number | null,
+  direction: TrackSortDirection,
+): number {
+  if (a === null && b === null) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return direction === 'asc' ? a - b : b - a;
+}
+
+function compareNullableString(
+  a: string | null | undefined,
+  b: string | null | undefined,
+  direction: TrackSortDirection,
+): number {
+  const left = a?.trim() ? a : null;
+  const right = b?.trim() ? b : null;
+  if (left === null && right === null) return 0;
+  if (left === null) return 1;
+  if (right === null) return -1;
+  const cmp = left.localeCompare(right, undefined, { sensitivity: 'base', numeric: true });
+  return direction === 'asc' ? cmp : -cmp;
+}
+
+function camelotIndex(track: Track): number | null {
+  const camelot = resolveCamelot(track.camelot, track.keyName);
+  if (!camelot) return null;
+  return CAMELOT_INDEX.get(camelot) ?? null;
+}
+
+function publishTimestamp(track: Track): number | null {
+  const published = parsePublishDate(track.publishDate);
+  return published ? published.getTime() : null;
+}
+
+function compareTracks(a: Track, b: Track, sort: TrackSort): number {
+  switch (sort.column) {
+    case 'position':
+      return compareNullableNumber(a.position, b.position, sort.direction);
+    case 'bpm':
+      return compareNullableNumber(a.bpm, b.bpm, sort.direction);
+    case 'key':
+      return compareNullableNumber(camelotIndex(a), camelotIndex(b), sort.direction);
+    case 'date':
+      return compareNullableNumber(publishTimestamp(a), publishTimestamp(b), sort.direction);
+    case 'label':
+      return compareNullableString(a.label?.name, b.label?.name, sort.direction);
+  }
+}
+
+export function sortTracks(tracks: Track[], sort: TrackSort): Track[] {
+  return [...tracks].sort((a, b) => {
+    const cmp = compareTracks(a, b, sort);
+    if (cmp !== 0) return cmp;
+    const position = compareNullableNumber(a.position, b.position, 'asc');
+    if (position !== 0) return position;
+    return a.id - b.id;
+  });
 }
 
 export function hasActiveFilters(filters: TrackFilters): boolean {

@@ -11,9 +11,14 @@ import { browser } from "wxt/browser";
 import { computeTrackStats } from "../analysis/stats";
 import { formatTrackKey, scaleToCamelot } from "../analysis/camelot";
 import {
+  DEFAULT_TRACK_SORT,
   filterTracks,
   hasActiveFilters,
+  nextTrackSort,
+  sortTracks,
   toggleListValue,
+  type TrackSort,
+  type TrackSortColumn,
 } from "../analysis/filters";
 import { buildCsvFilename, downloadCsv, tracksToCsv } from "../export/csv";
 import {
@@ -550,10 +555,52 @@ function StatCard({ label, value }: { label: string; value: string }) {
   );
 }
 
+function SortHeader({
+  column,
+  label,
+  sort,
+  onSort,
+}: {
+  column: TrackSortColumn;
+  label: string;
+  sort: TrackSort;
+  onSort: (column: TrackSortColumn) => void;
+}) {
+  const active = sort.column === column;
+  const ariaSort = active
+    ? sort.direction === "asc"
+      ? "ascending"
+      : "descending"
+    : "none";
+
+  const sortLabel = column === "position" ? "position" : label.toLowerCase();
+  const ariaLabel = active
+    ? `Sorted by ${sortLabel}, ${sort.direction === "asc" ? "ascending" : "descending"}`
+    : `Sort by ${sortLabel}`;
+
+  return (
+    <th aria-sort={ariaSort}>
+      <button
+        type="button"
+        className={`sort-btn${active ? " active" : ""}`}
+        onClick={() => onSort(column)}
+        aria-label={ariaLabel}
+      >
+        <span>{label}</span>
+        <span className="sort-indicator" aria-hidden="true">
+          {active ? (sort.direction === "asc" ? "▲" : "▼") : ""}
+        </span>
+      </button>
+    </th>
+  );
+}
+
 function TrackTable({
   tracks,
   totalCount,
   keyNotation,
+  sort,
+  onSort,
   currentTrackId,
   playing,
   onPlayTrack,
@@ -561,6 +608,8 @@ function TrackTable({
   tracks: Track[];
   totalCount: number;
   keyNotation: KeyNotation;
+  sort: TrackSort;
+  onSort: (column: TrackSortColumn) => void;
   currentTrackId: number | null;
   playing: boolean;
   onPlayTrack: (track: Track) => void;
@@ -581,14 +630,19 @@ function TrackTable({
         <table>
           <thead>
             <tr>
-              <th>#</th>
+              <SortHeader column="position" label="#" sort={sort} onSort={onSort} />
               <th>Title</th>
               <th>Artists</th>
-              <th>BPM</th>
-              <th>{keyNotation === "camelot" ? "Camelot" : "Scale"}</th>
+              <SortHeader column="bpm" label="BPM" sort={sort} onSort={onSort} />
+              <SortHeader
+                column="key"
+                label={keyNotation === "camelot" ? "Camelot" : "Scale"}
+                sort={sort}
+                onSort={onSort}
+              />
               <th>Genre</th>
-              <th>Label</th>
-              <th>Date</th>
+              <SortHeader column="label" label="Label" sort={sort} onSort={onSort} />
+              <SortHeader column="date" label="Date" sort={sort} onSort={onSort} />
             </tr>
           </thead>
           <tbody>
@@ -676,6 +730,7 @@ export function App() {
   const { snapshot, extractionError, keyNotation, setKeyNotation } =
     useStorageState();
   const [filters, setFilters] = useState<TrackFilters>(DEFAULT_FILTERS);
+  const [sort, setSort] = useState<TrackSort>(DEFAULT_TRACK_SORT);
   const tracks = useMemo(
     () => uniqueTracks(snapshot?.tracks ?? []),
     [snapshot],
@@ -685,12 +740,16 @@ export function App() {
     () => filterTracks(tracks, filters),
     [filters, tracks],
   );
+  const sortedTracks = useMemo(
+    () => sortTracks(filteredTracks, sort),
+    [filteredTracks, sort],
+  );
   const filteredStats = useMemo(
     () => computeTrackStats(filteredTracks),
     [filteredTracks],
   );
   const filtersActive = hasActiveFilters(filters);
-  const player = usePreviewPlayer(filteredTracks);
+  const player = usePreviewPlayer(sortedTracks);
 
   useEffect(() => {
     player.stop();
@@ -711,6 +770,10 @@ export function App() {
     setFilters(DEFAULT_FILTERS);
   }, []);
 
+  const setTitleQuery = useCallback((titleQuery: string) => {
+    setFilters((current) => ({ ...current, titleQuery }));
+  }, []);
+
   const toggleExclusive = useCallback(() => {
     setFilters((current) => ({
       ...current,
@@ -725,6 +788,10 @@ export function App() {
     }));
   }, []);
 
+  const cycleSort = useCallback((column: TrackSortColumn) => {
+    setSort((current) => nextTrackSort(current, column));
+  }, []);
+
   const toggleFreshness = useCallback((days: 7 | 30) => {
     setFilters((current) => ({
       ...current,
@@ -736,9 +803,9 @@ export function App() {
     if (!snapshot) return;
     downloadCsv(
       buildCsvFilename(snapshot.pageUrl),
-      tracksToCsv(filteredTracks),
+      tracksToCsv(sortedTracks),
     );
-  }, [filteredTracks, snapshot]);
+  }, [sortedTracks, snapshot]);
 
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFailed, setRefreshFailed] = useState(false);
@@ -792,6 +859,7 @@ export function App() {
 
   useEffect(() => {
     setFilters(DEFAULT_FILTERS);
+    setSort(DEFAULT_TRACK_SORT);
   }, [snapshot?.pageUrl]);
 
   const showExtractionHelp =
@@ -817,7 +885,7 @@ export function App() {
                 ? "No tracks could be read from this Beatport page."
                 : snapshot
                   ? filtersActive
-                    ? `${filteredTracks.length} of ${tracks.length} tracks from ${snapshot.source}`
+                    ? `${sortedTracks.length} of ${tracks.length} tracks from ${snapshot.source}`
                     : `${tracks.length} tracks from ${snapshot.source}`
                   : "Waiting for a Beatport page snapshot."}
           </p>
@@ -831,10 +899,45 @@ export function App() {
           <button disabled={refreshing} onClick={() => void requestRefresh(true)} type="button">
             {refreshing ? "Reloading…" : "Refresh"}
           </button>
-          <button onClick={exportCsv} disabled={!filteredTracks.length} type="button">
+          <button onClick={exportCsv} disabled={!sortedTracks.length} type="button">
             Export CSV
           </button>
         </div>
+        {tracks.length ? (
+          <div className="header-filters">
+            <label className="header-search">
+              <span className="visually-hidden">Search title, mix, or artists</span>
+              <input
+                type="search"
+                value={filters.titleQuery}
+                onChange={(event) => setTitleQuery(event.target.value)}
+                placeholder="Search title, mix, artists"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+            <div className="header-filter-chips">
+              <button
+                type="button"
+                className={`brief-chip${filters.includeExclusiveOnly ? " selected" : ""}`}
+                aria-pressed={filters.includeExclusiveOnly}
+                disabled={stats.exclusiveCount === 0 && !filters.includeExclusiveOnly}
+                onClick={toggleExclusive}
+              >
+                Exclusive
+              </button>
+              <button
+                type="button"
+                className={`brief-chip${filters.includeHypeOnly ? " selected" : ""}`}
+                aria-pressed={filters.includeHypeOnly}
+                disabled={stats.hypeCount === 0 && !filters.includeHypeOnly}
+                onClick={toggleHype}
+              >
+                Hype
+              </button>
+            </div>
+          </div>
+        ) : null}
       </header>
 
       {showExtractionHelp ? (
@@ -943,9 +1046,11 @@ export function App() {
       )}
 
       <TrackTable
-        tracks={filteredTracks}
+        tracks={sortedTracks}
         totalCount={tracks.length}
         keyNotation={keyNotation}
+        sort={sort}
+        onSort={cycleSort}
         currentTrackId={player.currentTrack?.id ?? null}
         playing={player.playing}
         onPlayTrack={player.playTrack}

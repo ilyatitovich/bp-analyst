@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_TRACK_SORT,
   filterTracks,
   hasActiveFilters,
+  nextTrackSort,
   parseBpmBucket,
+  sortTracks,
   toggleListValue,
 } from './filters';
 import { DEFAULT_FILTERS, type Track } from '../types/track';
@@ -87,8 +90,28 @@ describe('chart filters', () => {
     expect(hasActiveFilters({ ...DEFAULT_FILTERS, bpmBuckets: ['120-124'] })).toBe(true);
     expect(hasActiveFilters({ ...DEFAULT_FILTERS, labelNames: ['Anjunadeep'] })).toBe(true);
     expect(hasActiveFilters({ ...DEFAULT_FILTERS, includeExclusiveOnly: true })).toBe(true);
+    expect(hasActiveFilters({ ...DEFAULT_FILTERS, includeHypeOnly: true })).toBe(true);
+    expect(hasActiveFilters({ ...DEFAULT_FILTERS, titleQuery: 'night' })).toBe(true);
     expect(hasActiveFilters({ ...DEFAULT_FILTERS, mixTypes: ['Original'] })).toBe(true);
     expect(hasActiveFilters({ ...DEFAULT_FILTERS, publishedWithinDays: 7 })).toBe(true);
+  });
+
+  it('filters by title, mix name, and artist query', () => {
+    const tracks: Track[] = [
+      { ...baseTrack, id: 1, title: 'Night Drive', mixName: 'Original Mix', artists: [{ name: 'Nova' }] },
+      { ...baseTrack, id: 2, title: 'Sunrise', mixName: 'Club Mix', artists: [{ name: 'Delta' }] },
+      { ...baseTrack, id: 3, title: 'Pulse', mixName: 'Extended Mix', artists: [{ name: 'Nova' }] },
+    ];
+
+    expect(
+      filterTracks(tracks, { ...DEFAULT_FILTERS, titleQuery: 'night' }).map((track) => track.id),
+    ).toEqual([1]);
+    expect(
+      filterTracks(tracks, { ...DEFAULT_FILTERS, titleQuery: 'CLUB' }).map((track) => track.id),
+    ).toEqual([2]);
+    expect(
+      filterTracks(tracks, { ...DEFAULT_FILTERS, titleQuery: ' nova ' }).map((track) => track.id),
+    ).toEqual([1, 3]);
   });
 
   it('filters exclusive, hype, mix type, artists, and freshness', () => {
@@ -117,5 +140,49 @@ describe('chart filters', () => {
     expect(
       filterTracks(tracks, { ...DEFAULT_FILTERS, publishedWithinDays: 30 }, now).map((track) => track.id),
     ).toEqual([1, 2]);
+  });
+
+  it('cycles sort column and direction', () => {
+    expect(nextTrackSort(DEFAULT_TRACK_SORT, 'position')).toEqual({
+      column: 'position',
+      direction: 'desc',
+    });
+    expect(nextTrackSort(DEFAULT_TRACK_SORT, 'date')).toEqual({
+      column: 'date',
+      direction: 'desc',
+    });
+    expect(nextTrackSort({ column: 'date', direction: 'desc' }, 'date')).toEqual({
+      column: 'date',
+      direction: 'asc',
+    });
+    expect(nextTrackSort({ column: 'bpm', direction: 'asc' }, 'label')).toEqual({
+      column: 'label',
+      direction: 'asc',
+    });
+  });
+
+  it('sorts tracks by position, bpm, key, date, and label', () => {
+    const tracks: Track[] = [
+      { ...baseTrack, id: 1, position: 3, bpm: 128, camelot: '8A', keyName: 'A Minor', label: { name: 'Zebra' }, publishDate: '2026-08-01' },
+      { ...baseTrack, id: 2, position: 1, bpm: null, camelot: '11B', keyName: 'A Major', label: { name: 'Alpha' }, publishDate: '2026-07-01' },
+      { ...baseTrack, id: 3, position: 2, bpm: 122, camelot: null, keyName: null, label: null, publishDate: null },
+    ];
+
+    expect(sortTracks(tracks, DEFAULT_TRACK_SORT).map((track) => track.id)).toEqual([2, 3, 1]);
+    expect(
+      sortTracks(tracks, { column: 'bpm', direction: 'asc' }).map((track) => track.id),
+    ).toEqual([3, 1, 2]);
+    expect(
+      sortTracks(tracks, { column: 'bpm', direction: 'desc' }).map((track) => track.id),
+    ).toEqual([1, 3, 2]);
+    expect(
+      sortTracks(tracks, { column: 'key', direction: 'asc' }).map((track) => track.id),
+    ).toEqual([1, 2, 3]);
+    expect(
+      sortTracks(tracks, { column: 'date', direction: 'desc' }).map((track) => track.id),
+    ).toEqual([1, 2, 3]);
+    expect(
+      sortTracks(tracks, { column: 'label', direction: 'asc' }).map((track) => track.id),
+    ).toEqual([2, 1, 3]);
   });
 });
