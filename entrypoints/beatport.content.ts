@@ -1,13 +1,11 @@
 import { browser } from 'wxt/browser';
-import { filterTracks } from '../src/analysis/filters';
 import { extractSnapshotFromApiPayload } from '../src/extract/api-payload';
 import { extractSnapshotFromDom } from '../src/extract/dom';
 import { extractSnapshotFromNextData } from '../src/extract/next-data';
 import { mergeSnapshots, pickLargestSnapshot } from '../src/extract/merge';
-import { applyRowHighlights } from '../src/highlight/rows';
 import { STORAGE_KEYS } from '../src/messaging/protocol';
 import { extensionStorage, extensionStorageArea } from '../src/messaging/storage';
-import { DEFAULT_FILTERS, type ExtractionSnapshot, type TrackFilters } from '../src/types/track';
+import { type ExtractionSnapshot } from '../src/types/track';
 
 const PAYLOAD_EVENT = 'bp-analyst:payload';
 const LOCATION_EVENT = 'bp-analyst:location-change';
@@ -23,18 +21,6 @@ function getContext(source: ExtractionSnapshot['source']) {
   };
 }
 
-async function readFilters(): Promise<TrackFilters> {
-  const stored = await extensionStorage.get([STORAGE_KEYS.filters]);
-  return (stored[STORAGE_KEYS.filters] as TrackFilters | undefined) ?? DEFAULT_FILTERS;
-}
-
-async function syncHighlights(): Promise<void> {
-  if (!currentSnapshot) return;
-  const filters = await readFilters();
-  const visibleTracks = filterTracks(currentSnapshot.tracks, filters);
-  applyRowHighlights(currentSnapshot.tracks, visibleTracks);
-}
-
 async function publishSnapshot(snapshot: ExtractionSnapshot | null): Promise<void> {
   if (!snapshot) return;
   currentSnapshot = snapshot;
@@ -46,7 +32,6 @@ async function publishSnapshot(snapshot: ExtractionSnapshot | null): Promise<voi
   } catch {
     // Background or panel may not be listening yet.
   }
-  await syncHighlights();
 }
 
 async function extractAndPublish(payload?: unknown, reset = false): Promise<void> {
@@ -99,9 +84,6 @@ export default defineContentScript({
 
     browser.storage.onChanged.addListener((changes, areaName) => {
       if (areaName !== extensionStorageArea) return;
-      if (changes[STORAGE_KEYS.filters]) {
-        void syncHighlights();
-      }
       if (changes[STORAGE_KEYS.refreshToken]) {
         void extractAndPublish();
       }

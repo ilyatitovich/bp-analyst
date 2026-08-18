@@ -1,5 +1,5 @@
 import { browser } from 'wxt/browser';
-import { DEFAULT_FILTERS, type ExtractionSnapshot, type TrackFilters } from '../src/types/track';
+import { type ExtractionSnapshot } from '../src/types/track';
 import { STORAGE_KEYS, type BeatportAnalystMessage } from '../src/messaging/protocol';
 import { extensionStorage } from '../src/messaging/storage';
 
@@ -7,13 +7,6 @@ async function ensureDefaults(): Promise<void> {
   if (browser.storage.session?.setAccessLevel) {
     await browser.storage.session.setAccessLevel({
       accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS',
-    });
-  }
-
-  const current = await extensionStorage.get([STORAGE_KEYS.filters]);
-  if (!current[STORAGE_KEYS.filters]) {
-    await extensionStorage.set({
-      [STORAGE_KEYS.filters]: DEFAULT_FILTERS,
     });
   }
 }
@@ -91,13 +84,6 @@ export default defineBackground({
     browser.runtime.onMessage.addListener((message: BeatportAnalystMessage, _sender, sendResponse) => {
       if (message.type === 'TRACKS_EXTRACTED') {
         void persistSnapshot(message.snapshot).then(() => sendResponse({ ok: true }));
-        return true;
-      }
-
-      if (message.type === 'SET_FILTERS') {
-        void extensionStorage
-          .set({ [STORAGE_KEYS.filters]: message.filters as TrackFilters })
-          .then(() => sendResponse({ ok: true }));
         return true;
       }
 

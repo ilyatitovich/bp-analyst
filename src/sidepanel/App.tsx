@@ -2,24 +2,21 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { browser } from 'wxt/browser';
 import { computeTrackStats } from '../analysis/stats';
 import { formatTrackKey } from '../analysis/camelot';
-import { filterTracks } from '../analysis/filters';
 import { buildCsvFilename, downloadCsv, tracksToCsv } from '../export/csv';
 import { STORAGE_KEYS, type KeyNotation } from '../messaging/protocol';
 import { extensionStorage, extensionStorageArea } from '../messaging/storage';
-import { DEFAULT_FILTERS, type ExtractionSnapshot, type Track, type TrackFilters } from '../types/track';
+import { type ExtractionSnapshot, type Track } from '../types/track';
 
 function useStorageState() {
   const [snapshot, setSnapshot] = useState<ExtractionSnapshot | null>(null);
-  const [filters, setFilters] = useState<TrackFilters>(DEFAULT_FILTERS);
   const [keyNotation, setKeyNotationState] = useState<KeyNotation>('camelot');
 
   useEffect(() => {
     let active = true;
 
-    extensionStorage.get([STORAGE_KEYS.snapshot, STORAGE_KEYS.filters, STORAGE_KEYS.keyNotation]).then((stored) => {
+    extensionStorage.get([STORAGE_KEYS.snapshot, STORAGE_KEYS.keyNotation]).then((stored) => {
       if (!active) return;
       setSnapshot((stored[STORAGE_KEYS.snapshot] as ExtractionSnapshot | undefined) ?? null);
-      setFilters((stored[STORAGE_KEYS.filters] as TrackFilters | undefined) ?? DEFAULT_FILTERS);
       setKeyNotationState((stored[STORAGE_KEYS.keyNotation] as KeyNotation | undefined) ?? 'camelot');
     });
 
@@ -27,9 +24,6 @@ function useStorageState() {
       if (areaName !== extensionStorageArea) return;
       if (changes[STORAGE_KEYS.snapshot]) {
         setSnapshot((changes[STORAGE_KEYS.snapshot].newValue as ExtractionSnapshot | undefined) ?? null);
-      }
-      if (changes[STORAGE_KEYS.filters]) {
-        setFilters((changes[STORAGE_KEYS.filters].newValue as TrackFilters | undefined) ?? DEFAULT_FILTERS);
       }
       if (changes[STORAGE_KEYS.keyNotation]) {
         setKeyNotationState((changes[STORAGE_KEYS.keyNotation].newValue as KeyNotation | undefined) ?? 'camelot');
@@ -43,12 +37,6 @@ function useStorageState() {
     };
   }, []);
 
-  const updateFilters = useCallback((nextFilters: TrackFilters) => {
-    void extensionStorage.set({
-      [STORAGE_KEYS.filters]: nextFilters,
-    });
-  }, []);
-
   const setKeyNotation = useCallback((notation: KeyNotation) => {
     setKeyNotationState(notation);
     void extensionStorage.set({
@@ -56,7 +44,7 @@ function useStorageState() {
     });
   }, []);
 
-  return { snapshot, filters, updateFilters, keyNotation, setKeyNotation };
+  return { snapshot, keyNotation, setKeyNotation };
 }
 
 function ColumnHistogram({
@@ -219,45 +207,11 @@ function TrackTable({ tracks, keyNotation }: { tracks: Track[]; keyNotation: Key
 }
 
 export function App() {
-  const { snapshot, filters, updateFilters, keyNotation, setKeyNotation } = useStorageState();
+  const { snapshot, keyNotation, setKeyNotation } = useStorageState();
+  const tracks = snapshot?.tracks ?? [];
+  const stats = useMemo(() => computeTrackStats(snapshot?.tracks ?? []), [snapshot]);
 
-  const filteredTracks = useMemo(
-    () => (snapshot ? filterTracks(snapshot.tracks, filters) : []),
-    [snapshot, filters],
-  );
-  const stats = useMemo(() => computeTrackStats(filteredTracks), [filteredTracks]);
-
-  const genreOptions = useMemo(
-    () =>
-      snapshot
-        ? Array.from(new Set(snapshot.tracks.flatMap((track) => (track.genre?.name ? [track.genre.name] : [])))).sort()
-        : [],
-    [snapshot],
-  );
-
-  const camelotOptions = useMemo(
-    () =>
-      snapshot
-        ? Array.from(new Set(snapshot.tracks.flatMap((track) => (track.camelot ? [track.camelot] : [])))).sort(
-            (left, right) => left.localeCompare(right, undefined, { numeric: true }),
-          )
-        : [],
-    [snapshot],
-  );
-
-  const setPartialFilters = useCallback(
-    (partial: Partial<TrackFilters>) => {
-      updateFilters({ ...filters, ...partial });
-    },
-    [filters, updateFilters],
-  );
-
-  const exportFiltered = useCallback(() => {
-    if (!snapshot) return;
-    downloadCsv(buildCsvFilename(snapshot.pageUrl), tracksToCsv(filteredTracks));
-  }, [filteredTracks, snapshot]);
-
-  const exportAll = useCallback(() => {
+  const exportCsv = useCallback(() => {
     if (!snapshot) return;
     downloadCsv(buildCsvFilename(snapshot.pageUrl), tracksToCsv(snapshot.tracks));
   }, [snapshot]);
@@ -295,7 +249,7 @@ export function App() {
             {refreshing
               ? 'Reloading Beatport page…'
               : snapshot
-                ? `${filteredTracks.length}/${snapshot.trackCount} tracks shown from ${snapshot.source}`
+                ? `${snapshot.trackCount} tracks from ${snapshot.source}`
                 : 'Waiting for a Beatport page snapshot.'}
           </p>
         </div>
@@ -303,126 +257,11 @@ export function App() {
           <button disabled={refreshing} onClick={requestRefresh} type="button">
             {refreshing ? 'Reloading…' : 'Refresh'}
           </button>
-          <button onClick={exportFiltered} disabled={!filteredTracks.length} type="button">
+          <button onClick={exportCsv} disabled={!tracks.length} type="button">
             Export CSV
-          </button>
-          <button onClick={exportAll} disabled={!snapshot?.tracks.length} type="button">
-            Export All
           </button>
         </div>
       </header>
-
-      <section className="panel-card">
-        <h3>Filters</h3>
-        <div className="filters-grid">
-          <label>
-            BPM Min
-            <input
-              type="number"
-              value={filters.bpmMin ?? ''}
-              onChange={(event) =>
-                setPartialFilters({
-                  bpmMin: event.target.value ? Number(event.target.value) : null,
-                })
-              }
-            />
-          </label>
-          <label>
-            BPM Max
-            <input
-              type="number"
-              value={filters.bpmMax ?? ''}
-              onChange={(event) =>
-                setPartialFilters({
-                  bpmMax: event.target.value ? Number(event.target.value) : null,
-                })
-              }
-            />
-          </label>
-          <label>
-            Label Search
-            <input
-              type="text"
-              value={filters.labelQuery}
-              onChange={(event) => setPartialFilters({ labelQuery: event.target.value })}
-            />
-          </label>
-          <label>
-            Track Search
-            <input
-              type="text"
-              value={filters.titleQuery}
-              onChange={(event) => setPartialFilters({ titleQuery: event.target.value })}
-            />
-          </label>
-          <label>
-            Compatible With
-            <select
-              value={filters.compatibleWith ?? ''}
-              onChange={(event) => setPartialFilters({ compatibleWith: event.target.value || null })}
-            >
-              <option value="">Any</option>
-              {camelotOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Camelot Keys
-            <select
-              multiple
-              value={filters.camelotKeys}
-              onChange={(event) =>
-                setPartialFilters({
-                  camelotKeys: Array.from(event.target.selectedOptions, (option) => option.value),
-                })
-              }
-            >
-              {camelotOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Genres
-            <select
-              multiple
-              value={filters.genreNames}
-              onChange={(event) =>
-                setPartialFilters({
-                  genreNames: Array.from(event.target.selectedOptions, (option) => option.value),
-                })
-              }
-            >
-              {genreOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={filters.includeExclusiveOnly}
-              onChange={(event) => setPartialFilters({ includeExclusiveOnly: event.target.checked })}
-            />
-            Exclusive only
-          </label>
-          <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={filters.includeHypeOnly}
-              onChange={(event) => setPartialFilters({ includeHypeOnly: event.target.checked })}
-            />
-            Hype only
-          </label>
-        </div>
-      </section>
 
       <section className="stats-grid">
         <StatCard label="Tracks" value={String(stats.count)} />
@@ -449,7 +288,7 @@ export function App() {
         <DistributionChart title="Labels" items={stats.labelDistribution} />
       </section>
 
-      <TrackTable tracks={filteredTracks} keyNotation={keyNotation} />
+      <TrackTable tracks={tracks} keyNotation={keyNotation} />
     </main>
   );
 }

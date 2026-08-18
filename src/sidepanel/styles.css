@@ -38,8 +38,7 @@ select {
 .header-card,
 .header-actions,
 .stats-grid,
-.chart-grid,
-.filters-grid {
+.chart-grid {
   display: grid;
   gap: 12px;
 }
@@ -52,23 +51,6 @@ select {
 .header-actions {
   grid-auto-flow: column;
   align-content: start;
-}
-
-.filters-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.filters-grid label {
-  display: grid;
-  gap: 6px;
-  color: #b6c2d0;
-  font-size: 12px;
-}
-
-.checkbox-row {
-  grid-auto-flow: column;
-  justify-content: start;
-  align-items: center;
 }
 
 .stats-grid {
@@ -279,8 +261,7 @@ a {
 @media (max-width: 920px) {
   .header-card,
   .stats-grid,
-  .chart-grid,
-  .filters-grid {
+  .chart-grid {
     grid-template-columns: 1fr;
   }
 
