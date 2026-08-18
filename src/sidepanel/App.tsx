@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -73,6 +74,81 @@ function useStorageState() {
   return { snapshot, keyNotation, setKeyNotation };
 }
 
+function AccordionChevron() {
+  return (
+    <svg
+      className="accordion-chevron-icon"
+      viewBox="0 0 16 16"
+      width="16"
+      height="16"
+      aria-hidden="true"
+    >
+      <path
+        d="M4 6l4 4 4-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CollapsiblePanel({
+  title,
+  headerExtra,
+  children,
+  defaultOpen = true,
+}: {
+  title: string;
+  headerExtra?: ReactNode;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const contentId = `${useId()}-content`;
+
+  const toggle = useCallback(() => {
+    setOpen((value) => !value);
+  }, []);
+
+  return (
+    <section className={`panel-card accordion-card${open ? "" : " collapsed"}`}>
+      <div className="accordion-header">
+        <button
+          type="button"
+          className="accordion-trigger"
+          aria-expanded={open}
+          aria-controls={contentId}
+          onClick={toggle}
+        >
+          <h3>{title}</h3>
+        </button>
+        {open ? headerExtra : null}
+        <button
+          type="button"
+          className={`accordion-chevron${open ? " open" : ""}`}
+          aria-expanded={open}
+          aria-controls={contentId}
+          aria-label={open ? `Collapse ${title}` : `Expand ${title}`}
+          onClick={toggle}
+        >
+          <AccordionChevron />
+        </button>
+      </div>
+      <div
+        className={`accordion-body${open ? " open" : ""}`}
+        id={contentId}
+        aria-hidden={!open}
+        inert={!open}
+      >
+        <div className="accordion-body-inner">{children}</div>
+      </div>
+    </section>
+  );
+}
+
 function ColumnHistogram({
   title,
   items,
@@ -88,11 +164,7 @@ function ColumnHistogram({
 }) {
   const max = Math.max(1, ...items.map((item) => item.count));
   return (
-    <section className="panel-card">
-      <div className="chart-header">
-        <h3>{title}</h3>
-        {headerExtra}
-      </div>
+    <CollapsiblePanel title={title} headerExtra={headerExtra}>
       {items.length ? (
         <div
           className={`column-histogram${dense ? " column-histogram-dense" : ""}`}
@@ -115,7 +187,7 @@ function ColumnHistogram({
       ) : (
         <p className="muted">No data</p>
       )}
-    </section>
+    </CollapsiblePanel>
   );
 }
 
@@ -167,8 +239,7 @@ function DistributionChart({
   if (items.length <= 1) return null;
   const max = Math.max(1, ...items.map((item) => item.count));
   return (
-    <section className="panel-card">
-      <h3>{title}</h3>
+    <CollapsiblePanel title={title}>
       <div className="bars">
         {items.map((item) => (
           <div className="bar-row" key={item.label}>
@@ -185,7 +256,7 @@ function DistributionChart({
           </div>
         ))}
       </div>
-    </section>
+    </CollapsiblePanel>
   );
 }
 
@@ -200,8 +271,7 @@ function CountTable({
 }) {
   if (items.length <= 1) return null;
   return (
-    <section className="panel-card">
-      <h3>{title}</h3>
+    <CollapsiblePanel title={title}>
       <div className="table-wrap">
         <table>
           <thead>
@@ -220,7 +290,7 @@ function CountTable({
           </tbody>
         </table>
       </div>
-    </section>
+    </CollapsiblePanel>
   );
 }
 

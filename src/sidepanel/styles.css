@@ -87,11 +87,81 @@ h1 {
   font-size: 18px;
 }
 
-.chart-header {
+.chart-header,
+.accordion-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
+}
+
+.accordion-header {
+  min-height: 24px;
+}
+
+.accordion-trigger,
+.accordion-chevron {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.accordion-trigger:hover,
+.accordion-chevron:hover {
+  color: #edf1f7;
+}
+
+.accordion-trigger:focus-visible,
+.accordion-chevron:focus-visible {
+  outline: 2px solid #49c7f3;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.accordion-trigger {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  text-align: left;
+}
+
+.accordion-chevron {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: #8f9aac;
+}
+
+.accordion-chevron-icon {
+  display: block;
+  transition: transform 180ms ease;
+}
+
+.accordion-chevron.open .accordion-chevron-icon {
+  transform: rotate(180deg);
+}
+
+.accordion-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 180ms ease;
+}
+
+.accordion-body.open {
+  grid-template-rows: 1fr;
+}
+
+.accordion-body-inner {
+  overflow: hidden;
+}
+
+.accordion-card.collapsed {
+  padding-bottom: 10px;
 }
 
 .segmented {
