@@ -9,12 +9,24 @@ import {
 } from "react";
 import { browser } from "wxt/browser";
 import { computeTrackStats } from "../analysis/stats";
-import { formatTrackKey } from "../analysis/camelot";
+import { formatTrackKey, scaleToCamelot } from "../analysis/camelot";
+import {
+  filterTracks,
+  hasActiveFilters,
+  toggleListValue,
+} from "../analysis/filters";
 import { buildCsvFilename, downloadCsv, tracksToCsv } from "../export/csv";
 import { STORAGE_KEYS, type KeyNotation } from "../messaging/protocol";
 import { extensionStorage, extensionStorageArea } from "../messaging/storage";
 import { uniqueTracks } from "../extract/normalize";
-import { type ExtractionSnapshot, type Track } from "../types/track";
+import {
+  DEFAULT_FILTERS,
+  type ExtractionSnapshot,
+  type Track,
+  type TrackFilters,
+} from "../types/track";
+
+type FilterListKey = "bpmBuckets" | "camelotKeys" | "genreNames" | "labelNames";
 
 function useStorageState() {
   const [snapshot, setSnapshot] = useState<ExtractionSnapshot | null>(null);
@@ -149,40 +161,108 @@ function CollapsiblePanel({
   );
 }
 
+function FilterChips({
+  values,
+  formatValue,
+  onRemove,
+  onReset,
+}: {
+  values: string[];
+  formatValue?: (value: string) => string;
+  onRemove: (value: string) => void;
+  onReset: () => void;
+}) {
+  if (!values.length) return null;
+  const visible = values.slice(0, 3);
+  const hiddenCount = values.length - visible.length;
+
+  return (
+    <div className="filter-summary">
+      {visible.map((value) => {
+        const label = formatValue ? formatValue(value) : value;
+        return (
+          <button
+            key={value}
+            type="button"
+            className="filter-chip"
+            onClick={() => onRemove(value)}
+            aria-label={`Remove ${label} filter`}
+          >
+            <span className="filter-chip-label">{label}</span>
+            <span aria-hidden="true">×</span>
+          </button>
+        );
+      })}
+      {hiddenCount > 0 ? (
+        <span className="filter-chip filter-chip-static">+{hiddenCount}</span>
+      ) : null}
+      <button className="filter-reset" onClick={onReset} type="button">
+        Reset
+      </button>
+    </div>
+  );
+}
+
 function ColumnHistogram({
   title,
   items,
   dense = false,
   formatLabel,
   headerExtra,
+  selectedLabels,
+  onToggle,
 }: {
   title: string;
   items: Array<{ label: string; count: number }>;
   dense?: boolean;
   formatLabel?: (label: string) => string;
   headerExtra?: ReactNode;
+  selectedLabels?: Set<string>;
+  onToggle?: (label: string) => void;
 }) {
   const max = Math.max(1, ...items.map((item) => item.count));
+  const hasSelection = Boolean(selectedLabels?.size);
+
   return (
     <CollapsiblePanel title={title} headerExtra={headerExtra}>
       {items.length ? (
         <div
           className={`column-histogram${dense ? " column-histogram-dense" : ""}`}
         >
-          {items.map((item) => (
-            <div className="hist-col" key={item.label}>
-              <span className="hist-count">{item.count || ""}</span>
-              <div className="hist-track">
-                <div
-                  className="hist-fill"
-                  style={{ height: `${(item.count / max) * 100}%` }}
-                />
-              </div>
-              <span className="hist-label">
-                {formatLabel ? formatLabel(item.label) : item.label}
-              </span>
-            </div>
-          ))}
+          {items.map((item) => {
+            const selected = selectedLabels?.has(item.label) ?? false;
+            const label = formatLabel ? formatLabel(item.label) : item.label;
+            const className = [
+              "hist-col",
+              selected ? "selected" : "",
+              hasSelection && !selected ? "dimmed" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            return (
+              <button
+                className={className}
+                disabled={!item.count || !onToggle}
+                key={item.label}
+                onClick={() => onToggle?.(item.label)}
+                aria-pressed={selected}
+                title={
+                  selected ? `Remove ${label} filter` : `Filter ${label}`
+                }
+                type="button"
+              >
+                <span className="hist-count">{item.count || ""}</span>
+                <div className="hist-track">
+                  <div
+                    className="hist-fill"
+                    style={{ height: `${(item.count / max) * 100}%` }}
+                  />
+                </div>
+                <span className="hist-label">{label}</span>
+              </button>
+            );
+          })}
         </div>
       ) : (
         <p className="muted">No data</p>
@@ -196,34 +276,65 @@ function KeyHistogram({
   onNotationChange,
   camelotItems,
   scaleItems,
+  selectedKeys,
+  onToggle,
+  onReset,
 }: {
   notation: KeyNotation;
   onNotationChange: (notation: KeyNotation) => void;
   camelotItems: Array<{ label: string; count: number }>;
   scaleItems: Array<{ label: string; count: number }>;
+  selectedKeys: string[];
+  onToggle: (camelot: string) => void;
+  onReset: () => void;
 }) {
+  const selectedLabels = useMemo(() => {
+    if (notation === "camelot") return new Set(selectedKeys);
+    return new Set(
+      selectedKeys.map(
+        (key) => formatTrackKey(key, null, "scale") ?? key,
+      ),
+    );
+  }, [notation, selectedKeys]);
+
   return (
     <ColumnHistogram
       title="Keys"
       dense
       items={notation === "camelot" ? camelotItems : scaleItems}
+      selectedLabels={selectedLabels}
+      onToggle={(label) => {
+        const camelot =
+          notation === "camelot" ? label : scaleToCamelot(label);
+        if (camelot) onToggle(camelot);
+      }}
       headerExtra={
-        <div className="segmented" role="group" aria-label="Key notation">
-          <button
-            className={notation === "camelot" ? "active" : undefined}
-            onClick={() => onNotationChange("camelot")}
-            type="button"
-          >
-            Camelot
-          </button>
-          <button
-            className={notation === "scale" ? "active" : undefined}
-            onClick={() => onNotationChange("scale")}
-            type="button"
-          >
-            Scale
-          </button>
-        </div>
+        <>
+          <FilterChips
+            values={selectedKeys}
+            formatValue={(key) =>
+              formatTrackKey(key, null, notation) ?? key
+            }
+            onRemove={onToggle}
+            onReset={onReset}
+          />
+          <div className="segmented" role="group" aria-label="Key notation">
+            <button
+              className={notation === "camelot" ? "active" : undefined}
+              onClick={() => onNotationChange("camelot")}
+              type="button"
+            >
+              Camelot
+            </button>
+            <button
+              className={notation === "scale" ? "active" : undefined}
+              onClick={() => onNotationChange("scale")}
+              type="button"
+            >
+              Scale
+            </button>
+          </div>
+        </>
       }
     />
   );
@@ -232,29 +343,67 @@ function KeyHistogram({
 function DistributionChart({
   title,
   items,
+  selectedLabels,
+  onToggle,
+  onReset,
 }: {
   title: string;
   items: Array<{ label: string; count: number }>;
+  selectedLabels: string[];
+  onToggle: (label: string) => void;
+  onReset: () => void;
 }) {
   if (items.length <= 1) return null;
   const max = Math.max(1, ...items.map((item) => item.count));
+  const selected = new Set(selectedLabels);
+  const hasSelection = selected.size > 0;
+
   return (
-    <CollapsiblePanel title={title}>
+    <CollapsiblePanel
+      title={title}
+      headerExtra={
+        <FilterChips
+          values={selectedLabels}
+          onRemove={onToggle}
+          onReset={onReset}
+        />
+      }
+    >
       <div className="bars">
-        {items.map((item) => (
-          <div className="bar-row" key={item.label}>
-            <div className="bar-meta">
-              <span>{item.label}</span>
-              <strong>{item.count}</strong>
-            </div>
-            <div className="bar-track">
-              <div
-                className="bar-fill"
-                style={{ width: `${(item.count / max) * 100}%` }}
-              />
-            </div>
-          </div>
-        ))}
+        {items.map((item) => {
+          const isSelected = selected.has(item.label);
+          return (
+            <button
+              className={[
+                "bar-row",
+                isSelected ? "selected" : "",
+                hasSelection && !isSelected ? "dimmed" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              key={item.label}
+              onClick={() => onToggle(item.label)}
+              aria-pressed={isSelected}
+              title={
+                isSelected
+                  ? `Remove ${item.label} filter`
+                  : `Filter ${item.label}`
+              }
+              type="button"
+            >
+              <div className="bar-meta">
+                <span>{item.label}</span>
+                <strong>{item.count}</strong>
+              </div>
+              <div className="bar-track">
+                <div
+                  className="bar-fill"
+                  style={{ width: `${(item.count / max) * 100}%` }}
+                />
+              </div>
+            </button>
+          );
+        })}
       </div>
     </CollapsiblePanel>
   );
@@ -264,14 +413,32 @@ function CountTable({
   title,
   nameHeader,
   items,
+  selectedLabels,
+  onToggle,
+  onReset,
 }: {
   title: string;
   nameHeader: string;
   items: Array<{ label: string; count: number }>;
+  selectedLabels: string[];
+  onToggle: (label: string) => void;
+  onReset: () => void;
 }) {
   if (items.length <= 1) return null;
+  const selected = new Set(selectedLabels);
+  const hasSelection = selected.size > 0;
+
   return (
-    <CollapsiblePanel title={title}>
+    <CollapsiblePanel
+      title={title}
+      headerExtra={
+        <FilterChips
+          values={selectedLabels}
+          onRemove={onToggle}
+          onReset={onReset}
+        />
+      }
+    >
       <div className="table-wrap">
         <table>
           <thead>
@@ -281,12 +448,39 @@ function CountTable({
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => (
-              <tr key={item.label}>
-                <td>{item.label}</td>
-                <td className="count-cell">{item.count}</td>
-              </tr>
-            ))}
+            {items.map((item) => {
+              const isSelected = selected.has(item.label);
+              return (
+                <tr
+                  className={[
+                    "filter-row",
+                    isSelected ? "selected" : "",
+                    hasSelection && !isSelected ? "dimmed" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  key={item.label}
+                  onClick={() => onToggle(item.label)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onToggle(item.label);
+                    }
+                  }}
+                  aria-pressed={isSelected}
+                  role="button"
+                  tabIndex={0}
+                  title={
+                    isSelected
+                      ? `Remove ${item.label} filter`
+                      : `Filter ${item.label}`
+                  }
+                >
+                  <td>{item.label}</td>
+                  <td className="count-cell">{item.count}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -305,14 +499,25 @@ function StatCard({ label, value }: { label: string; value: string }) {
 
 function TrackTable({
   tracks,
+  totalCount,
   keyNotation,
 }: {
   tracks: Track[];
+  totalCount: number;
   keyNotation: KeyNotation;
 }) {
+  const filtered = tracks.length !== totalCount;
+
   return (
     <section className="panel-card">
-      <h3>Tracks</h3>
+      <div className="chart-header">
+        <h3>Tracks</h3>
+        {filtered ? (
+          <span className="muted">
+            {tracks.length} of {totalCount}
+          </span>
+        ) : null}
+      </div>
       <div className="table-wrap">
         <table>
           <thead>
@@ -328,32 +533,40 @@ function TrackTable({
             </tr>
           </thead>
           <tbody>
-            {tracks.map((track) => (
-              <tr key={track.id}>
-                <td>{track.position ?? "-"}</td>
-                <td>
-                  {track.trackUrl ? (
-                    <a href={track.trackUrl} target="_blank" rel="noreferrer">
-                      {track.title}
-                    </a>
-                  ) : (
-                    track.title
-                  )}
-                  {track.mixName ? (
-                    <div className="cell-subtle">{track.mixName}</div>
-                  ) : null}
+            {tracks.length ? (
+              tracks.map((track) => (
+                <tr key={track.id}>
+                  <td>{track.position ?? "-"}</td>
+                  <td>
+                    {track.trackUrl ? (
+                      <a href={track.trackUrl} target="_blank" rel="noreferrer">
+                        {track.title}
+                      </a>
+                    ) : (
+                      track.title
+                    )}
+                    {track.mixName ? (
+                      <div className="cell-subtle">{track.mixName}</div>
+                    ) : null}
+                  </td>
+                  <td>{track.artists.map((artist) => artist.name).join(", ")}</td>
+                  <td>{track.bpm ?? "-"}</td>
+                  <td>
+                    {formatTrackKey(track.camelot, track.keyName, keyNotation) ??
+                      "-"}
+                  </td>
+                  <td>{track.genre?.name ?? "-"}</td>
+                  <td>{track.label?.name ?? "-"}</td>
+                  <td>{track.publishDate ?? "-"}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td className="muted" colSpan={8}>
+                  No matching tracks
                 </td>
-                <td>{track.artists.map((artist) => artist.name).join(", ")}</td>
-                <td>{track.bpm ?? "-"}</td>
-                <td>
-                  {formatTrackKey(track.camelot, track.keyName, keyNotation) ??
-                    "-"}
-                </td>
-                <td>{track.genre?.name ?? "-"}</td>
-                <td>{track.label?.name ?? "-"}</td>
-                <td>{track.publishDate ?? "-"}</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -363,19 +576,44 @@ function TrackTable({
 
 export function App() {
   const { snapshot, keyNotation, setKeyNotation } = useStorageState();
+  const [filters, setFilters] = useState<TrackFilters>(DEFAULT_FILTERS);
   const tracks = useMemo(
     () => uniqueTracks(snapshot?.tracks ?? []),
     [snapshot],
   );
   const stats = useMemo(() => computeTrackStats(tracks), [tracks]);
+  const filteredTracks = useMemo(
+    () => filterTracks(tracks, filters),
+    [filters, tracks],
+  );
+  const filteredStats = useMemo(
+    () => computeTrackStats(filteredTracks),
+    [filteredTracks],
+  );
+  const filtersActive = hasActiveFilters(filters);
+
+  const toggleFilter = useCallback((key: FilterListKey, value: string) => {
+    setFilters((current) => ({
+      ...current,
+      [key]: toggleListValue(current[key], value),
+    }));
+  }, []);
+
+  const clearFilter = useCallback((key: FilterListKey) => {
+    setFilters((current) => ({ ...current, [key]: [] }));
+  }, []);
+
+  const resetFilters = useCallback(() => {
+    setFilters(DEFAULT_FILTERS);
+  }, []);
 
   const exportCsv = useCallback(() => {
     if (!snapshot) return;
     downloadCsv(
       buildCsvFilename(snapshot.pageUrl),
-      tracksToCsv(tracks),
+      tracksToCsv(filteredTracks),
     );
-  }, [snapshot, tracks]);
+  }, [filteredTracks, snapshot]);
 
   const [refreshing, setRefreshing] = useState(false);
   const refreshStartedAt = useRef(snapshot?.extractedAt ?? null);
@@ -417,6 +655,10 @@ export function App() {
     return () => window.clearTimeout(timeout);
   }, [refreshing, snapshot?.extractedAt]);
 
+  useEffect(() => {
+    setFilters(DEFAULT_FILTERS);
+  }, [snapshot?.pageUrl]);
+
   return (
     <main className="app-shell">
       <header className="panel-card header-card">
@@ -427,37 +669,57 @@ export function App() {
             {refreshing
               ? "Reloading Beatport page…"
               : snapshot
-                ? `${tracks.length} tracks from ${snapshot.source}`
+                ? filtersActive
+                  ? `${filteredTracks.length} of ${tracks.length} tracks from ${snapshot.source}`
+                  : `${tracks.length} tracks from ${snapshot.source}`
                 : "Waiting for a Beatport page snapshot."}
           </p>
         </div>
         <div className="header-actions">
+          {filtersActive ? (
+            <button onClick={resetFilters} type="button">
+              Reset filters
+            </button>
+          ) : null}
           <button disabled={refreshing} onClick={() => void requestRefresh(true)} type="button">
             {refreshing ? "Reloading…" : "Refresh"}
           </button>
-          <button onClick={exportCsv} disabled={!tracks.length} type="button">
+          <button onClick={exportCsv} disabled={!filteredTracks.length} type="button">
             Export CSV
           </button>
         </div>
       </header>
 
       <section className="stats-grid">
-        <StatCard label="Tracks" value={String(stats.count)} />
+        <StatCard
+          label="Tracks"
+          value={
+            filtersActive
+              ? `${filteredStats.count}/${stats.count}`
+              : String(stats.count)
+          }
+        />
         <StatCard
           label="BPM Range"
           value={
-            stats.bpmMin !== null && stats.bpmMax !== null
-              ? `${stats.bpmMin}-${stats.bpmMax}`
+            filteredStats.bpmMin !== null && filteredStats.bpmMax !== null
+              ? `${filteredStats.bpmMin}-${filteredStats.bpmMax}`
               : "-"
           }
         />
         <StatCard
           label="Median BPM"
-          value={stats.bpmMedian !== null ? String(stats.bpmMedian) : "-"}
+          value={
+            filteredStats.bpmMedian !== null
+              ? String(filteredStats.bpmMedian)
+              : "-"
+          }
         />
         <StatCard
           label="Mode BPM"
-          value={stats.bpmMode !== null ? String(stats.bpmMode) : "-"}
+          value={
+            filteredStats.bpmMode !== null ? String(filteredStats.bpmMode) : "-"
+          }
         />
       </section>
 
@@ -465,6 +727,16 @@ export function App() {
         title="BPM"
         items={stats.bpmHistogram}
         formatLabel={(label) => label.replace(/-\d+$/, "")}
+        selectedLabels={new Set(filters.bpmBuckets)}
+        onToggle={(label) => toggleFilter("bpmBuckets", label)}
+        headerExtra={
+          <FilterChips
+            values={filters.bpmBuckets}
+            formatValue={(label) => label.replace("-", "–")}
+            onRemove={(label) => toggleFilter("bpmBuckets", label)}
+            onReset={() => clearFilter("bpmBuckets")}
+          />
+        }
       />
 
       <KeyHistogram
@@ -472,16 +744,36 @@ export function App() {
         onNotationChange={setKeyNotation}
         camelotItems={stats.camelotHistogram}
         scaleItems={stats.scaleHistogram}
+        selectedKeys={filters.camelotKeys}
+        onToggle={(key) => toggleFilter("camelotKeys", key)}
+        onReset={() => clearFilter("camelotKeys")}
       />
 
       {(stats.genreDistribution.length > 1 || stats.labelDistribution.length > 1) && (
         <section className="chart-grid">
-          <DistributionChart title="Genres" items={stats.genreDistribution} />
-          <CountTable title="Labels" nameHeader="Label" items={stats.labelDistribution} />
+          <DistributionChart
+            title="Genres"
+            items={stats.genreDistribution}
+            selectedLabels={filters.genreNames}
+            onToggle={(label) => toggleFilter("genreNames", label)}
+            onReset={() => clearFilter("genreNames")}
+          />
+          <CountTable
+            title="Labels"
+            nameHeader="Label"
+            items={stats.labelDistribution}
+            selectedLabels={filters.labelNames}
+            onToggle={(label) => toggleFilter("labelNames", label)}
+            onReset={() => clearFilter("labelNames")}
+          />
         </section>
       )}
 
-      <TrackTable tracks={tracks} keyNotation={keyNotation} />
+      <TrackTable
+        tracks={filteredTracks}
+        totalCount={tracks.length}
+        keyNotation={keyNotation}
+      />
     </main>
   );
 }

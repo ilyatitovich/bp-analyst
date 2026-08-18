@@ -53,9 +53,11 @@ export type ExtractionSnapshot = {
 export type TrackFilters = {
   bpmMin: number | null;
   bpmMax: number | null;
+  bpmBuckets: string[];
   camelotKeys: string[];
   compatibleWith: string | null;
   genreNames: string[];
+  labelNames: string[];
   labelQuery: string;
   titleQuery: string;
   includeExclusiveOnly: boolean;
@@ -65,9 +67,11 @@ export type TrackFilters = {
 export const DEFAULT_FILTERS: TrackFilters = {
   bpmMin: null,
   bpmMax: null,
+  bpmBuckets: [],
   camelotKeys: [],
   compatibleWith: null,
   genreNames: [],
+  labelNames: [],
   labelQuery: '',
   titleQuery: '',
   includeExclusiveOnly: false,
