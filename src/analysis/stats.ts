@@ -30,18 +30,44 @@ function histogram(values: string[], limit = 12): Bucket[] {
     .map(([label, count]) => ({ label, count }));
 }
 
+const BPM_BUCKET_SIZE = 5;
+const BPM_HISTOGRAM_MIN_BUCKETS = 8;
+const BPM_AXIS_MIN = 60;
+const BPM_AXIS_MAX = 200;
+
+function alignBpmBucket(bpm: number): number {
+  return Math.floor(bpm / BPM_BUCKET_SIZE) * BPM_BUCKET_SIZE;
+}
+
 function createBpmHistogram(bpms: number[]): Bucket[] {
   if (!bpms.length) return [];
+
+  const dataStart = alignBpmBucket(Math.min(...bpms));
+  const dataEnd = alignBpmBucket(Math.max(...bpms));
+  const dataBuckets = (dataEnd - dataStart) / BPM_BUCKET_SIZE + 1;
+  const extraBuckets = Math.max(0, BPM_HISTOGRAM_MIN_BUCKETS - dataBuckets);
+  const padLeftBuckets = Math.floor(extraBuckets / 2);
+  const padRightBuckets = extraBuckets - padLeftBuckets;
+  const padLeft = padLeftBuckets * BPM_BUCKET_SIZE;
+  const padRight = padRightBuckets * BPM_BUCKET_SIZE;
+
+  const start = Math.min(dataStart, Math.max(BPM_AXIS_MIN, dataStart - padLeft));
+  const end = Math.max(dataEnd, Math.min(BPM_AXIS_MAX, dataEnd + padRight));
   const counts = new Map<number, number>();
+
+  for (let bucket = start; bucket <= end; bucket += BPM_BUCKET_SIZE) {
+    counts.set(bucket, 0);
+  }
+
   for (const bpm of bpms) {
-    const bucket = Math.floor(bpm / 2) * 2;
+    const bucket = Math.min(end, Math.max(start, alignBpmBucket(bpm)));
     counts.set(bucket, (counts.get(bucket) ?? 0) + 1);
   }
 
   return Array.from(counts.entries())
     .sort((a, b) => a[0] - b[0])
     .map(([bucket, count]) => ({
-      label: `${bucket}-${bucket + 1}`,
+      label: `${bucket}-${bucket + BPM_BUCKET_SIZE - 1}`,
       count,
     }));
 }

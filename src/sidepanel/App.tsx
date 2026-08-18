@@ -47,7 +47,7 @@ function useStorageState() {
 }
 
 function DistributionChart({ title, items }: { title: string; items: Array<{ label: string; count: number }> }) {
-  const max = items[0]?.count ?? 1;
+  const max = Math.max(1, ...items.map((item) => item.count));
   return (
     <section className="panel-card">
       <h3>{title}</h3>
@@ -68,6 +68,30 @@ function DistributionChart({ title, items }: { title: string; items: Array<{ lab
           <p className="muted">No data</p>
         )}
       </div>
+    </section>
+  );
+}
+
+function BpmHistogram({ items }: { items: Array<{ label: string; count: number }> }) {
+  const max = Math.max(1, ...items.map((item) => item.count));
+  return (
+    <section className="panel-card bpm-histogram-card">
+      <h3>BPM Histogram</h3>
+      {items.length ? (
+        <div className="bpm-histogram">
+          {items.map((item) => (
+            <div className="bpm-col" key={item.label}>
+              <span className="bpm-count">{item.count || ''}</span>
+              <div className="bpm-track">
+                <div className="bpm-fill" style={{ height: `${(item.count / max) * 100}%` }} />
+              </div>
+              <span className="bpm-label">{item.label.replace(/-\d+$/, '')}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="muted">No data</p>
+      )}
     </section>
   );
 }
@@ -172,10 +196,17 @@ export function App() {
     downloadCsv(buildCsvFilename(snapshot.pageUrl), tracksToCsv(snapshot.tracks));
   }, [snapshot]);
 
+  const [refreshing, setRefreshing] = useState(false);
+
   const requestRefresh = useCallback(async () => {
-    await extensionStorage.set({
-      [STORAGE_KEYS.refreshToken]: Date.now(),
-    });
+    setRefreshing(true);
+    try {
+      await browser.runtime.sendMessage({ type: 'REQUEST_REFRESH' });
+    } catch {
+      // No Beatport tab is listening yet.
+    } finally {
+      window.setTimeout(() => setRefreshing(false), 500);
+    }
   }, []);
 
   return (
@@ -185,14 +216,16 @@ export function App() {
           <p className="eyebrow">Beatport Analyst</p>
           <h1>{snapshot?.pageTitle ?? 'Open a Beatport track list page'}</h1>
           <p className="muted">
-            {snapshot
-              ? `${filteredTracks.length}/${snapshot.trackCount} tracks shown from ${snapshot.source}`
-              : 'Waiting for a Beatport page snapshot.'}
+            {refreshing
+              ? 'Refreshing current Beatport page…'
+              : snapshot
+                ? `${filteredTracks.length}/${snapshot.trackCount} tracks shown from ${snapshot.source}`
+                : 'Waiting for a Beatport page snapshot.'}
           </p>
         </div>
         <div className="header-actions">
-          <button onClick={requestRefresh} type="button">
-            Refresh
+          <button disabled={refreshing} onClick={requestRefresh} type="button">
+            {refreshing ? 'Refreshing…' : 'Refresh'}
           </button>
           <button onClick={exportFiltered} disabled={!filteredTracks.length} type="button">
             Export CSV
@@ -322,8 +355,9 @@ export function App() {
         <StatCard label="Mode BPM" value={stats.bpmMode !== null ? String(stats.bpmMode) : '-'} />
       </section>
 
+      <BpmHistogram items={stats.bpmHistogram} />
+
       <section className="chart-grid">
-        <DistributionChart title="BPM Histogram" items={stats.bpmHistogram} />
         <DistributionChart title="Camelot" items={stats.camelotDistribution} />
         <DistributionChart title="Genres" items={stats.genreDistribution} />
         <DistributionChart title="Labels" items={stats.labelDistribution} />

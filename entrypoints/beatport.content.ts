@@ -91,7 +91,7 @@ export default defineContentScript({
 
     browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       if (message?.type === 'REQUEST_REFRESH') {
-        void extractAndPublish().then(() => sendResponse({ ok: true }));
+        void extractAndPublish(undefined, true).then(() => sendResponse({ ok: true }));
         return true;
       }
       return false;

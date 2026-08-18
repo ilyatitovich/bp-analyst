@@ -4,6 +4,12 @@ import { STORAGE_KEYS, type BeatportAnalystMessage } from '../src/messaging/prot
 import { extensionStorage } from '../src/messaging/storage';
 
 async function ensureDefaults(): Promise<void> {
+  if (browser.storage.session?.setAccessLevel) {
+    await browser.storage.session.setAccessLevel({
+      accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS',
+    });
+  }
+
   const current = await extensionStorage.get([STORAGE_KEYS.filters]);
   if (!current[STORAGE_KEYS.filters]) {
     await extensionStorage.set({
@@ -23,6 +29,20 @@ async function persistSnapshot(snapshot: ExtractionSnapshot): Promise<void> {
   if (browser.action.setBadgeTextColor) {
     await browser.action.setBadgeTextColor({ color: '#7ef3ad' });
   }
+}
+
+async function refreshBeatportTabs(): Promise<void> {
+  const tabs = await browser.tabs.query({ url: '*://*.beatport.com/*' });
+  await Promise.all(
+    tabs.map(async (tab) => {
+      if (!tab.id) return;
+      try {
+        await browser.tabs.sendMessage(tab.id, { type: 'REQUEST_REFRESH' });
+      } catch {
+        // Tab has no content script until Beatport is reloaded.
+      }
+    }),
+  );
 }
 
 function openFirefoxSidebar(): void {
@@ -67,8 +87,8 @@ export default defineBackground({
       }
 
       if (message.type === 'REQUEST_REFRESH') {
-        sendResponse({ ok: true });
-        return false;
+        void refreshBeatportTabs().then(() => sendResponse({ ok: true }));
+        return true;
       }
 
       return false;

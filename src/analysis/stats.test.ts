@@ -46,5 +46,17 @@ describe('computeTrackStats', () => {
     expect(stats.bpmMode).toBe(126);
     expect(stats.camelotDistribution[0]).toEqual({ label: '11B', count: 2 });
     expect(stats.labelDistribution[0]).toEqual({ label: 'Label One', count: 2 });
+    expect(stats.bpmHistogram.map((bucket) => bucket.label)).toEqual([
+      '105-109',
+      '110-114',
+      '115-119',
+      '120-124',
+      '125-129',
+      '130-134',
+      '135-139',
+      '140-144',
+    ]);
+    expect(stats.bpmHistogram.find((bucket) => bucket.label === '120-124')?.count).toBe(1);
+    expect(stats.bpmHistogram.find((bucket) => bucket.label === '125-129')?.count).toBe(2);
   });
 });

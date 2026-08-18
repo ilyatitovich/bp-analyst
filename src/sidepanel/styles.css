@@ -109,6 +109,58 @@ h1 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.bpm-histogram {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 4px;
+  height: 148px;
+  margin-top: 12px;
+  padding-bottom: 18px;
+}
+
+.bpm-col {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 100%;
+}
+
+.bpm-count {
+  font-size: 10px;
+  color: #8f9aac;
+  line-height: 1;
+  min-height: 12px;
+}
+
+.bpm-track {
+  display: flex;
+  align-items: end;
+  width: 100%;
+  min-height: 0;
+  border-radius: 4px 4px 0 0;
+  background: #222834;
+}
+
+.bpm-fill {
+  width: 100%;
+  min-height: 0;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, #7ef3ad, #49c7f3);
+}
+
+.bpm-label {
+  font-size: 10px;
+  color: #b6c2d0;
+  transform: rotate(-45deg);
+  transform-origin: top center;
+  white-space: nowrap;
+  margin-top: 8px;
+}
+
 .bars {
   display: grid;
   gap: 8px;
