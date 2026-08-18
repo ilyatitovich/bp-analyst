@@ -44,7 +44,11 @@ describe('computeTrackStats', () => {
     expect(stats.bpmMax).toBe(126);
     expect(stats.bpmMedian).toBe(126);
     expect(stats.bpmMode).toBe(126);
-    expect(stats.camelotDistribution[0]).toEqual({ label: '11B', count: 2 });
+    expect(stats.camelotHistogram.find((bucket) => bucket.label === '11B')).toEqual({ label: '11B', count: 2 });
+    expect(stats.camelotHistogram.find((bucket) => bucket.label === '8A')).toEqual({ label: '8A', count: 1 });
+    expect(stats.camelotHistogram).toHaveLength(24);
+    expect(stats.scaleHistogram.find((bucket) => bucket.label === 'A maj')?.count).toBe(2);
+    expect(stats.scaleHistogram.find((bucket) => bucket.label === 'A min')?.count).toBe(1);
     expect(stats.labelDistribution[0]).toEqual({ label: 'Label One', count: 2 });
     expect(stats.bpmHistogram.map((bucket) => bucket.label)).toEqual([
       '105-109',

@@ -1,23 +1,26 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { browser } from 'wxt/browser';
 import { computeTrackStats } from '../analysis/stats';
+import { formatTrackKey } from '../analysis/camelot';
 import { filterTracks } from '../analysis/filters';
 import { buildCsvFilename, downloadCsv, tracksToCsv } from '../export/csv';
-import { STORAGE_KEYS } from '../messaging/protocol';
+import { STORAGE_KEYS, type KeyNotation } from '../messaging/protocol';
 import { extensionStorage, extensionStorageArea } from '../messaging/storage';
 import { DEFAULT_FILTERS, type ExtractionSnapshot, type Track, type TrackFilters } from '../types/track';
 
 function useStorageState() {
   const [snapshot, setSnapshot] = useState<ExtractionSnapshot | null>(null);
   const [filters, setFilters] = useState<TrackFilters>(DEFAULT_FILTERS);
+  const [keyNotation, setKeyNotationState] = useState<KeyNotation>('camelot');
 
   useEffect(() => {
     let active = true;
 
-    extensionStorage.get([STORAGE_KEYS.snapshot, STORAGE_KEYS.filters]).then((stored) => {
+    extensionStorage.get([STORAGE_KEYS.snapshot, STORAGE_KEYS.filters, STORAGE_KEYS.keyNotation]).then((stored) => {
       if (!active) return;
       setSnapshot((stored[STORAGE_KEYS.snapshot] as ExtractionSnapshot | undefined) ?? null);
       setFilters((stored[STORAGE_KEYS.filters] as TrackFilters | undefined) ?? DEFAULT_FILTERS);
+      setKeyNotationState((stored[STORAGE_KEYS.keyNotation] as KeyNotation | undefined) ?? 'camelot');
     });
 
     const listener: Parameters<typeof browser.storage.onChanged.addListener>[0] = (changes, areaName) => {
@@ -27,6 +30,9 @@ function useStorageState() {
       }
       if (changes[STORAGE_KEYS.filters]) {
         setFilters((changes[STORAGE_KEYS.filters].newValue as TrackFilters | undefined) ?? DEFAULT_FILTERS);
+      }
+      if (changes[STORAGE_KEYS.keyNotation]) {
+        setKeyNotationState((changes[STORAGE_KEYS.keyNotation].newValue as KeyNotation | undefined) ?? 'camelot');
       }
     };
 
@@ -43,7 +49,91 @@ function useStorageState() {
     });
   }, []);
 
-  return { snapshot, filters, updateFilters };
+  const setKeyNotation = useCallback((notation: KeyNotation) => {
+    setKeyNotationState(notation);
+    void extensionStorage.set({
+      [STORAGE_KEYS.keyNotation]: notation,
+    });
+  }, []);
+
+  return { snapshot, filters, updateFilters, keyNotation, setKeyNotation };
+}
+
+function ColumnHistogram({
+  title,
+  items,
+  dense = false,
+  formatLabel,
+  headerExtra,
+}: {
+  title: string;
+  items: Array<{ label: string; count: number }>;
+  dense?: boolean;
+  formatLabel?: (label: string) => string;
+  headerExtra?: ReactNode;
+}) {
+  const max = Math.max(1, ...items.map((item) => item.count));
+  return (
+    <section className="panel-card">
+      <div className="chart-header">
+        <h3>{title}</h3>
+        {headerExtra}
+      </div>
+      {items.length ? (
+        <div className={`column-histogram${dense ? ' column-histogram-dense' : ''}`}>
+          {items.map((item) => (
+            <div className="hist-col" key={item.label}>
+              <span className="hist-count">{item.count || ''}</span>
+              <div className="hist-track">
+                <div className="hist-fill" style={{ height: `${(item.count / max) * 100}%` }} />
+              </div>
+              <span className="hist-label">{formatLabel ? formatLabel(item.label) : item.label}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="muted">No data</p>
+      )}
+    </section>
+  );
+}
+
+function KeyHistogram({
+  notation,
+  onNotationChange,
+  camelotItems,
+  scaleItems,
+}: {
+  notation: KeyNotation;
+  onNotationChange: (notation: KeyNotation) => void;
+  camelotItems: Array<{ label: string; count: number }>;
+  scaleItems: Array<{ label: string; count: number }>;
+}) {
+  return (
+    <ColumnHistogram
+      title="Keys"
+      dense
+      items={notation === 'camelot' ? camelotItems : scaleItems}
+      headerExtra={
+        <div className="segmented" role="group" aria-label="Key notation">
+          <button
+            className={notation === 'camelot' ? 'active' : undefined}
+            onClick={() => onNotationChange('camelot')}
+            type="button"
+          >
+            Camelot
+          </button>
+          <button
+            className={notation === 'scale' ? 'active' : undefined}
+            onClick={() => onNotationChange('scale')}
+            type="button"
+          >
+            Scale
+          </button>
+        </div>
+      }
+    />
+  );
 }
 
 function DistributionChart({ title, items }: { title: string; items: Array<{ label: string; count: number }> }) {
@@ -72,30 +162,6 @@ function DistributionChart({ title, items }: { title: string; items: Array<{ lab
   );
 }
 
-function BpmHistogram({ items }: { items: Array<{ label: string; count: number }> }) {
-  const max = Math.max(1, ...items.map((item) => item.count));
-  return (
-    <section className="panel-card bpm-histogram-card">
-      <h3>BPM Histogram</h3>
-      {items.length ? (
-        <div className="bpm-histogram">
-          {items.map((item) => (
-            <div className="bpm-col" key={item.label}>
-              <span className="bpm-count">{item.count || ''}</span>
-              <div className="bpm-track">
-                <div className="bpm-fill" style={{ height: `${(item.count / max) * 100}%` }} />
-              </div>
-              <span className="bpm-label">{item.label.replace(/-\d+$/, '')}</span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="muted">No data</p>
-      )}
-    </section>
-  );
-}
-
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="stat-card">
@@ -105,7 +171,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function TrackTable({ tracks }: { tracks: Track[] }) {
+function TrackTable({ tracks, keyNotation }: { tracks: Track[]; keyNotation: KeyNotation }) {
   return (
     <section className="panel-card">
       <h3>Tracks</h3>
@@ -117,7 +183,7 @@ function TrackTable({ tracks }: { tracks: Track[] }) {
               <th>Title</th>
               <th>Artists</th>
               <th>BPM</th>
-              <th>Camelot</th>
+              <th>{keyNotation === 'camelot' ? 'Camelot' : 'Scale'}</th>
               <th>Genre</th>
               <th>Label</th>
               <th>Date</th>
@@ -139,7 +205,7 @@ function TrackTable({ tracks }: { tracks: Track[] }) {
                 </td>
                 <td>{track.artists.map((artist) => artist.name).join(', ')}</td>
                 <td>{track.bpm ?? '-'}</td>
-                <td>{track.camelot ?? track.keyName ?? '-'}</td>
+                <td>{formatTrackKey(track.camelot, track.keyName, keyNotation) ?? '-'}</td>
                 <td>{track.genre?.name ?? '-'}</td>
                 <td>{track.label?.name ?? '-'}</td>
                 <td>{track.publishDate ?? '-'}</td>
@@ -153,7 +219,7 @@ function TrackTable({ tracks }: { tracks: Track[] }) {
 }
 
 export function App() {
-  const { snapshot, filters, updateFilters } = useStorageState();
+  const { snapshot, filters, updateFilters, keyNotation, setKeyNotation } = useStorageState();
 
   const filteredTracks = useMemo(
     () => (snapshot ? filterTracks(snapshot.tracks, filters) : []),
@@ -355,15 +421,25 @@ export function App() {
         <StatCard label="Mode BPM" value={stats.bpmMode !== null ? String(stats.bpmMode) : '-'} />
       </section>
 
-      <BpmHistogram items={stats.bpmHistogram} />
+      <ColumnHistogram
+        title="BPM Histogram"
+        items={stats.bpmHistogram}
+        formatLabel={(label) => label.replace(/-\d+$/, '')}
+      />
+
+      <KeyHistogram
+        notation={keyNotation}
+        onNotationChange={setKeyNotation}
+        camelotItems={stats.camelotHistogram}
+        scaleItems={stats.scaleHistogram}
+      />
 
       <section className="chart-grid">
-        <DistributionChart title="Camelot" items={stats.camelotDistribution} />
         <DistributionChart title="Genres" items={stats.genreDistribution} />
         <DistributionChart title="Labels" items={stats.labelDistribution} />
       </section>
 
-      <TrackTable tracks={filteredTracks} />
+      <TrackTable tracks={filteredTracks} keyNotation={keyNotation} />
     </main>
   );
 }

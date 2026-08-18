@@ -105,11 +105,42 @@ h1 {
   font-size: 18px;
 }
 
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.segmented {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #30394a;
+  border-radius: 8px;
+  background: #11151b;
+}
+
+.segmented button {
+  min-height: 26px;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: #8f9aac;
+  font-size: 11px;
+}
+
+.segmented button.active {
+  background: #232834;
+  color: #edf1f7;
+}
+
 .chart-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.bpm-histogram {
+.column-histogram {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
@@ -120,7 +151,13 @@ h1 {
   padding-bottom: 18px;
 }
 
-.bpm-col {
+.column-histogram-dense {
+  gap: 2px;
+  height: 168px;
+  padding-bottom: 28px;
+}
+
+.hist-col {
   display: grid;
   grid-template-rows: auto 1fr auto;
   justify-items: center;
@@ -129,14 +166,14 @@ h1 {
   height: 100%;
 }
 
-.bpm-count {
+.hist-count {
   font-size: 10px;
   color: #8f9aac;
   line-height: 1;
   min-height: 12px;
 }
 
-.bpm-track {
+.hist-track {
   display: flex;
   align-items: end;
   width: 100%;
@@ -145,20 +182,24 @@ h1 {
   background: #222834;
 }
 
-.bpm-fill {
+.hist-fill {
   width: 100%;
   min-height: 0;
   border-radius: 4px 4px 0 0;
   background: linear-gradient(180deg, #7ef3ad, #49c7f3);
 }
 
-.bpm-label {
+.hist-label {
   font-size: 10px;
   color: #b6c2d0;
   transform: rotate(-45deg);
   transform-origin: top center;
   white-space: nowrap;
   margin-top: 8px;
+}
+
+.column-histogram-dense .hist-label {
+  font-size: 9px;
 }
 
 .bars {

@@ -1,3 +1,4 @@
+import { CAMELOT_KEYS, CAMELOT_TO_SCALE, resolveCamelot } from './camelot';
 import type { Track } from '../types/track';
 
 export type Bucket = {
@@ -12,6 +13,8 @@ export type TrackStats = {
   bpmMedian: number | null;
   bpmMode: number | null;
   bpmHistogram: Bucket[];
+  camelotHistogram: Bucket[];
+  scaleHistogram: Bucket[];
   camelotDistribution: Bucket[];
   genreDistribution: Bucket[];
   labelDistribution: Bucket[];
@@ -72,6 +75,24 @@ function createBpmHistogram(bpms: number[]): Bucket[] {
     }));
 }
 
+function createKeyHistograms(tracks: Track[]): { camelot: Bucket[]; scale: Bucket[] } {
+  const counts = new Map<string, number>();
+  for (const key of CAMELOT_KEYS) {
+    counts.set(key, 0);
+  }
+
+  for (const track of tracks) {
+    const camelot = resolveCamelot(track.camelot, track.keyName);
+    if (!camelot) continue;
+    counts.set(camelot, (counts.get(camelot) ?? 0) + 1);
+  }
+
+  return {
+    camelot: CAMELOT_KEYS.map((key) => ({ label: key, count: counts.get(key) ?? 0 })),
+    scale: CAMELOT_KEYS.map((key) => ({ label: CAMELOT_TO_SCALE[key], count: counts.get(key) ?? 0 })),
+  };
+}
+
 function median(values: number[]): number | null {
   if (!values.length) return null;
   const sorted = [...values].sort((a, b) => a - b);
@@ -103,6 +124,7 @@ function mode(values: number[]): number | null {
 export function computeTrackStats(tracks: Track[]): TrackStats {
   const bpms = tracks.flatMap((track) => (track.bpm === null ? [] : [track.bpm]));
   const artists = tracks.flatMap((track) => track.artists.map((artist) => artist.name));
+  const keyHistograms = createKeyHistograms(tracks);
 
   return {
     count: tracks.length,
@@ -111,7 +133,9 @@ export function computeTrackStats(tracks: Track[]): TrackStats {
     bpmMedian: median(bpms),
     bpmMode: mode(bpms),
     bpmHistogram: createBpmHistogram(bpms),
-    camelotDistribution: histogram(tracks.flatMap((track) => (track.camelot ? [track.camelot] : []))),
+    camelotHistogram: keyHistograms.camelot,
+    scaleHistogram: keyHistograms.scale,
+    camelotDistribution: keyHistograms.camelot.filter((bucket) => bucket.count > 0),
     genreDistribution: histogram(tracks.flatMap((track) => (track.genre?.name ? [track.genre.name] : []))),
     labelDistribution: histogram(tracks.flatMap((track) => (track.label?.name ? [track.label.name] : []))),
     artistDistribution: histogram(artists),
