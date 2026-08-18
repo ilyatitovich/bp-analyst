@@ -34,22 +34,52 @@ function isBeatportUrl(url: string | undefined): boolean {
   }
 }
 
-async function reloadBeatportPage(): Promise<void> {
+async function findActiveBeatportTab(): Promise<{ id: number; url: string } | null> {
   const [activeTab] = await browser.tabs.query({ active: true, lastFocusedWindow: true });
   if (activeTab?.id && isBeatportUrl(activeTab.url)) {
-    await browser.tabs.reload(activeTab.id);
-    return;
+    return { id: activeTab.id, url: activeTab.url ?? '' };
   }
 
-  const windowTabs = activeTab?.windowId
-    ? await browser.tabs.query({ windowId: activeTab.windowId, url: '*://*.beatport.com/*' })
-    : [];
-  const tabs = windowTabs.length
-    ? windowTabs
-    : await browser.tabs.query({ url: '*://*.beatport.com/*' });
-  const tab = tabs.find((candidate) => candidate.active) ?? tabs[0];
-  if (tab?.id) {
+  const [matched] = await browser.tabs.query({
+    active: true,
+    lastFocusedWindow: true,
+    url: '*://*.beatport.com/*',
+  });
+  if (!matched?.id) return null;
+  return { id: matched.id, url: matched.url ?? '' };
+}
+
+const AUTO_RELOAD_COOLDOWN_MS = 2000;
+let lastAutoReload = { tabId: -1, url: '', at: 0 };
+let openPanelCount = 0;
+let reloadInFlight: Promise<{ reloaded: boolean }> | null = null;
+
+async function reloadActiveBeatportPage(force = false): Promise<{ reloaded: boolean }> {
+  if (reloadInFlight && !force) return reloadInFlight;
+
+  reloadInFlight = (async () => {
+    const tab = await findActiveBeatportTab();
+    if (!tab) return { reloaded: false };
+
+    const now = Date.now();
+    if (
+      !force &&
+      lastAutoReload.tabId === tab.id &&
+      lastAutoReload.url === tab.url &&
+      now - lastAutoReload.at < AUTO_RELOAD_COOLDOWN_MS
+    ) {
+      return { reloaded: false };
+    }
+
+    lastAutoReload = { tabId: tab.id, url: tab.url, at: now };
     await browser.tabs.reload(tab.id);
+    return { reloaded: true };
+  })();
+
+  try {
+    return await reloadInFlight;
+  } finally {
+    reloadInFlight = null;
   }
 }
 
@@ -81,6 +111,19 @@ export default defineBackground({
       void ensureDefaults();
     });
 
+    browser.runtime.onConnect.addListener((port) => {
+      if (port.name !== 'bp-analyst-panel') return;
+      openPanelCount += 1;
+      port.onDisconnect.addListener(() => {
+        openPanelCount = Math.max(0, openPanelCount - 1);
+      });
+    });
+
+    browser.tabs.onActivated.addListener(() => {
+      if (openPanelCount === 0) return;
+      void reloadActiveBeatportPage();
+    });
+
     browser.runtime.onMessage.addListener((message: BeatportAnalystMessage, _sender, sendResponse) => {
       if (message.type === 'TRACKS_EXTRACTED') {
         void persistSnapshot(message.snapshot).then(() => sendResponse({ ok: true }));
@@ -88,7 +131,7 @@ export default defineBackground({
       }
 
       if (message.type === 'REQUEST_REFRESH') {
-        void reloadBeatportPage().then(() => sendResponse({ ok: true }));
+        void reloadActiveBeatportPage(Boolean(message.force)).then((result) => sendResponse(result));
         return true;
       }
 

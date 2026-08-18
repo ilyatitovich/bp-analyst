@@ -15,6 +15,7 @@ export type TracksExtractedMessage = {
 
 export type RequestRefreshMessage = {
   type: 'REQUEST_REFRESH';
+  force?: boolean;
 };
 
 export type BeatportAnalystMessage = TracksExtractedMessage | RequestRefreshMessage;
