@@ -49,6 +49,8 @@ describe('computeTrackStats', () => {
     expect(stats.camelotHistogram).toHaveLength(24);
     expect(stats.scaleHistogram.find((bucket) => bucket.label === 'A maj')?.count).toBe(2);
     expect(stats.scaleHistogram.find((bucket) => bucket.label === 'A min')?.count).toBe(1);
+    expect(stats.camelotMode).toBe('11B');
+    expect(stats.camelotMedian).toBe('11B');
     expect(stats.labelDistribution).toEqual([
       { label: 'Label One', count: 2 },
       { label: 'Label Two', count: 1 },
@@ -65,5 +67,17 @@ describe('computeTrackStats', () => {
     ]);
     expect(stats.bpmHistogram.find((bucket) => bucket.label === '120-124')?.count).toBe(1);
     expect(stats.bpmHistogram.find((bucket) => bucket.label === '125-129')?.count).toBe(2);
+  });
+
+  it('computes key median along the camelot order', () => {
+    const stats = computeTrackStats([
+      { ...baseTrack, id: 1, camelot: '8A', keyName: 'A Minor' },
+      { ...baseTrack, id: 2, camelot: '10A', keyName: 'B Minor' },
+      { ...baseTrack, id: 3, camelot: '9A', keyName: 'E Minor' },
+      { ...baseTrack, id: 4, camelot: '8A', keyName: 'A Minor' },
+    ]);
+
+    expect(stats.camelotMedian).toBe('8A');
+    expect(stats.camelotMode).toBe('8A');
   });
 });

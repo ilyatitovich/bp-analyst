@@ -211,6 +211,7 @@ function ColumnHistogram({
   headerExtra,
   selectedLabels,
   onToggle,
+  leading,
 }: {
   title: string;
   items: Array<{ label: string; count: number }>;
@@ -219,12 +220,14 @@ function ColumnHistogram({
   headerExtra?: ReactNode;
   selectedLabels?: Set<string>;
   onToggle?: (label: string) => void;
+  leading?: ReactNode;
 }) {
   const max = Math.max(1, ...items.map((item) => item.count));
   const hasSelection = Boolean(selectedLabels?.size);
 
   return (
     <CollapsiblePanel title={title} headerExtra={headerExtra}>
+      {leading}
       {items.length ? (
         <div
           className={`column-histogram${dense ? " column-histogram-dense" : ""}`}
@@ -282,6 +285,8 @@ function KeyHistogram({
   selectedKeys,
   onToggle,
   onReset,
+  medianKey,
+  modeKey,
 }: {
   notation: KeyNotation;
   onNotationChange: (notation: KeyNotation) => void;
@@ -290,6 +295,8 @@ function KeyHistogram({
   selectedKeys: string[];
   onToggle: (camelot: string) => void;
   onReset: () => void;
+  medianKey: string | null;
+  modeKey: string | null;
 }) {
   const selectedLabels = useMemo(() => {
     if (notation === "camelot") return new Set(selectedKeys);
@@ -311,6 +318,18 @@ function KeyHistogram({
           notation === "camelot" ? label : scaleToCamelot(label);
         if (camelot) onToggle(camelot);
       }}
+      leading={
+        <div className="panel-stats">
+          <StatCard
+            label="Median"
+            value={formatTrackKey(medianKey, null, notation) ?? "-"}
+          />
+          <StatCard
+            label="Mode"
+            value={formatTrackKey(modeKey, null, notation) ?? "-"}
+          />
+        </div>
+      }
       headerExtra={
         <>
           <FilterChips
@@ -493,7 +512,7 @@ function CountTable({
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="stat-card">
+    <div className="panel-stat">
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
@@ -693,39 +712,6 @@ export function App() {
         </div>
       </header>
 
-      <section className="stats-grid">
-        <StatCard
-          label="Tracks"
-          value={
-            filtersActive
-              ? `${filteredStats.count}/${stats.count}`
-              : String(stats.count)
-          }
-        />
-        <StatCard
-          label="BPM Range"
-          value={
-            filteredStats.bpmMin !== null && filteredStats.bpmMax !== null
-              ? `${filteredStats.bpmMin}-${filteredStats.bpmMax}`
-              : "-"
-          }
-        />
-        <StatCard
-          label="Median BPM"
-          value={
-            filteredStats.bpmMedian !== null
-              ? String(filteredStats.bpmMedian)
-              : "-"
-          }
-        />
-        <StatCard
-          label="Mode BPM"
-          value={
-            filteredStats.bpmMode !== null ? String(filteredStats.bpmMode) : "-"
-          }
-        />
-      </section>
-
       <ColumnHistogram
         title="BPM"
         items={stats.bpmHistogram}
@@ -740,6 +726,34 @@ export function App() {
             onReset={() => clearFilter("bpmBuckets")}
           />
         }
+        leading={
+          <div className="panel-stats">
+            <StatCard
+              label="Range"
+              value={
+                filteredStats.bpmMin !== null && filteredStats.bpmMax !== null
+                  ? `${filteredStats.bpmMin}–${filteredStats.bpmMax}`
+                  : "-"
+              }
+            />
+            <StatCard
+              label="Median"
+              value={
+                filteredStats.bpmMedian !== null
+                  ? String(filteredStats.bpmMedian)
+                  : "-"
+              }
+            />
+            <StatCard
+              label="Mode"
+              value={
+                filteredStats.bpmMode !== null
+                  ? String(filteredStats.bpmMode)
+                  : "-"
+              }
+            />
+          </div>
+        }
       />
 
       <KeyHistogram
@@ -750,6 +764,8 @@ export function App() {
         selectedKeys={filters.camelotKeys}
         onToggle={(key) => toggleFilter("camelotKeys", key)}
         onReset={() => clearFilter("camelotKeys")}
+        medianKey={filteredStats.camelotMedian}
+        modeKey={filteredStats.camelotMode}
       />
 
       {(stats.genreDistribution.length > 1 || stats.labelDistribution.length > 1) && (

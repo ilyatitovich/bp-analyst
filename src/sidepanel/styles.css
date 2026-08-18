@@ -27,8 +27,7 @@ select {
   padding: 12px;
 }
 
-.panel-card,
-.stat-card {
+.panel-card {
   border: 1px solid #232834;
   background: #171b22;
   border-radius: 12px;
@@ -37,7 +36,7 @@ select {
 
 .header-card,
 .header-actions,
-.stats-grid,
+.panel-stats,
 .chart-grid {
   display: grid;
   gap: 12px;
@@ -53,21 +52,34 @@ select {
   align-content: start;
 }
 
-.stats-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.panel-stats {
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
 }
 
-.stat-card span,
+.panel-stat {
+  padding: 8px 10px;
+  border: 1px solid #232834;
+  border-radius: 8px;
+  background: #11151b;
+}
+
+.panel-stat span,
 .eyebrow,
 .muted,
 .cell-subtle {
   color: #8f9aac;
 }
 
-.stat-card strong {
+.panel-stat span {
+  font-size: 11px;
+}
+
+.panel-stat strong {
   display: block;
-  margin-top: 4px;
-  font-size: 20px;
+  margin-top: 2px;
+  font-size: 16px;
 }
 
 .eyebrow {
@@ -508,7 +520,6 @@ a {
 
 @media (max-width: 920px) {
   .header-card,
-  .stats-grid,
   .chart-grid {
     grid-template-columns: 1fr;
   }

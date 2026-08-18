@@ -1,4 +1,4 @@
-import { CAMELOT_KEYS, CAMELOT_TO_SCALE, resolveCamelot } from './camelot';
+import { CAMELOT_KEYS, CAMELOT_TO_SCALE, resolveCamelot, type CamelotKey } from './camelot';
 import type { Track } from '../types/track';
 
 export type Bucket = {
@@ -12,6 +12,8 @@ export type TrackStats = {
   bpmMax: number | null;
   bpmMedian: number | null;
   bpmMode: number | null;
+  camelotMedian: CamelotKey | null;
+  camelotMode: CamelotKey | null;
   bpmHistogram: Bucket[];
   camelotHistogram: Bucket[];
   scaleHistogram: Bucket[];
@@ -102,6 +104,8 @@ function createKeyHistograms(tracks: Track[]): { camelot: Bucket[]; scale: Bucke
   };
 }
 
+const CAMELOT_INDEX = new Map(CAMELOT_KEYS.map((key, index) => [key, index]));
+
 function median(values: number[]): number | null {
   if (!values.length) return null;
   const sorted = [...values].sort((a, b) => a - b);
@@ -130,9 +134,40 @@ function mode(values: number[]): number | null {
   return bestValue;
 }
 
+function camelotMedian(keys: CamelotKey[]): CamelotKey | null {
+  if (!keys.length) return null;
+  const sorted = [...keys].sort(
+    (a, b) => (CAMELOT_INDEX.get(a) ?? 0) - (CAMELOT_INDEX.get(b) ?? 0),
+  );
+  const middle = Math.floor((sorted.length - 1) / 2);
+  return sorted[middle];
+}
+
+function camelotMode(keys: CamelotKey[]): CamelotKey | null {
+  if (!keys.length) return null;
+  const counts = new Map<CamelotKey, number>();
+  let bestValue = keys[0];
+  let bestCount = 0;
+
+  for (const key of keys) {
+    const count = (counts.get(key) ?? 0) + 1;
+    counts.set(key, count);
+    if (count > bestCount) {
+      bestValue = key;
+      bestCount = count;
+    }
+  }
+
+  return bestValue;
+}
+
 export function computeTrackStats(tracks: Track[]): TrackStats {
   const bpms = tracks.flatMap((track) => (track.bpm === null ? [] : [track.bpm]));
   const artists = tracks.flatMap((track) => track.artists.map((artist) => artist.name));
+  const camelotKeys = tracks.flatMap((track) => {
+    const camelot = resolveCamelot(track.camelot, track.keyName);
+    return camelot ? [camelot] : [];
+  });
   const keyHistograms = createKeyHistograms(tracks);
 
   return {
@@ -141,6 +176,8 @@ export function computeTrackStats(tracks: Track[]): TrackStats {
     bpmMax: bpms.length ? Math.max(...bpms) : null,
     bpmMedian: median(bpms),
     bpmMode: mode(bpms),
+    camelotMedian: camelotMedian(camelotKeys),
+    camelotMode: camelotMode(camelotKeys),
     bpmHistogram: createBpmHistogram(bpms),
     camelotHistogram: keyHistograms.camelot,
     scaleHistogram: keyHistograms.scale,
