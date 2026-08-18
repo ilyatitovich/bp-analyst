@@ -1,11 +1,11 @@
 import { browser } from 'wxt/browser';
-import { extractSnapshotFromApiPayload } from '../src/extract/api-payload';
-import { extractSnapshotFromDom } from '../src/extract/dom';
-import { extractSnapshotFromNextData } from '../src/extract/next-data';
-import { mergeSnapshots, pickLargestSnapshot } from '../src/extract/merge';
-import { STORAGE_KEYS } from '../src/messaging/protocol';
-import { extensionStorage, extensionStorageArea } from '../src/messaging/storage';
-import { type ExtractionSnapshot } from '../src/types/track';
+import { extractSnapshotFromApiPayload } from '../src/lib/extract/api-payload';
+import { extractSnapshotFromDom } from '../src/lib/extract/dom';
+import { extractSnapshotFromNextData } from '../src/lib/extract/next-data';
+import { mergeSnapshots, pickLargestSnapshot } from '../src/lib/extract/merge';
+import { STORAGE_KEYS } from '../src/lib/messaging/protocol';
+import { extensionStorage, extensionStorageArea } from '../src/lib/messaging/storage';
+import { type ExtractionSnapshot } from '../src/lib/types/track';
 
 const PAYLOAD_EVENT = 'bp-analyst:payload';
 const LOCATION_EVENT = 'bp-analyst:location-change';

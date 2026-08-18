@@ -2,6 +2,14 @@ import { CAMELOT_KEYS, getCompatibleCamelotKeys, resolveCamelot } from './camelo
 import { classifyMixType, isPublishedWithinDays, parsePublishDate } from './stats';
 import type { Track, TrackFilters } from '../types/track';
 
+export type FilterListKey =
+  | 'bpmBuckets'
+  | 'camelotKeys'
+  | 'genreNames'
+  | 'labelNames'
+  | 'artistNames'
+  | 'mixTypes';
+
 const BPM_BUCKET_PATTERN = /^(\d+)-(\d+)$/;
 
 export type BpmBucketRange = {

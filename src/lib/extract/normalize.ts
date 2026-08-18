@@ -176,7 +176,7 @@ export function normalizeTrack(
   };
 }
 
-function trackRichness(track: Track): number {
+export function trackRichness(track: Track): number {
   return [
     track.camelot,
     track.bpm,

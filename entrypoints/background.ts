@@ -1,11 +1,11 @@
 import { browser } from 'wxt/browser';
-import { type ExtractionSnapshot } from '../src/types/track';
+import { type ExtractionSnapshot } from '../src/lib/types/track';
 import {
   STORAGE_KEYS,
   type BeatportAnalystMessage,
   type ExtractionFailedMessage,
-} from '../src/messaging/protocol';
-import { extensionStorage } from '../src/messaging/storage';
+} from '../src/lib/messaging/protocol';
+import { extensionStorage } from '../src/lib/messaging/storage';
 
 async function ensureDefaults(): Promise<void> {
   if (browser.storage.session?.setAccessLevel) {

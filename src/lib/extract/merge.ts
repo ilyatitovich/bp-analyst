@@ -1,16 +1,5 @@
-import { buildSnapshot } from './normalize';
+import { buildSnapshot, trackRichness } from './normalize';
 import type { ExtractionSnapshot, Track } from '../types/track';
-
-function richness(track: Track): number {
-  return [
-    track.camelot,
-    track.bpm,
-    track.isrc,
-    track.genre?.name,
-    track.label?.name,
-    track.previewUrl,
-  ].filter(Boolean).length;
-}
 
 export function pickLargestSnapshot(
   ...snapshots: Array<ExtractionSnapshot | null | undefined>
@@ -48,7 +37,7 @@ export function mergeSnapshots(
 
   for (const track of [...current.tracks, ...incoming.tracks]) {
     const existing = betterById.get(track.id);
-    if (!existing || richness(track) > richness(existing)) {
+    if (!existing || trackRichness(track) > trackRichness(existing)) {
       betterById.set(track.id, track);
     }
   }

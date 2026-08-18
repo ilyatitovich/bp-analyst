@@ -1,29 +1,11 @@
-import type { Bucket, TrackStats } from "../analysis/stats";
-
-function formatShare(share: number | null): string {
-  if (share === null) return "-";
-  return `${Math.round(share * 100)}%`;
-}
-
-function formatBpm(value: number | null): string {
-  if (value === null) return "-";
-  return String(value);
-}
-
-function coverageLabel(
-  trackCount: number,
-  listCount?: number | null,
-  complete?: boolean,
-): string | null {
-  if (complete === true) return null;
-  if (listCount != null && listCount > trackCount) {
-    return `Based on ${trackCount} of ${listCount} tracks`;
-  }
-  if (complete === false) {
-    return `Based on ${trackCount} tracks`;
-  }
-  return null;
-}
+import type { Bucket, TrackStats } from "../../lib/analysis/stats";
+import {
+  coverageLabel,
+  formatBpm,
+  formatBpmRange,
+  formatShare,
+} from "../../lib/utils/format";
+import { cx } from "./ui";
 
 function BriefStat({
   label,
@@ -40,13 +22,11 @@ function BriefStat({
   disabled?: boolean;
   onClick?: () => void;
 }) {
-  const className = [
+  const className = cx(
     "brief-stat",
-    onClick ? "" : "brief-stat-static",
-    pressed ? "selected" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+    !onClick && "brief-stat-static",
+    pressed && "selected",
+  );
 
   const body = (
     <>
@@ -131,10 +111,6 @@ export function MarketBrief({
 }) {
   const coverage = coverageLabel(trackCount, listCount, complete);
   const selectedMixTypes = new Set(mixTypes);
-  const iqr =
-    stats.bpmP25 !== null && stats.bpmP75 !== null
-      ? `${formatBpm(stats.bpmP25)}–${formatBpm(stats.bpmP75)}`
-      : "-";
 
   return (
     <section className="panel-card">
@@ -182,7 +158,10 @@ export function MarketBrief({
           }
         />
         <BriefStat label="BPM median" value={formatBpm(stats.bpmMedian)} />
-        <BriefStat label="BPM p25–p75" value={iqr} />
+        <BriefStat
+          label="BPM p25–p75"
+          value={formatBpmRange(stats.bpmP25, stats.bpmP75)}
+        />
       </div>
 
       <div className="brief-groups">
@@ -205,7 +184,7 @@ export function MarketBrief({
                 <button
                   key={item.label}
                   type="button"
-                  className={`brief-chip${selected ? " selected" : ""}`}
+                  className={cx("brief-chip", selected && "selected")}
                   aria-pressed={selected}
                   disabled={item.count === 0 && !selected}
                   onClick={() => onToggleMixType(item.label)}
