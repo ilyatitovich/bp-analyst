@@ -24,6 +24,7 @@ import {
 import { extensionStorage, extensionStorageArea } from "../messaging/storage";
 import { uniqueTracks } from "../extract/normalize";
 import { ExtractionHelpCard } from "./ContactSupport";
+import { MarketBrief } from "./MarketBrief";
 import { PreviewPlayer, PauseIcon, PlayIcon, usePreviewPlayer } from "./PreviewPlayer";
 import {
   DEFAULT_FILTERS,
@@ -32,7 +33,13 @@ import {
   type TrackFilters,
 } from "../types/track";
 
-type FilterListKey = "bpmBuckets" | "camelotKeys" | "genreNames" | "labelNames";
+type FilterListKey =
+  | "bpmBuckets"
+  | "camelotKeys"
+  | "genreNames"
+  | "labelNames"
+  | "artistNames"
+  | "mixTypes";
 
 function useStorageState() {
   const [snapshot, setSnapshot] = useState<ExtractionSnapshot | null>(null);
@@ -704,6 +711,27 @@ export function App() {
     setFilters(DEFAULT_FILTERS);
   }, []);
 
+  const toggleExclusive = useCallback(() => {
+    setFilters((current) => ({
+      ...current,
+      includeExclusiveOnly: !current.includeExclusiveOnly,
+    }));
+  }, []);
+
+  const toggleHype = useCallback(() => {
+    setFilters((current) => ({
+      ...current,
+      includeHypeOnly: !current.includeHypeOnly,
+    }));
+  }, []);
+
+  const toggleFreshness = useCallback((days: 7 | 30) => {
+    setFilters((current) => ({
+      ...current,
+      publishedWithinDays: current.publishedWithinDays === days ? null : days,
+    }));
+  }, []);
+
   const exportCsv = useCallback(() => {
     if (!snapshot) return;
     downloadCsv(
@@ -813,6 +841,21 @@ export function App() {
         <ExtractionHelpCard />
       ) : (
         <>
+      <MarketBrief
+        stats={stats}
+        trackCount={tracks.length}
+        listCount={snapshot?.listCount}
+        complete={snapshot?.complete}
+        exclusiveOnly={filters.includeExclusiveOnly}
+        hypeOnly={filters.includeHypeOnly}
+        mixTypes={filters.mixTypes}
+        publishedWithinDays={filters.publishedWithinDays}
+        onToggleExclusive={toggleExclusive}
+        onToggleHype={toggleHype}
+        onToggleMixType={(mixType) => toggleFilter("mixTypes", mixType)}
+        onToggleFreshness={toggleFreshness}
+      />
+
       <ColumnHistogram
         title="BPM"
         items={stats.bpmHistogram}
@@ -830,10 +873,10 @@ export function App() {
         leading={
           <div className="panel-stats">
             <StatCard
-              label="Range"
+              label="p25–p75"
               value={
-                filteredStats.bpmMin !== null && filteredStats.bpmMax !== null
-                  ? `${filteredStats.bpmMin}–${filteredStats.bpmMax}`
+                filteredStats.bpmP25 !== null && filteredStats.bpmP75 !== null
+                  ? `${filteredStats.bpmP25}–${filteredStats.bpmP75}`
                   : "-"
               }
             />
@@ -869,7 +912,9 @@ export function App() {
         modeKey={filteredStats.camelotMode}
       />
 
-      {(stats.genreDistribution.length > 1 || stats.labelDistribution.length > 1) && (
+      {(stats.genreDistribution.length > 1 ||
+        stats.labelDistribution.length > 1 ||
+        stats.artistDistribution.length > 1) && (
         <section className="chart-grid">
           <DistributionChart
             title="Genres"
@@ -885,6 +930,14 @@ export function App() {
             selectedLabels={filters.labelNames}
             onToggle={(label) => toggleFilter("labelNames", label)}
             onReset={() => clearFilter("labelNames")}
+          />
+          <CountTable
+            title="Artists"
+            nameHeader="Artist"
+            items={stats.artistDistribution}
+            selectedLabels={filters.artistNames}
+            onToggle={(label) => toggleFilter("artistNames", label)}
+            onReset={() => clearFilter("artistNames")}
           />
         </section>
       )}

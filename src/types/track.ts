@@ -52,6 +52,8 @@ export type ExtractionSnapshot = {
   source: TrackSnapshotSource;
   trackCount: number;
   tracks: Track[];
+  listCount?: number | null;
+  complete?: boolean;
 };
 
 export type TrackFilters = {
@@ -62,8 +64,11 @@ export type TrackFilters = {
   compatibleWith: string | null;
   genreNames: string[];
   labelNames: string[];
+  artistNames: string[];
   labelQuery: string;
   titleQuery: string;
+  mixTypes: string[];
+  publishedWithinDays: 7 | 30 | null;
   includeExclusiveOnly: boolean;
   includeHypeOnly: boolean;
 };
@@ -76,8 +81,11 @@ export const DEFAULT_FILTERS: TrackFilters = {
   compatibleWith: null,
   genreNames: [],
   labelNames: [],
+  artistNames: [],
   labelQuery: '',
   titleQuery: '',
+  mixTypes: [],
+  publishedWithinDays: null,
   includeExclusiveOnly: false,
   includeHypeOnly: false,
 };

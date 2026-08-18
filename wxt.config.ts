@@ -12,7 +12,7 @@ export default defineConfig({
   manifest: ({ browser }) => ({
     name: 'Beatport Analyst',
     description:
-      'Analyze Beatport track pages by BPM, key/Camelot, genre, labels, and export CSV.',
+      'Analyze Beatport lists for BPM, key, and label composition.',
     version: '0.1.0',
     minimum_chrome_version: browser === 'firefox' ? undefined : '116',
     permissions: browser === 'firefox' ? ['storage'] : ['storage', 'sidePanel'],

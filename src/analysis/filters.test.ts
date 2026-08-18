@@ -86,5 +86,36 @@ describe('chart filters', () => {
     expect(hasActiveFilters(DEFAULT_FILTERS)).toBe(false);
     expect(hasActiveFilters({ ...DEFAULT_FILTERS, bpmBuckets: ['120-124'] })).toBe(true);
     expect(hasActiveFilters({ ...DEFAULT_FILTERS, labelNames: ['Anjunadeep'] })).toBe(true);
+    expect(hasActiveFilters({ ...DEFAULT_FILTERS, includeExclusiveOnly: true })).toBe(true);
+    expect(hasActiveFilters({ ...DEFAULT_FILTERS, mixTypes: ['Original'] })).toBe(true);
+    expect(hasActiveFilters({ ...DEFAULT_FILTERS, publishedWithinDays: 7 })).toBe(true);
+  });
+
+  it('filters exclusive, hype, mix type, artists, and freshness', () => {
+    const now = new Date('2026-08-18T12:00:00.000Z');
+    const tracks: Track[] = [
+      { ...baseTrack, id: 1, exclusive: true, hype: false, mixName: 'Original Mix', artists: [{ name: 'Alpha' }], publishDate: '2026-08-16' },
+      { ...baseTrack, id: 2, exclusive: false, hype: true, mixName: 'Extended Mix', artists: [{ name: 'Beta' }], publishDate: '2026-07-20' },
+      { ...baseTrack, id: 3, exclusive: true, hype: true, mixName: 'Artist Remix', artists: [{ name: 'Alpha' }, { name: 'Gamma' }], publishDate: '2026-07-01' },
+    ];
+
+    expect(
+      filterTracks(tracks, { ...DEFAULT_FILTERS, includeExclusiveOnly: true }).map((track) => track.id),
+    ).toEqual([1, 3]);
+    expect(
+      filterTracks(tracks, { ...DEFAULT_FILTERS, includeHypeOnly: true }).map((track) => track.id),
+    ).toEqual([2, 3]);
+    expect(
+      filterTracks(tracks, { ...DEFAULT_FILTERS, mixTypes: ['Original', 'Remix'] }).map((track) => track.id),
+    ).toEqual([1, 3]);
+    expect(
+      filterTracks(tracks, { ...DEFAULT_FILTERS, artistNames: ['Alpha'] }).map((track) => track.id),
+    ).toEqual([1, 3]);
+    expect(
+      filterTracks(tracks, { ...DEFAULT_FILTERS, publishedWithinDays: 7 }, now).map((track) => track.id),
+    ).toEqual([1]);
+    expect(
+      filterTracks(tracks, { ...DEFAULT_FILTERS, publishedWithinDays: 30 }, now).map((track) => track.id),
+    ).toEqual([1, 2]);
   });
 });

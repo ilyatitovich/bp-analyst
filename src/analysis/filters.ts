@@ -1,4 +1,5 @@
 import { getCompatibleCamelotKeys, resolveCamelot } from './camelot';
+import { classifyMixType, isPublishedWithinDays } from './stats';
 import type { Track, TrackFilters } from '../types/track';
 
 const BPM_BUCKET_PATTERN = /^(\d+)-(\d+)$/;
@@ -39,6 +40,9 @@ export function hasActiveFilters(filters: TrackFilters): boolean {
     filters.labelNames.length > 0 ||
     Boolean(filters.labelQuery.trim()) ||
     Boolean(filters.titleQuery.trim()) ||
+    filters.mixTypes.length > 0 ||
+    filters.publishedWithinDays !== null ||
+    filters.artistNames.length > 0 ||
     filters.includeExclusiveOnly ||
     filters.includeHypeOnly
   );
@@ -53,7 +57,11 @@ function matchesBpmBuckets(bpm: number | null, buckets: string[]): boolean {
   });
 }
 
-export function filterTracks(tracks: Track[], filters: TrackFilters): Track[] {
+export function filterTracks(
+  tracks: Track[],
+  filters: TrackFilters,
+  now: Date = new Date(),
+): Track[] {
   const compatibleSet = filters.compatibleWith
     ? new Set(getCompatibleCamelotKeys(filters.compatibleWith))
     : null;
@@ -64,6 +72,10 @@ export function filterTracks(tracks: Track[], filters: TrackFilters): Track[] {
   const labelSet = filters.labelNames.length
     ? new Set(filters.labelNames.map((name) => name.toLowerCase()))
     : null;
+  const artistSet = filters.artistNames.length
+    ? new Set(filters.artistNames.map((name) => name.toLowerCase()))
+    : null;
+  const mixTypeSet = filters.mixTypes.length ? new Set(filters.mixTypes) : null;
 
   return tracks.filter((track) => {
     if (filters.bpmMin !== null && (track.bpm ?? -Infinity) < filters.bpmMin) return false;
@@ -75,10 +87,21 @@ export function filterTracks(tracks: Track[], filters: TrackFilters): Track[] {
     if (compatibleSet && !compatibleSet.has(camelot)) return false;
     if (genreSet && !genreSet.has((track.genre?.name ?? '').toLowerCase())) return false;
     if (labelSet && !labelSet.has((track.label?.name ?? '').toLowerCase())) return false;
+    if (artistSet) {
+      const names = track.artists.map((artist) => artist.name.toLowerCase());
+      if (!names.some((name) => artistSet.has(name))) return false;
+    }
     if (!includesText(track.label?.name, filters.labelQuery)) return false;
 
     const combinedTitle = `${track.title} ${track.mixName} ${track.artists.map((artist) => artist.name).join(' ')}`;
     if (!includesText(combinedTitle, filters.titleQuery)) return false;
+    if (mixTypeSet && !mixTypeSet.has(classifyMixType(track.mixName))) return false;
+    if (
+      filters.publishedWithinDays !== null &&
+      !isPublishedWithinDays(track.publishDate, now, filters.publishedWithinDays)
+    ) {
+      return false;
+    }
     if (filters.includeExclusiveOnly && !track.exclusive) return false;
     if (filters.includeHypeOnly && !track.hype) return false;
 

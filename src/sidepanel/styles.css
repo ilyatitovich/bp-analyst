@@ -130,10 +130,109 @@ select {
   font-size: 11px;
 }
 
-.panel-stat strong {
+.panel-stat strong,
+.brief-stat strong {
   display: block;
   margin-top: 2px;
   font-size: 16px;
+}
+
+.brief-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.brief-stat {
+  min-height: 0;
+  padding: 8px 10px;
+  border: 1px solid #232834;
+  border-radius: 8px;
+  background: #11151b;
+  color: inherit;
+  text-align: left;
+}
+
+.brief-stat-static {
+  cursor: default;
+}
+
+.brief-stat:disabled {
+  cursor: default;
+}
+
+.brief-stat:not(:disabled):hover,
+.brief-stat:not(:disabled):focus-visible {
+  border-color: rgba(126, 243, 173, 0.45);
+}
+
+.brief-stat.selected {
+  border-color: #2f6f55;
+  background: rgba(126, 243, 173, 0.12);
+}
+
+.brief-stat-hint {
+  display: block;
+  margin-top: 2px;
+  color: #8f9aac;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.brief-groups {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.brief-group-label {
+  margin: 0 0 6px;
+  color: #8f9aac;
+  font-size: 11px;
+}
+
+.brief-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.brief-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 4px 8px;
+  border: 1px solid #30394a;
+  border-radius: 999px;
+  background: #11151b;
+  color: inherit;
+  font-size: 11px;
+}
+
+.brief-chip strong {
+  font-size: 11px;
+}
+
+.brief-chip-static {
+  cursor: default;
+}
+
+.brief-chip:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.brief-chip:not(:disabled):hover,
+.brief-chip:not(:disabled):focus-visible {
+  border-color: rgba(126, 243, 173, 0.45);
+}
+
+.brief-chip.selected {
+  border-color: #2f6f55;
+  background: rgba(126, 243, 173, 0.12);
+  color: #b8f5d0;
 }
 
 .eyebrow {

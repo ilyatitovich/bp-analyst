@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { computeTrackStats } from './stats';
+import {
+  classifyMixType,
+  computeTrackStats,
+  parsePublishDate,
+} from './stats';
 import type { Track } from '../types/track';
 
 const baseTrack: Track = {
@@ -83,5 +87,95 @@ describe('computeTrackStats', () => {
 
     expect(stats.camelotMedian).toBe('8A');
     expect(stats.camelotMode).toBe('8A');
+  });
+
+  it('computes exclusive and hype shares', () => {
+    const stats = computeTrackStats([
+      { ...baseTrack, id: 1, exclusive: true, hype: false },
+      { ...baseTrack, id: 2, exclusive: true, hype: true },
+      { ...baseTrack, id: 3, exclusive: false, hype: false },
+      { ...baseTrack, id: 4, exclusive: false, hype: false },
+    ]);
+
+    expect(stats.exclusiveCount).toBe(2);
+    expect(stats.exclusiveShare).toBe(0.5);
+    expect(stats.hypeCount).toBe(1);
+    expect(stats.hypeShare).toBe(0.25);
+  });
+
+  it('parses ISO and Beatport display publish dates', () => {
+    expect(parsePublishDate('2026-08-01')?.toISOString()).toBe('2026-08-01T00:00:00.000Z');
+    expect(parsePublishDate('Aug 12, 2026')?.toISOString()).toBe('2026-08-12T00:00:00.000Z');
+    expect(parsePublishDate('12 August 2026')?.toISOString()).toBe('2026-08-12T00:00:00.000Z');
+    expect(parsePublishDate('not a date')).toBeNull();
+  });
+
+  it('computes 7-day and 30-day freshness shares', () => {
+    const now = new Date('2026-08-18T12:00:00.000Z');
+    const stats = computeTrackStats(
+      [
+        { ...baseTrack, id: 1, publishDate: '2026-08-12' },
+        { ...baseTrack, id: 2, publishDate: 'Aug 15, 2026' },
+        { ...baseTrack, id: 3, publishDate: '2026-07-20' },
+        { ...baseTrack, id: 4, publishDate: '2026-07-01' },
+        { ...baseTrack, id: 5, publishDate: null },
+      ],
+      { now },
+    );
+
+    expect(stats.freshness7Count).toBe(2);
+    expect(stats.freshness7Share).toBe(0.4);
+    expect(stats.freshness30Count).toBe(3);
+    expect(stats.freshness30Share).toBe(0.6);
+  });
+
+  it('classifies mix names into original, extended, radio, remix, and other', () => {
+    expect(classifyMixType('Original Mix')).toBe('Original');
+    expect(classifyMixType('')).toBe('Original');
+    expect(classifyMixType('Extended Mix')).toBe('Extended');
+    expect(classifyMixType('Radio Edit')).toBe('Radio');
+    expect(classifyMixType('Amelie Lens Remix')).toBe('Remix');
+    expect(classifyMixType('Extended Remix')).toBe('Remix');
+    expect(classifyMixType('Club Mix')).toBe('Other');
+  });
+
+  it('builds mix-type and length-band histograms', () => {
+    const stats = computeTrackStats([
+      { ...baseTrack, id: 1, mixName: 'Original Mix', lengthMs: 180000, length: '3:00' },
+      { ...baseTrack, id: 2, mixName: 'Extended Mix', lengthMs: 300000, length: '5:00' },
+      { ...baseTrack, id: 3, mixName: 'Radio Edit', lengthMs: null, length: '6:30' },
+      { ...baseTrack, id: 4, mixName: 'Artist Remix', lengthMs: 540000, length: '9:00' },
+      { ...baseTrack, id: 5, mixName: 'Club Mix', lengthMs: 240000, length: '4:00' },
+    ]);
+
+    expect(stats.mixTypeHistogram).toEqual([
+      { label: 'Original', count: 1 },
+      { label: 'Extended', count: 1 },
+      { label: 'Radio', count: 1 },
+      { label: 'Remix', count: 1 },
+      { label: 'Other', count: 1 },
+    ]);
+    expect(stats.lengthHistogram).toEqual([
+      { label: '<4', count: 1 },
+      { label: '4–6', count: 2 },
+      { label: '6–8', count: 1 },
+      { label: '8+', count: 1 },
+    ]);
+  });
+
+  it('computes key concentration and BPM quartiles', () => {
+    const stats = computeTrackStats([
+      { ...baseTrack, id: 1, bpm: 120, camelot: '8A', keyName: 'A Minor' },
+      { ...baseTrack, id: 2, bpm: 124, camelot: '8A', keyName: 'A Minor' },
+      { ...baseTrack, id: 3, bpm: 128, camelot: '11B', keyName: 'A Major' },
+      { ...baseTrack, id: 4, bpm: 132, camelot: '9A', keyName: 'E Minor' },
+      { ...baseTrack, id: 5, bpm: 128, camelot: '4A', keyName: 'F Minor' },
+    ]);
+
+    expect(stats.keyConcentrationKeys).toEqual(['8A', '11B', '4A']);
+    expect(stats.keyConcentrationShare).toBe(0.8);
+    expect(stats.bpmP25).toBe(124);
+    expect(stats.bpmMedian).toBe(128);
+    expect(stats.bpmP75).toBe(128);
   });
 });
