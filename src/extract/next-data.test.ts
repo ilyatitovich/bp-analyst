@@ -36,6 +36,13 @@ const nextDataFixture = {
                     is_hype: false,
                     isrc: 'QMBZ92656424',
                     slug: 'beat-goes-on',
+                    sample_url: 'https://geo-samples.beatport.com/track/abc.LOFI.mp3',
+                    sample_start_ms: 130976,
+                    sample_end_ms: 250976,
+                    image: {
+                      uri: 'https://geo-media.beatport.com/image_size/590x404/art.jpg',
+                      dynamic_uri: 'https://geo-media.beatport.com/image_size/{w}x{h}/art.jpg',
+                    },
                   },
                 ],
               },
@@ -59,6 +66,9 @@ describe('extractSnapshotFromNextDataObject', () => {
     expect(snapshot?.tracks[0].camelot).toBe('11B');
     expect(snapshot?.tracks[0].label?.name).toBe('Maccabi House');
     expect(snapshot?.tracks[0].trackUrl).toBe('https://www.beatport.com/track/beat-goes-on/29486878');
+    expect(snapshot?.tracks[0].previewUrl).toBe('https://geo-samples.beatport.com/track/abc.LOFI.mp3');
+    expect(snapshot?.tracks[0].previewStartMs).toBe(130976);
+    expect(snapshot?.tracks[0].artworkUrl).toBe('https://geo-media.beatport.com/image_size/80x80/art.jpg');
   });
 
   it('uses the largest track query instead of a top-10 widget', () => {

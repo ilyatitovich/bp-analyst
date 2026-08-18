@@ -9,6 +9,12 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   background: #0f1115;
@@ -21,9 +27,18 @@ select {
   font: inherit;
 }
 
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .app-shell {
   display: grid;
   gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
   padding: 12px;
 }
 
@@ -518,6 +533,154 @@ a {
   text-decoration: none;
 }
 
+.track-row.playing td {
+  background: rgba(73, 199, 243, 0.08);
+}
+
+.track-title-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.track-title-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.track-play-btn,
+.preview-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  padding: 0;
+  border-radius: 999px;
+  color: #edf1f7;
+}
+
+.track-play-btn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.track-play-btn:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.track-title-button {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #7ed9ff;
+  font: inherit;
+  text-align: left;
+}
+
+.track-title-button:hover {
+  text-decoration: underline;
+}
+
+.track-open-link {
+  flex-shrink: 0;
+  color: #8f9aac;
+  font-size: 12px;
+}
+
+.track-open-link:hover {
+  color: #7ed9ff;
+}
+
+.preview-player {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1.4fr) auto minmax(120px, 1.6fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid #232834;
+  background: #12161d;
+}
+
+.preview-artwork {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #222834;
+}
+
+.preview-artwork-empty {
+  border: 1px solid #232834;
+}
+
+.preview-meta {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.preview-title,
+.preview-artists {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-title {
+  font-size: 13px;
+}
+
+.preview-artists,
+.preview-timeline span {
+  font-size: 11px;
+  color: #8f9aac;
+}
+
+.preview-error {
+  font-size: 11px;
+  color: #f3b49a;
+}
+
+.preview-controls,
+.preview-actions,
+.preview-timeline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preview-play-btn {
+  width: 34px;
+  height: 34px;
+  border-color: #2f6f55;
+  background: rgba(126, 243, 173, 0.14);
+  color: #b8f5d0;
+}
+
+.preview-timeline {
+  min-width: 0;
+}
+
+.preview-seek {
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: #7ef3ad;
+}
+
+.preview-open {
+  font-size: 12px;
+}
+
 @media (max-width: 920px) {
   .header-card,
   .chart-grid {
@@ -526,5 +689,34 @@ a {
 
   .header-actions {
     grid-auto-flow: row;
+  }
+
+  .preview-player {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "art meta actions"
+      "controls controls controls"
+      "timeline timeline timeline";
+  }
+
+  .preview-artwork {
+    grid-area: art;
+  }
+
+  .preview-meta {
+    grid-area: meta;
+  }
+
+  .preview-controls {
+    grid-area: controls;
+    justify-content: center;
+  }
+
+  .preview-timeline {
+    grid-area: timeline;
+  }
+
+  .preview-actions {
+    grid-area: actions;
   }
 }

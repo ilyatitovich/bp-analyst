@@ -19,6 +19,7 @@ import { buildCsvFilename, downloadCsv, tracksToCsv } from "../export/csv";
 import { STORAGE_KEYS, type KeyNotation } from "../messaging/protocol";
 import { extensionStorage, extensionStorageArea } from "../messaging/storage";
 import { uniqueTracks } from "../extract/normalize";
+import { PreviewPlayer, PauseIcon, PlayIcon, usePreviewPlayer } from "./PreviewPlayer";
 import {
   DEFAULT_FILTERS,
   type ExtractionSnapshot,
@@ -523,10 +524,16 @@ function TrackTable({
   tracks,
   totalCount,
   keyNotation,
+  currentTrackId,
+  playing,
+  onPlayTrack,
 }: {
   tracks: Track[];
   totalCount: number;
   keyNotation: KeyNotation;
+  currentTrackId: number | null;
+  playing: boolean;
+  onPlayTrack: (track: Track) => void;
 }) {
   const filtered = tracks.length !== totalCount;
 
@@ -556,32 +563,71 @@ function TrackTable({
           </thead>
           <tbody>
             {tracks.length ? (
-              tracks.map((track) => (
-                <tr key={track.id}>
-                  <td>{track.position ?? "-"}</td>
-                  <td>
-                    {track.trackUrl ? (
-                      <a href={track.trackUrl} target="_blank" rel="noreferrer">
-                        {track.title}
-                      </a>
-                    ) : (
-                      track.title
-                    )}
-                    {track.mixName ? (
-                      <div className="cell-subtle">{track.mixName}</div>
-                    ) : null}
-                  </td>
-                  <td>{track.artists.map((artist) => artist.name).join(", ")}</td>
-                  <td>{track.bpm ?? "-"}</td>
-                  <td>
-                    {formatTrackKey(track.camelot, track.keyName, keyNotation) ??
-                      "-"}
-                  </td>
-                  <td>{track.genre?.name ?? "-"}</td>
-                  <td>{track.label?.name ?? "-"}</td>
-                  <td>{track.publishDate ?? "-"}</td>
-                </tr>
-              ))
+              tracks.map((track) => {
+                const current = track.id === currentTrackId;
+                const playLabel = current && playing ? `Pause ${track.title}` : `Play preview of ${track.title}`;
+
+                return (
+                  <tr className={current ? "track-row playing" : "track-row"} key={track.id}>
+                    <td>{track.position ?? "-"}</td>
+                    <td>
+                      <div className="track-title-cell">
+                        <button
+                          type="button"
+                          className="track-play-btn"
+                          disabled={!track.previewUrl}
+                          onClick={() => onPlayTrack(track)}
+                          aria-label={track.previewUrl ? playLabel : `${track.title} has no preview`}
+                        >
+                          {current && playing ? <PauseIcon /> : <PlayIcon />}
+                        </button>
+                        <div>
+                          <div className="track-title-line">
+                            {track.previewUrl ? (
+                              <button
+                                type="button"
+                                className="track-title-button"
+                                onClick={() => onPlayTrack(track)}
+                              >
+                                {track.title}
+                              </button>
+                            ) : track.trackUrl ? (
+                              <a href={track.trackUrl} target="_blank" rel="noreferrer">
+                                {track.title}
+                              </a>
+                            ) : (
+                              track.title
+                            )}
+                            {track.trackUrl && track.previewUrl ? (
+                              <a
+                                className="track-open-link"
+                                href={track.trackUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label={`Open ${track.title} on Beatport`}
+                              >
+                                ↗
+                              </a>
+                            ) : null}
+                          </div>
+                          {track.mixName ? (
+                            <div className="cell-subtle">{track.mixName}</div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </td>
+                    <td>{track.artists.map((artist) => artist.name).join(", ")}</td>
+                    <td>{track.bpm ?? "-"}</td>
+                    <td>
+                      {formatTrackKey(track.camelot, track.keyName, keyNotation) ??
+                        "-"}
+                    </td>
+                    <td>{track.genre?.name ?? "-"}</td>
+                    <td>{track.label?.name ?? "-"}</td>
+                    <td>{track.publishDate ?? "-"}</td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td className="muted" colSpan={8}>
@@ -613,6 +659,11 @@ export function App() {
     [filteredTracks],
   );
   const filtersActive = hasActiveFilters(filters);
+  const player = usePreviewPlayer(filteredTracks);
+
+  useEffect(() => {
+    player.stop();
+  }, [player.stop, snapshot?.pageUrl]);
 
   const toggleFilter = useCallback((key: FilterListKey, value: string) => {
     setFilters((current) => ({
@@ -682,7 +733,8 @@ export function App() {
   }, [snapshot?.pageUrl]);
 
   return (
-    <main className="app-shell">
+    <div className="app">
+      <main className="app-shell">
       <header className="panel-card header-card">
         <div>
           <p className="eyebrow">Beatport Analyst</p>
@@ -792,7 +844,12 @@ export function App() {
         tracks={filteredTracks}
         totalCount={tracks.length}
         keyNotation={keyNotation}
+        currentTrackId={player.currentTrack?.id ?? null}
+        playing={player.playing}
+        onPlayTrack={player.playTrack}
       />
-    </main>
+      </main>
+      <PreviewPlayer player={player} />
+    </div>
   );
 }

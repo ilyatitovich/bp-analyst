@@ -2,7 +2,14 @@ import { buildSnapshot } from './normalize';
 import type { ExtractionSnapshot, Track } from '../types/track';
 
 function richness(track: Track): number {
-  return [track.camelot, track.bpm, track.isrc, track.genre?.name, track.label?.name].filter(Boolean).length;
+  return [
+    track.camelot,
+    track.bpm,
+    track.isrc,
+    track.genre?.name,
+    track.label?.name,
+    track.previewUrl,
+  ].filter(Boolean).length;
 }
 
 export function pickLargestSnapshot(

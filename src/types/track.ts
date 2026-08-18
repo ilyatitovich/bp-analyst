@@ -35,6 +35,10 @@ export type Track = {
   isrc: string | null;
   slug: string | null;
   trackUrl: string | null;
+  previewUrl: string | null;
+  previewStartMs: number | null;
+  previewEndMs: number | null;
+  artworkUrl: string | null;
   pageUrl: string;
   pageTitle: string;
   extractedAt: string;

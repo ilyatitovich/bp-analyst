@@ -7,6 +7,19 @@ type RawNamed = {
   slug?: string | null;
 };
 
+type RawImage = {
+  uri?: string | null;
+  dynamic_uri?: string | null;
+};
+
+type RawSampleMp3 = {
+  url?: string | null;
+  offset?: {
+    start?: number | null;
+    end?: number | null;
+  } | null;
+};
+
 type RawTrack = {
   id?: number;
   name?: string;
@@ -24,6 +37,7 @@ type RawTrack = {
   release?: {
     name?: string | null;
     label?: RawNamed | null;
+    image?: RawImage | null;
   } | null;
   length?: string | null;
   length_ms?: number | null;
@@ -36,6 +50,14 @@ type RawTrack = {
   is_hype?: boolean;
   isrc?: string | null;
   slug?: string | null;
+  sample_url?: string | null;
+  sample_start_ms?: number | null;
+  sample_end_ms?: number | null;
+  sample?: {
+    mp3_url?: string | null;
+    mp3?: string | RawSampleMp3 | null;
+  } | null;
+  image?: RawImage | null;
 };
 
 export type NormalizeContext = {
@@ -63,6 +85,45 @@ function normalizeFacet(value: RawNamed | null | undefined): TrackFacet | null {
   };
 }
 
+function asHttpUrl(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : null;
+}
+
+function asMs(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
+}
+
+function normalizePreviewUrl(rawTrack: RawTrack): string | null {
+  const sample = rawTrack.sample;
+  const mp3 = sample?.mp3;
+  const nestedUrl = typeof mp3 === 'string' ? mp3 : mp3?.url;
+  return asHttpUrl(rawTrack.sample_url) ?? asHttpUrl(sample?.mp3_url) ?? asHttpUrl(nestedUrl);
+}
+
+function normalizePreviewWindow(rawTrack: RawTrack): { start: number | null; end: number | null } {
+  const mp3 = rawTrack.sample?.mp3;
+  const offset = mp3 && typeof mp3 === 'object' ? mp3.offset : null;
+  const start = asMs(rawTrack.sample_start_ms) ?? asMs(offset?.start);
+  const end = asMs(rawTrack.sample_end_ms) ?? asMs(offset?.end);
+  return {
+    start,
+    end: end !== null && start !== null && end <= start ? null : end,
+  };
+}
+
+function normalizeArtworkUrl(image: RawImage | null | undefined): string | null {
+  if (!image) return null;
+  if (typeof image.dynamic_uri === 'string' && image.dynamic_uri.includes('{')) {
+    return image.dynamic_uri.replace(/\{w(?:idth)?\}x\{h(?:eight)?\}/i, '80x80');
+  }
+  if (typeof image.uri === 'string') {
+    return image.uri.replace(/image_size\/\d+x\d+\//, 'image_size/80x80/');
+  }
+  return asHttpUrl(image.dynamic_uri) ?? asHttpUrl(image.uri);
+}
+
 export function looksLikeRawTrack(value: unknown): value is RawTrack {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as RawTrack;
@@ -77,6 +138,7 @@ export function normalizeTrack(
   if (!looksLikeRawTrack(rawTrack)) return null;
 
   const pageTrackUrl = rawTrack.slug ? `https://www.beatport.com/track/${rawTrack.slug}/${rawTrack.id}` : null;
+  const previewWindow = normalizePreviewWindow(rawTrack);
 
   return {
     id: rawTrack.id!,
@@ -103,6 +165,10 @@ export function normalizeTrack(
     isrc: rawTrack.isrc ?? null,
     slug: rawTrack.slug ?? null,
     trackUrl: pageTrackUrl,
+    previewUrl: normalizePreviewUrl(rawTrack),
+    previewStartMs: previewWindow.start,
+    previewEndMs: previewWindow.end,
+    artworkUrl: normalizeArtworkUrl(rawTrack.image) ?? normalizeArtworkUrl(rawTrack.release?.image),
     pageUrl: context.pageUrl,
     pageTitle: context.pageTitle,
     extractedAt: new Date().toISOString(),
@@ -111,7 +177,14 @@ export function normalizeTrack(
 }
 
 function trackRichness(track: Track): number {
-  return [track.camelot, track.bpm, track.isrc, track.genre?.name, track.label?.name].filter(Boolean).length;
+  return [
+    track.camelot,
+    track.bpm,
+    track.isrc,
+    track.genre?.name,
+    track.label?.name,
+    track.previewUrl,
+  ].filter(Boolean).length;
 }
 
 function normalizeName(value: string): string {
