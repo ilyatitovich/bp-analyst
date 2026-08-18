@@ -247,13 +247,16 @@ function ColumnHistogram({
                 key={item.label}
                 onClick={() => onToggle?.(item.label)}
                 aria-pressed={selected}
-                title={
+                aria-label={
                   selected ? `Remove ${label} filter` : `Filter ${label}`
                 }
                 type="button"
               >
                 <span className="hist-count">{item.count || ""}</span>
                 <div className="hist-track">
+                  <span className="hist-popup" aria-hidden="true">
+                    {item.label.replace("-", "–")}
+                  </span>
                   <div
                     className="hist-fill"
                     style={{ height: `${(item.count / max) * 100}%` }}
