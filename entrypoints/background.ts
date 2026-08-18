@@ -31,18 +31,33 @@ async function persistSnapshot(snapshot: ExtractionSnapshot): Promise<void> {
   }
 }
 
-async function refreshBeatportTabs(): Promise<void> {
-  const tabs = await browser.tabs.query({ url: '*://*.beatport.com/*' });
-  await Promise.all(
-    tabs.map(async (tab) => {
-      if (!tab.id) return;
-      try {
-        await browser.tabs.sendMessage(tab.id, { type: 'REQUEST_REFRESH' });
-      } catch {
-        // Tab has no content script until Beatport is reloaded.
-      }
-    }),
-  );
+function isBeatportUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  try {
+    const hostname = new URL(url).hostname;
+    return hostname === 'beatport.com' || hostname.endsWith('.beatport.com');
+  } catch {
+    return false;
+  }
+}
+
+async function reloadBeatportPage(): Promise<void> {
+  const [activeTab] = await browser.tabs.query({ active: true, lastFocusedWindow: true });
+  if (activeTab?.id && isBeatportUrl(activeTab.url)) {
+    await browser.tabs.reload(activeTab.id);
+    return;
+  }
+
+  const windowTabs = activeTab?.windowId
+    ? await browser.tabs.query({ windowId: activeTab.windowId, url: '*://*.beatport.com/*' })
+    : [];
+  const tabs = windowTabs.length
+    ? windowTabs
+    : await browser.tabs.query({ url: '*://*.beatport.com/*' });
+  const tab = tabs.find((candidate) => candidate.active) ?? tabs[0];
+  if (tab?.id) {
+    await browser.tabs.reload(tab.id);
+  }
 }
 
 function openFirefoxSidebar(): void {
@@ -87,7 +102,7 @@ export default defineBackground({
       }
 
       if (message.type === 'REQUEST_REFRESH') {
-        void refreshBeatportTabs().then(() => sendResponse({ ok: true }));
+        void reloadBeatportPage().then(() => sendResponse({ ok: true }));
         return true;
       }
 

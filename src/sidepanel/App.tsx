@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { browser } from 'wxt/browser';
 import { computeTrackStats } from '../analysis/stats';
 import { formatTrackKey } from '../analysis/camelot';
@@ -263,17 +263,27 @@ export function App() {
   }, [snapshot]);
 
   const [refreshing, setRefreshing] = useState(false);
+  const refreshStartedAt = useRef(snapshot?.extractedAt ?? null);
 
   const requestRefresh = useCallback(async () => {
+    refreshStartedAt.current = snapshot?.extractedAt ?? new Date().toISOString();
     setRefreshing(true);
     try {
       await browser.runtime.sendMessage({ type: 'REQUEST_REFRESH' });
     } catch {
-      // No Beatport tab is listening yet.
-    } finally {
-      window.setTimeout(() => setRefreshing(false), 500);
+      setRefreshing(false);
     }
-  }, []);
+  }, [snapshot?.extractedAt]);
+
+  useEffect(() => {
+    if (!refreshing) return;
+    if (snapshot?.extractedAt && snapshot.extractedAt !== refreshStartedAt.current) {
+      setRefreshing(false);
+      return;
+    }
+    const timeout = window.setTimeout(() => setRefreshing(false), 12000);
+    return () => window.clearTimeout(timeout);
+  }, [refreshing, snapshot?.extractedAt]);
 
   return (
     <main className="app-shell">
@@ -283,7 +293,7 @@ export function App() {
           <h1>{snapshot?.pageTitle ?? 'Open a Beatport track list page'}</h1>
           <p className="muted">
             {refreshing
-              ? 'Refreshing current Beatport page…'
+              ? 'Reloading Beatport page…'
               : snapshot
                 ? `${filteredTracks.length}/${snapshot.trackCount} tracks shown from ${snapshot.source}`
                 : 'Waiting for a Beatport page snapshot.'}
@@ -291,7 +301,7 @@ export function App() {
         </div>
         <div className="header-actions">
           <button disabled={refreshing} onClick={requestRefresh} type="button">
-            {refreshing ? 'Refreshing…' : 'Refresh'}
+            {refreshing ? 'Reloading…' : 'Refresh'}
           </button>
           <button onClick={exportFiltered} disabled={!filteredTracks.length} type="button">
             Export CSV
