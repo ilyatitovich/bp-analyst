@@ -163,29 +163,61 @@ function DistributionChart({
   title: string;
   items: Array<{ label: string; count: number }>;
 }) {
+  if (items.length <= 1) return null;
   const max = Math.max(1, ...items.map((item) => item.count));
   return (
     <section className="panel-card">
       <h3>{title}</h3>
       <div className="bars">
-        {items.length ? (
-          items.map((item) => (
-            <div className="bar-row" key={item.label}>
-              <div className="bar-meta">
-                <span>{item.label}</span>
-                <strong>{item.count}</strong>
-              </div>
-              <div className="bar-track">
-                <div
-                  className="bar-fill"
-                  style={{ width: `${(item.count / max) * 100}%` }}
-                />
-              </div>
+        {items.map((item) => (
+          <div className="bar-row" key={item.label}>
+            <div className="bar-meta">
+              <span>{item.label}</span>
+              <strong>{item.count}</strong>
             </div>
-          ))
-        ) : (
-          <p className="muted">No data</p>
-        )}
+            <div className="bar-track">
+              <div
+                className="bar-fill"
+                style={{ width: `${(item.count / max) * 100}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CountTable({
+  title,
+  nameHeader,
+  items,
+}: {
+  title: string;
+  nameHeader: string;
+  items: Array<{ label: string; count: number }>;
+}) {
+  if (items.length <= 1) return null;
+  return (
+    <section className="panel-card">
+      <h3>{title}</h3>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>{nameHeader}</th>
+              <th className="count-cell">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.label}>
+                <td>{item.label}</td>
+                <td className="count-cell">{item.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );
@@ -371,10 +403,12 @@ export function App() {
         scaleItems={stats.scaleHistogram}
       />
 
-      <section className="chart-grid">
-        <DistributionChart title="Genres" items={stats.genreDistribution} />
-        <DistributionChart title="Labels" items={stats.labelDistribution} />
-      </section>
+      {(stats.genreDistribution.length > 1 || stats.labelDistribution.length > 1) && (
+        <section className="chart-grid">
+          <DistributionChart title="Genres" items={stats.genreDistribution} />
+          <CountTable title="Labels" nameHeader="Label" items={stats.labelDistribution} />
+        </section>
+      )}
 
       <TrackTable tracks={tracks} keyNotation={keyNotation} />
     </main>

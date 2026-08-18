@@ -27,10 +27,11 @@ function histogram(values: string[], limit = 12): Bucket[] {
     counts.set(value, (counts.get(value) ?? 0) + 1);
   }
 
-  return Array.from(counts.entries())
+  const buckets = Array.from(counts.entries())
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, limit)
     .map(([label, count]) => ({ label, count }));
+
+  return limit > 0 ? buckets.slice(0, limit) : buckets;
 }
 
 const BPM_BUCKET_SIZE = 5;
@@ -137,7 +138,7 @@ export function computeTrackStats(tracks: Track[]): TrackStats {
     scaleHistogram: keyHistograms.scale,
     camelotDistribution: keyHistograms.camelot.filter((bucket) => bucket.count > 0),
     genreDistribution: histogram(tracks.flatMap((track) => (track.genre?.name ? [track.genre.name] : []))),
-    labelDistribution: histogram(tracks.flatMap((track) => (track.label?.name ? [track.label.name] : []))),
+    labelDistribution: histogram(tracks.flatMap((track) => (track.label?.name ? [track.label.name] : [])), 0),
     artistDistribution: histogram(artists),
   };
 }
