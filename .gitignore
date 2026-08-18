@@ -1,0 +1,7 @@
+.cursor/
+node_modules/
+.output/
+.wxt/
+dist/
+coverage/
+.pnpm-store/
