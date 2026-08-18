@@ -1,6 +1,10 @@
 import { browser } from 'wxt/browser';
 import { type ExtractionSnapshot } from '../src/types/track';
-import { STORAGE_KEYS, type BeatportAnalystMessage } from '../src/messaging/protocol';
+import {
+  STORAGE_KEYS,
+  type BeatportAnalystMessage,
+  type ExtractionFailedMessage,
+} from '../src/messaging/protocol';
 import { extensionStorage } from '../src/messaging/storage';
 
 async function ensureDefaults(): Promise<void> {
@@ -14,6 +18,7 @@ async function ensureDefaults(): Promise<void> {
 async function persistSnapshot(snapshot: ExtractionSnapshot): Promise<void> {
   await extensionStorage.set({
     [STORAGE_KEYS.snapshot]: snapshot,
+    [STORAGE_KEYS.extractionError]: null,
   });
 
   const badgeText = snapshot.trackCount ? String(Math.min(snapshot.trackCount, 999)) : '';
@@ -22,6 +27,18 @@ async function persistSnapshot(snapshot: ExtractionSnapshot): Promise<void> {
   if (browser.action.setBadgeTextColor) {
     await browser.action.setBadgeTextColor({ color: '#7ef3ad' });
   }
+}
+
+async function persistExtractionError(message: ExtractionFailedMessage): Promise<void> {
+  await extensionStorage.set({
+    [STORAGE_KEYS.snapshot]: null,
+    [STORAGE_KEYS.extractionError]: {
+      pageUrl: message.pageUrl,
+      pageTitle: message.pageTitle,
+      at: new Date().toISOString(),
+    },
+  });
+  await browser.action.setBadgeText({ text: '' });
 }
 
 function isBeatportUrl(url: string | undefined): boolean {
@@ -127,6 +144,11 @@ export default defineBackground({
     browser.runtime.onMessage.addListener((message: BeatportAnalystMessage, _sender, sendResponse) => {
       if (message.type === 'TRACKS_EXTRACTED') {
         void persistSnapshot(message.snapshot).then(() => sendResponse({ ok: true }));
+        return true;
+      }
+
+      if (message.type === 'EXTRACTION_FAILED') {
+        void persistExtractionError(message).then(() => sendResponse({ ok: true }));
         return true;
       }
 

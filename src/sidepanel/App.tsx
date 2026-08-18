@@ -16,9 +16,14 @@ import {
   toggleListValue,
 } from "../analysis/filters";
 import { buildCsvFilename, downloadCsv, tracksToCsv } from "../export/csv";
-import { STORAGE_KEYS, type KeyNotation } from "../messaging/protocol";
+import {
+  STORAGE_KEYS,
+  type ExtractionErrorState,
+  type KeyNotation,
+} from "../messaging/protocol";
 import { extensionStorage, extensionStorageArea } from "../messaging/storage";
 import { uniqueTracks } from "../extract/normalize";
+import { ExtractionHelpCard } from "./ContactSupport";
 import { PreviewPlayer, PauseIcon, PlayIcon, usePreviewPlayer } from "./PreviewPlayer";
 import {
   DEFAULT_FILTERS,
@@ -31,13 +36,19 @@ type FilterListKey = "bpmBuckets" | "camelotKeys" | "genreNames" | "labelNames";
 
 function useStorageState() {
   const [snapshot, setSnapshot] = useState<ExtractionSnapshot | null>(null);
+  const [extractionError, setExtractionError] =
+    useState<ExtractionErrorState | null>(null);
   const [keyNotation, setKeyNotationState] = useState<KeyNotation>("camelot");
 
   useEffect(() => {
     let active = true;
 
     extensionStorage
-      .get([STORAGE_KEYS.snapshot, STORAGE_KEYS.keyNotation])
+      .get([
+        STORAGE_KEYS.snapshot,
+        STORAGE_KEYS.keyNotation,
+        STORAGE_KEYS.extractionError,
+      ])
       .then((stored) => {
         if (!active) return;
         setSnapshot(
@@ -47,6 +58,11 @@ function useStorageState() {
         setKeyNotationState(
           (stored[STORAGE_KEYS.keyNotation] as KeyNotation | undefined) ??
             "camelot",
+        );
+        setExtractionError(
+          (stored[STORAGE_KEYS.extractionError] as
+            | ExtractionErrorState
+            | undefined) ?? null,
         );
       });
 
@@ -68,6 +84,13 @@ function useStorageState() {
             | undefined) ?? "camelot",
         );
       }
+      if (changes[STORAGE_KEYS.extractionError]) {
+        setExtractionError(
+          (changes[STORAGE_KEYS.extractionError].newValue as
+            | ExtractionErrorState
+            | undefined) ?? null,
+        );
+      }
     };
 
     browser.storage.onChanged.addListener(listener);
@@ -84,7 +107,7 @@ function useStorageState() {
     });
   }, []);
 
-  return { snapshot, keyNotation, setKeyNotation };
+  return { snapshot, extractionError, keyNotation, setKeyNotation };
 }
 
 function AccordionChevron() {
@@ -643,7 +666,8 @@ function TrackTable({
 }
 
 export function App() {
-  const { snapshot, keyNotation, setKeyNotation } = useStorageState();
+  const { snapshot, extractionError, keyNotation, setKeyNotation } =
+    useStorageState();
   const [filters, setFilters] = useState<TrackFilters>(DEFAULT_FILTERS);
   const tracks = useMemo(
     () => uniqueTracks(snapshot?.tracks ?? []),
@@ -689,23 +713,28 @@ export function App() {
   }, [filteredTracks, snapshot]);
 
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshFailed, setRefreshFailed] = useState(false);
+  const [beatportReloadAttempted, setBeatportReloadAttempted] = useState(false);
   const refreshStartedAt = useRef(snapshot?.extractedAt ?? null);
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
 
   const requestRefresh = useCallback(async (force = false) => {
     refreshStartedAt.current = snapshotRef.current?.extractedAt ?? new Date().toISOString();
+    setRefreshFailed(false);
     setRefreshing(true);
     try {
       const result = (await browser.runtime.sendMessage({
         type: 'REQUEST_REFRESH',
         force,
       })) as { reloaded?: boolean } | undefined;
+      setBeatportReloadAttempted(Boolean(result?.reloaded));
       if (!result?.reloaded) {
         setRefreshing(false);
       }
     } catch {
       setRefreshing(false);
+      setRefreshFailed(true);
     }
   }, []);
 
@@ -724,13 +753,23 @@ export function App() {
       setRefreshing(false);
       return;
     }
+    const startedAt = refreshStartedAt.current;
+    if (extractionError?.at && startedAt && extractionError.at > startedAt) {
+      setRefreshing(false);
+      return;
+    }
     const timeout = window.setTimeout(() => setRefreshing(false), 12000);
     return () => window.clearTimeout(timeout);
-  }, [refreshing, snapshot?.extractedAt]);
+  }, [extractionError?.at, refreshing, snapshot?.extractedAt]);
 
   useEffect(() => {
     setFilters(DEFAULT_FILTERS);
   }, [snapshot?.pageUrl]);
+
+  const showExtractionHelp =
+    !refreshing &&
+    tracks.length === 0 &&
+    (Boolean(extractionError) || refreshFailed || beatportReloadAttempted);
 
   return (
     <div className="app">
@@ -738,15 +777,21 @@ export function App() {
       <header className="panel-card header-card">
         <div>
           <p className="eyebrow">Beatport Analyst</p>
-          <h1>{snapshot?.pageTitle ?? "Open a Beatport track list page"}</h1>
+          <h1>
+            {snapshot?.pageTitle ??
+              extractionError?.pageTitle ??
+              "Open a Beatport track list page"}
+          </h1>
           <p className="muted">
             {refreshing
               ? "Reloading Beatport page…"
-              : snapshot
-                ? filtersActive
-                  ? `${filteredTracks.length} of ${tracks.length} tracks from ${snapshot.source}`
-                  : `${tracks.length} tracks from ${snapshot.source}`
-                : "Waiting for a Beatport page snapshot."}
+              : showExtractionHelp
+                ? "No tracks could be read from this Beatport page."
+                : snapshot
+                  ? filtersActive
+                    ? `${filteredTracks.length} of ${tracks.length} tracks from ${snapshot.source}`
+                    : `${tracks.length} tracks from ${snapshot.source}`
+                  : "Waiting for a Beatport page snapshot."}
           </p>
         </div>
         <div className="header-actions">
@@ -764,6 +809,10 @@ export function App() {
         </div>
       </header>
 
+      {showExtractionHelp ? (
+        <ExtractionHelpCard />
+      ) : (
+        <>
       <ColumnHistogram
         title="BPM"
         items={stats.bpmHistogram}
@@ -848,6 +897,8 @@ export function App() {
         playing={player.playing}
         onPlayTrack={player.playTrack}
       />
+        </>
+      )}
       </main>
       <PreviewPlayer player={player} />
     </div>

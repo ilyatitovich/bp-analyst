@@ -67,6 +67,45 @@ select {
   align-content: start;
 }
 
+.support-card {
+  display: grid;
+  gap: 10px;
+  border-color: #4a372e;
+  background: #1c1714;
+}
+
+.support-card h3 {
+  font-size: 14px;
+}
+
+.support-card p {
+  color: #c3b6ae;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.support-email-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.support-email {
+  padding: 7px 10px;
+  border: 1px solid #3a4458;
+  border-radius: 8px;
+  background: #11151b;
+  color: #edf1f7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+
+.copy-email-btn {
+  min-height: 34px;
+  padding: 8px 12px;
+}
+
 .panel-stats {
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: 8px;

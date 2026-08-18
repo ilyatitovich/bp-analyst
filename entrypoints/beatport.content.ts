@@ -10,8 +10,12 @@ import { type ExtractionSnapshot } from '../src/types/track';
 const PAYLOAD_EVENT = 'bp-analyst:payload';
 const LOCATION_EVENT = 'bp-analyst:location-change';
 
+const EXTRACTION_FAIL_DELAY_MS = 2500;
+
 let currentSnapshot: ExtractionSnapshot | null = null;
 let refreshTimer: number | null = null;
+let failTimer: number | null = null;
+let failurePublished = false;
 
 function getContext(source: ExtractionSnapshot['source']) {
   return {
@@ -21,10 +25,35 @@ function getContext(source: ExtractionSnapshot['source']) {
   };
 }
 
+function clearFailTimer(): void {
+  if (failTimer === null) return;
+  window.clearTimeout(failTimer);
+  failTimer = null;
+}
+
 async function publishSnapshot(snapshot: ExtractionSnapshot | null): Promise<void> {
-  if (!snapshot) return;
-  currentSnapshot = snapshot;
   try {
+    if (!snapshot) {
+      if (failurePublished || failTimer !== null) return;
+      failTimer = window.setTimeout(() => {
+        failTimer = null;
+        failurePublished = true;
+        void browser.runtime
+          .sendMessage({
+            type: 'EXTRACTION_FAILED',
+            pageUrl: location.href,
+            pageTitle: document.title,
+          })
+          .catch(() => {
+            failurePublished = false;
+          });
+      }, EXTRACTION_FAIL_DELAY_MS);
+      return;
+    }
+
+    clearFailTimer();
+    failurePublished = false;
+    currentSnapshot = snapshot;
     await browser.runtime.sendMessage({
       type: 'TRACKS_EXTRACTED',
       snapshot,
@@ -37,6 +66,8 @@ async function publishSnapshot(snapshot: ExtractionSnapshot | null): Promise<voi
 async function extractAndPublish(payload?: unknown, reset = false): Promise<void> {
   if (reset) {
     currentSnapshot = null;
+    failurePublished = false;
+    clearFailTimer();
   }
 
   const incoming = pickLargestSnapshot(
