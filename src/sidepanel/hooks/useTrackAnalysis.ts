@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { browser } from "wxt/browser";
 import { computeTrackStats } from "../../lib/analysis/stats";
 import {
   DEFAULT_TRACK_SORT,
@@ -98,6 +99,16 @@ export function useTrackAnalysis(snapshot: ExtractionSnapshot | null) {
     );
   }, [sortedTracks, snapshot]);
 
+  const downloadReport = useCallback(() => {
+    const url = new URL(browser.runtime.getURL("/report.html"));
+    url.searchParams.set("print", "1");
+    url.searchParams.set("t", String(Date.now()));
+    const opened = window.open(url.href, "bp-analyst-report");
+    if (!opened) {
+      void browser.tabs.create({ url: url.href });
+    }
+  }, []);
+
   return {
     tracks,
     stats,
@@ -116,5 +127,6 @@ export function useTrackAnalysis(snapshot: ExtractionSnapshot | null) {
     toggleFreshness,
     cycleSort,
     exportCsv,
+    downloadReport,
   };
 }

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { cleanPageTitle } from "../lib/export/report";
 import { AnalysisView } from "./components/AnalysisView";
 import { ExtractionHelpCard } from "./components/ExtractionHelp";
 import { Header } from "./components/Header";
@@ -30,9 +31,11 @@ export function App() {
       <main className="app-shell">
         <Header
           title={
-            snapshot?.pageTitle ??
-            extractionError?.pageTitle ??
-            "Open a Beatport track list page"
+            snapshot?.pageTitle
+              ? cleanPageTitle(snapshot.pageTitle)
+              : extractionError?.pageTitle
+                ? cleanPageTitle(extractionError.pageTitle)
+                : "Open a Beatport track list page"
           }
           refreshing={refreshing}
           showExtractionHelp={showExtractionHelp}
@@ -42,12 +45,14 @@ export function App() {
           visibleCount={analysis.sortedTracks.length}
           filtersActive={analysis.filtersActive}
           canExport={analysis.sortedTracks.length > 0}
+          canDownloadReport={analysis.tracks.length > 0}
           filters={analysis.filters}
           exclusiveCount={analysis.stats.exclusiveCount}
           hypeCount={analysis.stats.hypeCount}
           onResetFilters={analysis.resetFilters}
           onRefresh={() => void requestRefresh(true)}
           onExport={analysis.exportCsv}
+          onDownloadReport={analysis.downloadReport}
           onTitleQueryChange={analysis.setTitleQuery}
           onToggleExclusive={analysis.toggleExclusive}
           onToggleHype={analysis.toggleHype}

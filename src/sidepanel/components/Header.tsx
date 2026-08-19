@@ -11,12 +11,14 @@ interface HeaderProps {
   visibleCount: number;
   filtersActive: boolean;
   canExport: boolean;
+  canDownloadReport: boolean;
   filters: TrackFilters;
   exclusiveCount: number;
   hypeCount: number;
   onResetFilters: () => void;
   onRefresh: () => void;
   onExport: () => void;
+  onDownloadReport: () => void;
   onTitleQueryChange: (value: string) => void;
   onToggleExclusive: () => void;
   onToggleHype: () => void;
@@ -32,12 +34,14 @@ export function Header({
   visibleCount,
   filtersActive,
   canExport,
+  canDownloadReport,
   filters,
   exclusiveCount,
   hypeCount,
   onResetFilters,
   onRefresh,
   onExport,
+  onDownloadReport,
   onTitleQueryChange,
   onToggleExclusive,
   onToggleHype,
@@ -70,6 +74,9 @@ export function Header({
         </button>
         <button onClick={onExport} disabled={!canExport} type="button">
           Export CSV
+        </button>
+        <button onClick={onDownloadReport} disabled={!canDownloadReport} type="button">
+          Download report
         </button>
       </div>
       {trackCount ? (
