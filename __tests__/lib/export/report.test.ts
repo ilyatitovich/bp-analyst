@@ -6,7 +6,7 @@ import {
   formatReportSourceUrl,
   reportPrintQuery,
   statsBasisLabel,
-} from './report';
+} from '../../../src/lib/export/report';
 
 describe('cleanPageTitle', () => {
   it('uses the first pipe segment and strips Beatport suffixes', () => {

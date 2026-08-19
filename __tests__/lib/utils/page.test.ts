@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Track } from '../types/track';
+import type { Track } from '../../../src/lib/types/track';
 import {
   beatportCatalogUrlFromTracks,
   beatportEntityUrl,
   scopedFacetFromPageUrl,
-} from './page';
+} from '../../../src/lib/utils/page';
 
 describe('scopedFacetFromPageUrl', () => {
   it('detects artist, label, and genre entity pages', () => {

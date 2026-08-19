@@ -7,7 +7,7 @@ import {
   formatBpmRange,
   formatShare,
   headerStatus,
-} from './format';
+} from '../../../src/lib/utils/format';
 
 describe('formatShare', () => {
   it('renders percents and a dash for missing values', () => {

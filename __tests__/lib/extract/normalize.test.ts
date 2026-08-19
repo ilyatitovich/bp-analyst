@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { looksLikeRawTrack, normalizeTrack, uniqueTracks } from './normalize';
-import type { Track } from '../types/track';
+import { looksLikeRawTrack, normalizeTrack, uniqueTracks } from '../../../src/lib/extract/normalize';
+import type { Track } from '../../../src/lib/types/track';
 
 const context = {
   pageUrl: 'https://www.beatport.com/genre/tech-house/11/top-100',

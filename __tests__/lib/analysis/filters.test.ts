@@ -7,8 +7,8 @@ import {
   parseBpmBucket,
   sortTracks,
   toggleListValue,
-} from './filters';
-import { DEFAULT_FILTERS, type Track } from '../types/track';
+} from '../../../src/lib/analysis/filters';
+import { DEFAULT_FILTERS, type Track } from '../../../src/lib/types/track';
 
 const baseTrack: Track = {
   id: 1,

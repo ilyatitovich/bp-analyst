@@ -7,13 +7,15 @@ import {
   seekTimeFromProgress,
 } from "../../lib/player/preview";
 import type { PreviewPlayerHandle } from "../hooks/usePreviewPlayer";
-import { PauseIcon, PlayIcon, SkipIcon } from "./icons";
+import { PauseIcon } from "./icons/PauseIcon";
+import { PlayIcon } from "./icons/PlayIcon";
+import { SkipIcon } from "./icons/SkipIcon";
 
-export function PreviewPlayer({
-  player,
-}: {
+export interface PreviewPlayerProps {
   player: PreviewPlayerHandle;
-}) {
+}
+
+export function PreviewPlayer({ player }: PreviewPlayerProps) {
   const { currentTrack, playing, error, audioRef, playAdjacent, togglePlay, stop } = player;
   const [currentTime, setCurrentTime] = useState(0);
 

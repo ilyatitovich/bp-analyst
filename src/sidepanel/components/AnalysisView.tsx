@@ -1,63 +1,32 @@
-import type { FilterListKey, TrackSort, TrackSortColumn } from "../../lib/analysis/filters";
-import type { TrackStats } from "../../lib/analysis/stats";
 import type { KeyNotation } from "../../lib/messaging/protocol";
-import type { Track, TrackFilters } from "../../lib/types/track";
-import {
-  bpmBucketRangeLabel,
-  bpmBucketStartLabel,
-  formatBpm,
-  formatBpmRange,
-} from "../../lib/utils/format";
+import type { ExtractionSnapshot } from "../../lib/types/track";
 import { scopedFacetFromPageUrl } from "../../lib/utils/page";
-import { ColumnHistogram, CountTable, DistributionChart, KeyHistogram } from "./charts";
+import type { PreviewPlayerHandle } from "../hooks/usePreviewPlayer";
+import type { TrackAnalysis } from "../hooks/useTrackAnalysis";
+import { BpmHistogram } from "./charts/BpmHistogram";
+import { CountTable } from "./charts/CountTable";
+import { DistributionChart } from "./charts/DistributionChart";
+import { KeyHistogram } from "./charts/KeyHistogram";
 import { MarketBrief } from "./MarketBrief";
 import { TrackTable } from "./TrackTable";
-import { FilterChips, StatCard } from "./ui";
+
+export interface AnalysisViewProps {
+  snapshot: ExtractionSnapshot | null;
+  analysis: TrackAnalysis;
+  keyNotation: KeyNotation;
+  onKeyNotationChange: (notation: KeyNotation) => void;
+  player: PreviewPlayerHandle;
+}
 
 export function AnalysisView({
-  tracks,
-  stats,
-  filteredStats,
-  sortedTracks,
-  filters,
-  sort,
+  snapshot,
+  analysis,
   keyNotation,
-  listCount,
-  complete,
-  pageUrl,
-  currentTrackId,
-  playing,
   onKeyNotationChange,
-  onToggleFilter,
-  onClearFilter,
-  onToggleExclusive,
-  onToggleHype,
-  onToggleFreshness,
-  onSort,
-  onPlayTrack,
-}: {
-  tracks: Track[];
-  stats: TrackStats;
-  filteredStats: TrackStats;
-  sortedTracks: Track[];
-  filters: TrackFilters;
-  sort: TrackSort;
-  keyNotation: KeyNotation;
-  listCount?: number | null;
-  complete?: boolean;
-  pageUrl?: string | null;
-  currentTrackId: number | null;
-  playing: boolean;
-  onKeyNotationChange: (notation: KeyNotation) => void;
-  onToggleFilter: (key: FilterListKey, value: string) => void;
-  onClearFilter: (key: FilterListKey) => void;
-  onToggleExclusive: () => void;
-  onToggleHype: () => void;
-  onToggleFreshness: (days: 7 | 30) => void;
-  onSort: (column: TrackSortColumn) => void;
-  onPlayTrack: (track: Track) => void;
-}) {
-  const scopedFacet = scopedFacetFromPageUrl(pageUrl);
+  player,
+}: AnalysisViewProps) {
+  const scopedFacet = scopedFacetFromPageUrl(snapshot?.pageUrl);
+  const { stats } = analysis;
   const showGenrePanel = scopedFacet !== "genre" && stats.genreDistribution.length > 1;
   const showLabelPanel = scopedFacet !== "label" && stats.labelDistribution.length > 1;
   const showArtistPanel = scopedFacet !== "artist" && stats.artistDistribution.length > 1;
@@ -65,58 +34,18 @@ export function AnalysisView({
   return (
     <>
       <MarketBrief
-        stats={stats}
-        trackCount={tracks.length}
-        listCount={listCount}
-        complete={complete}
-        exclusiveOnly={filters.includeExclusiveOnly}
-        hypeOnly={filters.includeHypeOnly}
-        mixTypes={filters.mixTypes}
-        publishedWithinDays={filters.publishedWithinDays}
+        analysis={analysis}
+        snapshot={snapshot}
         keyNotation={keyNotation}
         scopedFacet={scopedFacet}
-        onToggleExclusive={onToggleExclusive}
-        onToggleHype={onToggleHype}
-        onToggleMixType={(mixType) => onToggleFilter("mixTypes", mixType)}
-        onToggleFreshness={onToggleFreshness}
       />
 
-      <ColumnHistogram
-        title="BPM"
-        items={stats.bpmHistogram}
-        formatLabel={bpmBucketStartLabel}
-        selectedLabels={new Set(filters.bpmBuckets)}
-        onToggle={(label) => onToggleFilter("bpmBuckets", label)}
-        headerExtra={
-          <FilterChips
-            values={filters.bpmBuckets}
-            formatValue={bpmBucketRangeLabel}
-            onRemove={(label) => onToggleFilter("bpmBuckets", label)}
-            onReset={() => onClearFilter("bpmBuckets")}
-          />
-        }
-        leading={
-          <div className="panel-stats">
-            <StatCard
-              label="p25–p75"
-              value={formatBpmRange(filteredStats.bpmP25, filteredStats.bpmP75)}
-            />
-            <StatCard label="Median" value={formatBpm(filteredStats.bpmMedian)} />
-            <StatCard label="Mode" value={formatBpm(filteredStats.bpmMode)} />
-          </div>
-        }
-      />
+      <BpmHistogram analysis={analysis} />
 
       <KeyHistogram
+        analysis={analysis}
         notation={keyNotation}
         onNotationChange={onKeyNotationChange}
-        camelotItems={stats.camelotHistogram}
-        scaleItems={stats.scaleHistogram}
-        selectedKeys={filters.camelotKeys}
-        onToggle={(key) => onToggleFilter("camelotKeys", key)}
-        onReset={() => onClearFilter("camelotKeys")}
-        medianKey={filteredStats.camelotMedian}
-        modeKey={filteredStats.camelotMode}
       />
 
       {(showGenrePanel || showLabelPanel || showArtistPanel) && (
@@ -125,9 +54,8 @@ export function AnalysisView({
             <DistributionChart
               title="Genres"
               items={stats.genreDistribution}
-              selectedLabels={filters.genreNames}
-              onToggle={(label) => onToggleFilter("genreNames", label)}
-              onReset={() => onClearFilter("genreNames")}
+              analysis={analysis}
+              filterKey="genreNames"
             />
           ) : null}
           {showLabelPanel ? (
@@ -135,9 +63,8 @@ export function AnalysisView({
               title="Labels"
               nameHeader="Label"
               items={stats.labelDistribution}
-              selectedLabels={filters.labelNames}
-              onToggle={(label) => onToggleFilter("labelNames", label)}
-              onReset={() => onClearFilter("labelNames")}
+              analysis={analysis}
+              filterKey="labelNames"
             />
           ) : null}
           {showArtistPanel ? (
@@ -145,24 +72,14 @@ export function AnalysisView({
               title="Artists"
               nameHeader="Artist"
               items={stats.artistDistribution}
-              selectedLabels={filters.artistNames}
-              onToggle={(label) => onToggleFilter("artistNames", label)}
-              onReset={() => onClearFilter("artistNames")}
+              analysis={analysis}
+              filterKey="artistNames"
             />
           ) : null}
         </section>
       )}
 
-      <TrackTable
-        tracks={sortedTracks}
-        totalCount={tracks.length}
-        keyNotation={keyNotation}
-        sort={sort}
-        onSort={onSort}
-        currentTrackId={currentTrackId}
-        playing={playing}
-        onPlayTrack={onPlayTrack}
-      />
+      <TrackTable analysis={analysis} keyNotation={keyNotation} player={player} />
     </>
   );
 }

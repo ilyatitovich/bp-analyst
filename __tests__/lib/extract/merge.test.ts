@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { mergeSnapshots } from './merge';
-import type { ExtractionSnapshot, Track } from '../types/track';
+import { mergeSnapshots } from '../../../src/lib/extract/merge';
+import type { ExtractionSnapshot, Track } from '../../../src/lib/types/track';
 
 const context = {
   pageUrl: 'https://www.beatport.com/genre/tech-house/11/top-100',

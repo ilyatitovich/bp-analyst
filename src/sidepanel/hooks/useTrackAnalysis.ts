@@ -112,7 +112,6 @@ export function useTrackAnalysis(snapshot: ExtractionSnapshot | null) {
   return {
     tracks,
     stats,
-    filteredTracks,
     sortedTracks,
     filteredStats,
     filters,
@@ -130,3 +129,5 @@ export function useTrackAnalysis(snapshot: ExtractionSnapshot | null) {
     downloadReport,
   };
 }
+
+export type TrackAnalysis = ReturnType<typeof useTrackAnalysis>;

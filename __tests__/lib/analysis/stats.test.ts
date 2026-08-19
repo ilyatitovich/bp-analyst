@@ -3,8 +3,8 @@ import {
   classifyMixType,
   computeTrackStats,
   parsePublishDate,
-} from './stats';
-import type { Track } from '../types/track';
+} from '../../../src/lib/analysis/stats';
+import type { Track } from '../../../src/lib/types/track';
 
 const baseTrack: Track = {
   id: 1,

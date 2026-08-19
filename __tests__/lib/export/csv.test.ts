@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildCsvFilename, tracksToCsv } from './csv';
-import type { Track } from '../types/track';
+import { buildCsvFilename, tracksToCsv } from '../../../src/lib/export/csv';
+import type { Track } from '../../../src/lib/types/track';
 
 const track: Track = {
   id: 1,

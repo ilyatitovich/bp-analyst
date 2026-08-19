@@ -6,7 +6,7 @@ import {
   previewWindow,
   resolvedPreviewWindow,
   seekTimeFromProgress,
-} from './preview';
+} from '../../../src/lib/player/preview';
 
 describe('previewWindow', () => {
   it('uses Beatport sample offsets when present', () => {

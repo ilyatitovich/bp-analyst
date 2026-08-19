@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { cleanPageTitle } from "../lib/export/report";
 import { AnalysisView } from "./components/AnalysisView";
 import { ExtractionHelpCard } from "./components/ExtractionHelp";
 import { Header } from "./components/Header";
@@ -30,58 +29,23 @@ export function App() {
     <div className="app">
       <main className="app-shell">
         <Header
-          title={
-            snapshot?.pageTitle
-              ? cleanPageTitle(snapshot.pageTitle)
-              : extractionError?.pageTitle
-                ? cleanPageTitle(extractionError.pageTitle)
-                : "Open a Beatport track list page"
-          }
+          snapshot={snapshot}
+          extractionError={extractionError}
+          analysis={analysis}
           refreshing={refreshing}
           showExtractionHelp={showExtractionHelp}
-          hasSnapshot={Boolean(snapshot)}
-          source={snapshot?.source}
-          trackCount={analysis.tracks.length}
-          visibleCount={analysis.sortedTracks.length}
-          filtersActive={analysis.filtersActive}
-          canExport={analysis.sortedTracks.length > 0}
-          canDownloadReport={analysis.tracks.length > 0}
-          filters={analysis.filters}
-          exclusiveCount={analysis.stats.exclusiveCount}
-          hypeCount={analysis.stats.hypeCount}
-          onResetFilters={analysis.resetFilters}
           onRefresh={() => void requestRefresh(true)}
-          onExport={analysis.exportCsv}
-          onDownloadReport={analysis.downloadReport}
-          onTitleQueryChange={analysis.setTitleQuery}
-          onToggleExclusive={analysis.toggleExclusive}
-          onToggleHype={analysis.toggleHype}
         />
 
         {showExtractionHelp ? (
           <ExtractionHelpCard />
         ) : (
           <AnalysisView
-            tracks={analysis.tracks}
-            stats={analysis.stats}
-            filteredStats={analysis.filteredStats}
-            sortedTracks={analysis.sortedTracks}
-            filters={analysis.filters}
-            sort={analysis.sort}
+            snapshot={snapshot}
+            analysis={analysis}
             keyNotation={keyNotation}
-            listCount={snapshot?.listCount}
-            complete={snapshot?.complete}
-            pageUrl={snapshot?.pageUrl}
-            currentTrackId={player.currentTrack?.id ?? null}
-            playing={player.playing}
             onKeyNotationChange={setKeyNotation}
-            onToggleFilter={analysis.toggleFilter}
-            onClearFilter={analysis.clearFilter}
-            onToggleExclusive={analysis.toggleExclusive}
-            onToggleHype={analysis.toggleHype}
-            onToggleFreshness={analysis.toggleFreshness}
-            onSort={analysis.cycleSort}
-            onPlayTrack={player.playTrack}
+            player={player}
           />
         )}
       </main>

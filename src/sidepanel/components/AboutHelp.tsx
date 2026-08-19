@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { CloseIcon, HelpIcon } from "./icons";
-import { SupportContact, SupportMeLink } from "./SupportContact";
+import { CloseIcon } from "./icons/CloseIcon";
+import { HelpIcon } from "./icons/HelpIcon";
+import { SupportContact } from "./SupportContact";
+import { SupportMeLink } from "./SupportMeLink";
 
 export function AboutHelpButton() {
   const [open, setOpen] = useState(false);

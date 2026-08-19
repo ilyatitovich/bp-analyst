@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { formatTrackKey } from '../lib/analysis/camelot';
-import { computeTrackStats, type Bucket } from '../lib/analysis/stats';
+import { computeTrackStats } from '../lib/analysis/stats';
+import { BRIEF_STAT_HINTS } from '../lib/constants/briefStatHints';
 import {
   buildReportTitle,
   formatReportDate,
@@ -14,109 +15,12 @@ import {
   beatportCatalogUrlFromTracks,
   scopedFacetFromPageUrl,
 } from '../lib/utils/page';
-import { BRIEF_STAT_HINTS } from '../sidepanel/components/briefStatHints';
 import { useStorageState } from '../sidepanel/hooks/useStorageState';
+import { BarList } from './BarList';
+import { ChipGroup } from './ChipGroup';
+import { ReportStat } from './ReportStat';
 
 let printTimer: number | null = null;
-
-function Stat({
-  label,
-  value,
-  caption,
-}: {
-  label: string;
-  value: string;
-  caption: string;
-}) {
-  return (
-    <div className="report-stat">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <p>{caption}</p>
-    </div>
-  );
-}
-
-type ChipItem = Bucket & { href?: string | null };
-
-function ChipGroup({
-  title,
-  share,
-  items,
-}: {
-  title: string;
-  share?: number | null;
-  items: ChipItem[];
-}) {
-  if (!items.length) return null;
-
-  return (
-    <div>
-      <h3>
-        {title}
-        {share != null ? <span> {formatShare(share)}</span> : null}
-      </h3>
-      <ul className="report-chips">
-        {items.map((item) => {
-          const body = (
-            <>
-              <span>{item.label}</span>
-              <strong>{item.count}</strong>
-            </>
-          );
-
-          return (
-            <li key={item.label}>
-              {item.href ? (
-                <a href={item.href} rel="noopener noreferrer" target="_blank">
-                  {body}
-                </a>
-              ) : (
-                <span className="report-chip-body">{body}</span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
-function BarList({
-  title,
-  items,
-  empty = 'No data',
-}: {
-  title: string;
-  items: Bucket[];
-  empty?: string;
-}) {
-  const max = Math.max(1, ...items.map((item) => item.count));
-
-  return (
-    <section className="report-section">
-      <h2>{title}</h2>
-      {items.length ? (
-        <ul className="report-bars">
-          {items.map((item) => (
-            <li key={item.label}>
-              <span className="report-bar-label">{item.label}</span>
-              <span className="report-bar-track">
-                <span
-                  className="report-bar-fill"
-                  style={{ width: `${(item.count / max) * 100}%` }}
-                />
-              </span>
-              <span className="report-bar-count">{item.count}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="report-muted">{empty}</p>
-      )}
-    </section>
-  );
-}
 
 export function ReportApp() {
   const { snapshot, keyNotation } = useStorageState();
@@ -197,32 +101,32 @@ export function ReportApp() {
             <p className="report-basis">{basis}</p>
           </div>
           <div className="report-stats">
-            <Stat
+            <ReportStat
               label="Exclusive"
               value={formatShare(stats.exclusiveShare)}
               caption={BRIEF_STAT_HINTS.exclusive}
             />
-            <Stat
+            <ReportStat
               label="Hype"
               value={formatShare(stats.hypeShare)}
               caption={BRIEF_STAT_HINTS.hype}
             />
-            <Stat
+            <ReportStat
               label="Last 7 days"
               value={formatShare(stats.freshness7Share)}
               caption={BRIEF_STAT_HINTS.freshness7}
             />
-            <Stat
+            <ReportStat
               label="Last 30 days"
               value={formatShare(stats.freshness30Share)}
               caption={BRIEF_STAT_HINTS.freshness30}
             />
-            <Stat
+            <ReportStat
               label="BPM median"
               value={formatBpm(stats.bpmMedian)}
               caption={BRIEF_STAT_HINTS.bpmMedian}
             />
-            <Stat
+            <ReportStat
               label="BPM p25–p75"
               value={formatBpmRange(stats.bpmP25, stats.bpmP75)}
               caption={BRIEF_STAT_HINTS.bpmIqr}

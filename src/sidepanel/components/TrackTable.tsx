@@ -1,69 +1,21 @@
 import { formatTrackKey } from "../../lib/analysis/camelot";
-import type { TrackSort, TrackSortColumn } from "../../lib/analysis/filters";
 import type { KeyNotation } from "../../lib/messaging/protocol";
-import type { Track } from "../../lib/types/track";
-import { PauseIcon, PlayIcon } from "./icons";
+import type { PreviewPlayerHandle } from "../hooks/usePreviewPlayer";
+import type { TrackAnalysis } from "../hooks/useTrackAnalysis";
+import { PauseIcon } from "./icons/PauseIcon";
+import { PlayIcon } from "./icons/PlayIcon";
+import { SortHeader } from "./SortHeader";
 
-function SortHeader({
-  column,
-  label,
-  sort,
-  onSort,
-}: {
-  column: TrackSortColumn;
-  label: string;
-  sort: TrackSort;
-  onSort: (column: TrackSortColumn) => void;
-}) {
-  const active = sort.column === column;
-  const ariaSort = active
-    ? sort.direction === "asc"
-      ? "ascending"
-      : "descending"
-    : "none";
-
-  const sortLabel = column === "position" ? "position" : label.toLowerCase();
-  const ariaLabel = active
-    ? `Sorted by ${sortLabel}, ${sort.direction === "asc" ? "ascending" : "descending"}`
-    : `Sort by ${sortLabel}`;
-
-  return (
-    <th aria-sort={ariaSort}>
-      <button
-        type="button"
-        className={`sort-btn${active ? " active" : ""}`}
-        onClick={() => onSort(column)}
-        aria-label={ariaLabel}
-      >
-        <span>{label}</span>
-        <span className="sort-indicator" aria-hidden="true">
-          {active ? (sort.direction === "asc" ? "▲" : "▼") : ""}
-        </span>
-      </button>
-    </th>
-  );
+export interface TrackTableProps {
+  analysis: TrackAnalysis;
+  keyNotation: KeyNotation;
+  player: PreviewPlayerHandle;
 }
 
-export function TrackTable({
-  tracks,
-  totalCount,
-  keyNotation,
-  sort,
-  onSort,
-  currentTrackId,
-  playing,
-  onPlayTrack,
-}: {
-  tracks: Track[];
-  totalCount: number;
-  keyNotation: KeyNotation;
-  sort: TrackSort;
-  onSort: (column: TrackSortColumn) => void;
-  currentTrackId: number | null;
-  playing: boolean;
-  onPlayTrack: (track: Track) => void;
-}) {
-  const filtered = tracks.length !== totalCount;
+export function TrackTable({ analysis, keyNotation, player }: TrackTableProps) {
+  const { sortedTracks, tracks, sort, cycleSort } = analysis;
+  const { currentTrack, playing, playTrack } = player;
+  const filtered = sortedTracks.length !== tracks.length;
 
   return (
     <section className="panel-card">
@@ -71,7 +23,7 @@ export function TrackTable({
         <h3>Tracks</h3>
         {filtered ? (
           <span className="muted">
-            {tracks.length} of {totalCount}
+            {sortedTracks.length} of {tracks.length}
           </span>
         ) : null}
       </div>
@@ -79,26 +31,27 @@ export function TrackTable({
         <table>
           <thead>
             <tr>
-              <SortHeader column="position" label="#" sort={sort} onSort={onSort} />
+              <SortHeader column="position" label="#" sort={sort} onSort={cycleSort} />
               <th>Title</th>
               <th>Artists</th>
-              <SortHeader column="bpm" label="BPM" sort={sort} onSort={onSort} />
+              <SortHeader column="bpm" label="BPM" sort={sort} onSort={cycleSort} />
               <SortHeader
                 column="key"
                 label={keyNotation === "camelot" ? "Camelot" : "Scale"}
                 sort={sort}
-                onSort={onSort}
+                onSort={cycleSort}
               />
               <th>Genre</th>
-              <SortHeader column="label" label="Label" sort={sort} onSort={onSort} />
-              <SortHeader column="date" label="Date" sort={sort} onSort={onSort} />
+              <SortHeader column="label" label="Label" sort={sort} onSort={cycleSort} />
+              <SortHeader column="date" label="Date" sort={sort} onSort={cycleSort} />
             </tr>
           </thead>
           <tbody>
-            {tracks.length ? (
-              tracks.map((track) => {
-                const current = track.id === currentTrackId;
-                const playLabel = current && playing ? `Pause ${track.title}` : `Play preview of ${track.title}`;
+            {sortedTracks.length ? (
+              sortedTracks.map((track) => {
+                const current = track.id === currentTrack?.id;
+                const playLabel =
+                  current && playing ? `Pause ${track.title}` : `Play preview of ${track.title}`;
 
                 return (
                   <tr className={current ? "track-row playing" : "track-row"} key={track.id}>
@@ -109,8 +62,10 @@ export function TrackTable({
                           type="button"
                           className="track-play-btn"
                           disabled={!track.previewUrl}
-                          onClick={() => onPlayTrack(track)}
-                          aria-label={track.previewUrl ? playLabel : `${track.title} has no preview`}
+                          onClick={() => playTrack(track)}
+                          aria-label={
+                            track.previewUrl ? playLabel : `${track.title} has no preview`
+                          }
                         >
                           {current && playing ? <PauseIcon /> : <PlayIcon />}
                         </button>
@@ -120,7 +75,7 @@ export function TrackTable({
                               <button
                                 type="button"
                                 className="track-title-button"
-                                onClick={() => onPlayTrack(track)}
+                                onClick={() => playTrack(track)}
                               >
                                 {track.title}
                               </button>
@@ -152,8 +107,7 @@ export function TrackTable({
                     <td>{track.artists.map((artist) => artist.name).join(", ")}</td>
                     <td>{track.bpm ?? "-"}</td>
                     <td>
-                      {formatTrackKey(track.camelot, track.keyName, keyNotation) ??
-                        "-"}
+                      {formatTrackKey(track.camelot, track.keyName, keyNotation) ?? "-"}
                     </td>
                     <td>{track.genre?.name ?? "-"}</td>
                     <td>{track.label?.name ?? "-"}</td>

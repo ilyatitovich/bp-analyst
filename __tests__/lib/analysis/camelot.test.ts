@@ -6,7 +6,7 @@ import {
   parseScaleName,
   scaleToCamelot,
   toCamelot,
-} from './camelot';
+} from '../../../src/lib/analysis/camelot';
 
 describe('camelot helpers', () => {
   it('formats a camelot key', () => {

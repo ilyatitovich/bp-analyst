@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractSnapshotFromNextDataObject } from './next-data';
+import { extractSnapshotFromNextDataObject } from '../../../src/lib/extract/next-data';
 
 const nextDataFixture = {
   props: {

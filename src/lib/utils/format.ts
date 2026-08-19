@@ -28,7 +28,7 @@ export function coverageLabel(
   return null;
 }
 
-export function headerStatus(input: {
+export interface HeaderStatusInput {
   refreshing: boolean;
   showExtractionHelp: boolean;
   hasSnapshot: boolean;
@@ -36,7 +36,9 @@ export function headerStatus(input: {
   trackCount: number;
   visibleCount: number;
   filtersActive: boolean;
-}): string {
+}
+
+export function headerStatus(input: HeaderStatusInput): string {
   if (input.refreshing) return 'Reloading Beatport page…';
   if (input.showExtractionHelp) {
     return 'No tracks could be read from this Beatport page.';

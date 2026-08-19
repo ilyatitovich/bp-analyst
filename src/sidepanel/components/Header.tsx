@@ -1,59 +1,40 @@
+import { cleanPageTitle } from "../../lib/export/report";
+import type { ExtractionErrorState } from "../../lib/messaging/protocol";
+import type { ExtractionSnapshot } from "../../lib/types/track";
 import { headerStatus } from "../../lib/utils/format";
-import type { TrackFilters } from "../../lib/types/track";
+import type { TrackAnalysis } from "../hooks/useTrackAnalysis";
 import { AboutHelpButton } from "./AboutHelp";
 
-interface HeaderProps {
-  title: string;
+export interface HeaderProps {
+  snapshot: ExtractionSnapshot | null;
+  extractionError: ExtractionErrorState | null;
+  analysis: TrackAnalysis;
   refreshing: boolean;
   showExtractionHelp: boolean;
-  hasSnapshot: boolean;
-  source?: string;
-  trackCount: number;
-  visibleCount: number;
-  filtersActive: boolean;
-  canExport: boolean;
-  canDownloadReport: boolean;
-  filters: TrackFilters;
-  exclusiveCount: number;
-  hypeCount: number;
-  onResetFilters: () => void;
   onRefresh: () => void;
-  onExport: () => void;
-  onDownloadReport: () => void;
-  onTitleQueryChange: (value: string) => void;
-  onToggleExclusive: () => void;
-  onToggleHype: () => void;
 }
 
 export function Header({
-  title,
+  snapshot,
+  extractionError,
+  analysis,
   refreshing,
   showExtractionHelp,
-  hasSnapshot,
-  source,
-  trackCount,
-  visibleCount,
-  filtersActive,
-  canExport,
-  canDownloadReport,
-  filters,
-  exclusiveCount,
-  hypeCount,
-  onResetFilters,
   onRefresh,
-  onExport,
-  onDownloadReport,
-  onTitleQueryChange,
-  onToggleExclusive,
-  onToggleHype,
 }: HeaderProps) {
+  const { tracks, sortedTracks, filtersActive, filters, stats } = analysis;
+  const title = snapshot?.pageTitle
+    ? cleanPageTitle(snapshot.pageTitle)
+    : extractionError?.pageTitle
+      ? cleanPageTitle(extractionError.pageTitle)
+      : "Open a Beatport track list page";
   const status = headerStatus({
     refreshing,
     showExtractionHelp,
-    hasSnapshot,
-    source,
-    trackCount,
-    visibleCount,
+    hasSnapshot: Boolean(snapshot),
+    source: snapshot?.source,
+    trackCount: tracks.length,
+    visibleCount: sortedTracks.length,
     filtersActive,
   });
 
@@ -69,21 +50,29 @@ export function Header({
       </div>
       <div className="header-actions">
         {filtersActive ? (
-          <button onClick={onResetFilters} type="button">
+          <button onClick={analysis.resetFilters} type="button">
             Reset filters
           </button>
         ) : null}
         <button disabled={refreshing} onClick={onRefresh} type="button">
           {refreshing ? "Reloading…" : "Refresh"}
         </button>
-        <button onClick={onExport} disabled={!canExport} type="button">
+        <button
+          onClick={analysis.exportCsv}
+          disabled={!sortedTracks.length}
+          type="button"
+        >
           Export CSV
         </button>
-        <button onClick={onDownloadReport} disabled={!canDownloadReport} type="button">
+        <button
+          onClick={analysis.downloadReport}
+          disabled={!tracks.length}
+          type="button"
+        >
           Download report
         </button>
       </div>
-      {trackCount ? (
+      {tracks.length ? (
         <div className="header-filters">
           <label className="header-search">
             <span className="visually-hidden">
@@ -92,7 +81,7 @@ export function Header({
             <input
               type="search"
               value={filters.titleQuery}
-              onChange={(event) => onTitleQueryChange(event.target.value)}
+              onChange={(event) => analysis.setTitleQuery(event.target.value)}
               placeholder="Search title, mix, artists"
               autoComplete="off"
               spellCheck={false}
@@ -103,8 +92,8 @@ export function Header({
               type="button"
               className={`brief-chip${filters.includeExclusiveOnly ? " selected" : ""}`}
               aria-pressed={filters.includeExclusiveOnly}
-              disabled={exclusiveCount === 0 && !filters.includeExclusiveOnly}
-              onClick={onToggleExclusive}
+              disabled={stats.exclusiveCount === 0 && !filters.includeExclusiveOnly}
+              onClick={analysis.toggleExclusive}
             >
               Exclusive
             </button>
@@ -112,8 +101,8 @@ export function Header({
               type="button"
               className={`brief-chip${filters.includeHypeOnly ? " selected" : ""}`}
               aria-pressed={filters.includeHypeOnly}
-              disabled={hypeCount === 0 && !filters.includeHypeOnly}
-              onClick={onToggleHype}
+              disabled={stats.hypeCount === 0 && !filters.includeHypeOnly}
+              onClick={analysis.toggleHype}
             >
               Hype
             </button>

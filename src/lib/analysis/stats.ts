@@ -41,7 +41,6 @@ export type TrackStats = {
   bpmHistogram: Bucket[];
   camelotHistogram: Bucket[];
   scaleHistogram: Bucket[];
-  camelotDistribution: Bucket[];
   genreDistribution: Bucket[];
   labelDistribution: Bucket[];
   artistDistribution: Bucket[];
@@ -409,7 +408,6 @@ export function computeTrackStats(
     bpmHistogram: createBpmHistogram(bpms),
     camelotHistogram: keyHistograms.camelot,
     scaleHistogram: keyHistograms.scale,
-    camelotDistribution: keyHistograms.camelot.filter((bucket) => bucket.count > 0),
     genreDistribution: histogram(tracks.flatMap((track) => (track.genre?.name ? [track.genre.name] : []))),
     labelDistribution,
     artistDistribution,

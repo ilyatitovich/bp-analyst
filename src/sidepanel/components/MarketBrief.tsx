@@ -1,6 +1,8 @@
 import { formatTrackKey } from "../../lib/analysis/camelot";
-import type { Bucket, TrackStats } from "../../lib/analysis/stats";
+import { BRIEF_STAT_HINTS } from "../../lib/constants/briefStatHints";
 import type { KeyNotation } from "../../lib/messaging/protocol";
+import type { ExtractionSnapshot } from "../../lib/types/track";
+import { cx } from "../../lib/utils/cx";
 import {
   coverageLabel,
   formatBpm,
@@ -8,117 +10,27 @@ import {
   formatShare,
 } from "../../lib/utils/format";
 import type { BeatportScopedFacet } from "../../lib/utils/page";
-import { BRIEF_STAT_HINTS } from "./briefStatHints";
-import { cx } from "./ui";
+import type { TrackAnalysis } from "../hooks/useTrackAnalysis";
+import { BriefStat } from "./BriefStat";
+import { ConcentrationGroup } from "./ConcentrationGroup";
 
-function BriefStat({
-  label,
-  value,
-  hint,
-  pressed,
-  disabled,
-  onClick,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  pressed?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-}) {
-  const className = cx(
-    "brief-stat",
-    !onClick && "brief-stat-static",
-    pressed && "selected",
-  );
-
-  const body = (
-    <>
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <span className="brief-stat-popup">{hint}</span>
-    </>
-  );
-
-  if (!onClick) {
-    return <div className={className}>{body}</div>;
-  }
-
-  return (
-    <button
-      className={className}
-      type="button"
-      aria-pressed={pressed}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      {body}
-    </button>
-  );
-}
-
-function ConcentrationGroup({
-  title,
-  share,
-  items,
-}: {
-  title: string;
-  share: number | null;
-  items: Bucket[];
-}) {
-  if (!items.length) return null;
-
-  return (
-    <div>
-      <p className="brief-group-label brief-group-heading">
-        <span>{title}</span>
-        <strong className="brief-group-share">{formatShare(share)}</strong>
-      </p>
-      <div className="brief-chips">
-        {items.map((item) => (
-          <span className="brief-chip brief-chip-static" key={item.label}>
-            <span>{item.label}</span>
-            <strong>{item.count}</strong>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
+export interface MarketBriefProps {
+  analysis: TrackAnalysis;
+  snapshot: ExtractionSnapshot | null;
+  keyNotation: KeyNotation;
+  scopedFacet: BeatportScopedFacet | null;
 }
 
 export function MarketBrief({
-  stats,
-  trackCount,
-  listCount,
-  complete,
-  exclusiveOnly,
-  hypeOnly,
-  mixTypes,
-  publishedWithinDays,
+  analysis,
+  snapshot,
   keyNotation,
   scopedFacet,
-  onToggleExclusive,
-  onToggleHype,
-  onToggleMixType,
-  onToggleFreshness,
-}: {
-  stats: TrackStats;
-  trackCount: number;
-  listCount?: number | null;
-  complete?: boolean;
-  exclusiveOnly: boolean;
-  hypeOnly: boolean;
-  mixTypes: string[];
-  publishedWithinDays: 7 | 30 | null;
-  keyNotation: KeyNotation;
-  scopedFacet: BeatportScopedFacet | null;
-  onToggleExclusive: () => void;
-  onToggleHype: () => void;
-  onToggleMixType: (mixType: string) => void;
-  onToggleFreshness: (days: 7 | 30) => void;
-}) {
-  const coverage = coverageLabel(trackCount, listCount, complete);
-  const selectedMixTypes = new Set(mixTypes);
+}: MarketBriefProps) {
+  const { stats, tracks, filters, toggleExclusive, toggleHype, toggleFilter, toggleFreshness } =
+    analysis;
+  const coverage = coverageLabel(tracks.length, snapshot?.listCount, snapshot?.complete);
+  const selectedMixTypes = new Set(filters.mixTypes);
 
   return (
     <section className="panel-card">
@@ -132,33 +44,33 @@ export function MarketBrief({
           label="Exclusive"
           value={formatShare(stats.exclusiveShare)}
           hint={BRIEF_STAT_HINTS.exclusive}
-          pressed={exclusiveOnly}
-          disabled={stats.exclusiveCount === 0 && !exclusiveOnly}
-          onClick={onToggleExclusive}
+          pressed={filters.includeExclusiveOnly}
+          disabled={stats.exclusiveCount === 0 && !filters.includeExclusiveOnly}
+          onClick={toggleExclusive}
         />
         <BriefStat
           label="Hype"
           value={formatShare(stats.hypeShare)}
           hint={BRIEF_STAT_HINTS.hype}
-          pressed={hypeOnly}
-          disabled={stats.hypeCount === 0 && !hypeOnly}
-          onClick={onToggleHype}
+          pressed={filters.includeHypeOnly}
+          disabled={stats.hypeCount === 0 && !filters.includeHypeOnly}
+          onClick={toggleHype}
         />
         <BriefStat
           label="Last 7 days"
           value={formatShare(stats.freshness7Share)}
           hint={BRIEF_STAT_HINTS.freshness7}
-          pressed={publishedWithinDays === 7}
-          disabled={stats.freshness7Count === 0 && publishedWithinDays !== 7}
-          onClick={() => onToggleFreshness(7)}
+          pressed={filters.publishedWithinDays === 7}
+          disabled={stats.freshness7Count === 0 && filters.publishedWithinDays !== 7}
+          onClick={() => toggleFreshness(7)}
         />
         <BriefStat
           label="Last 30 days"
           value={formatShare(stats.freshness30Share)}
           hint={BRIEF_STAT_HINTS.freshness30}
-          pressed={publishedWithinDays === 30}
-          disabled={stats.freshness30Count === 0 && publishedWithinDays !== 30}
-          onClick={() => onToggleFreshness(30)}
+          pressed={filters.publishedWithinDays === 30}
+          disabled={stats.freshness30Count === 0 && filters.publishedWithinDays !== 30}
+          onClick={() => toggleFreshness(30)}
         />
         <BriefStat
           label="BPM median"
@@ -207,7 +119,7 @@ export function MarketBrief({
                   className={cx("brief-chip", selected && "selected")}
                   aria-pressed={selected}
                   disabled={item.count === 0 && !selected}
-                  onClick={() => onToggleMixType(item.label)}
+                  onClick={() => toggleFilter("mixTypes", item.label)}
                 >
                   <span>{item.label}</span>
                   <strong>{item.count}</strong>
