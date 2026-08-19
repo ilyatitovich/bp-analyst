@@ -1,6 +1,27 @@
 import { headerStatus } from "../../lib/utils/format";
 import type { TrackFilters } from "../../lib/types/track";
 
+interface HeaderProps {
+  title: string;
+  refreshing: boolean;
+  showExtractionHelp: boolean;
+  hasSnapshot: boolean;
+  source?: string;
+  trackCount: number;
+  visibleCount: number;
+  filtersActive: boolean;
+  canExport: boolean;
+  filters: TrackFilters;
+  exclusiveCount: number;
+  hypeCount: number;
+  onResetFilters: () => void;
+  onRefresh: () => void;
+  onExport: () => void;
+  onTitleQueryChange: (value: string) => void;
+  onToggleExclusive: () => void;
+  onToggleHype: () => void;
+}
+
 export function Header({
   title,
   refreshing,
@@ -20,26 +41,7 @@ export function Header({
   onTitleQueryChange,
   onToggleExclusive,
   onToggleHype,
-}: {
-  title: string;
-  refreshing: boolean;
-  showExtractionHelp: boolean;
-  hasSnapshot: boolean;
-  source?: string;
-  trackCount: number;
-  visibleCount: number;
-  filtersActive: boolean;
-  canExport: boolean;
-  filters: TrackFilters;
-  exclusiveCount: number;
-  hypeCount: number;
-  onResetFilters: () => void;
-  onRefresh: () => void;
-  onExport: () => void;
-  onTitleQueryChange: (value: string) => void;
-  onToggleExclusive: () => void;
-  onToggleHype: () => void;
-}) {
+}: HeaderProps) {
   const status = headerStatus({
     refreshing,
     showExtractionHelp,
@@ -54,7 +56,7 @@ export function Header({
     <header className="panel-card header-card">
       <div>
         <p className="eyebrow">Beatport Analyst</p>
-        <h1>{title}</h1>
+        <h1 className="header-title">{title}</h1>
         <p className="muted">{status}</p>
       </div>
       <div className="header-actions">
@@ -73,7 +75,9 @@ export function Header({
       {trackCount ? (
         <div className="header-filters">
           <label className="header-search">
-            <span className="visually-hidden">Search title, mix, or artists</span>
+            <span className="visually-hidden">
+              Search title, mix, or artists
+            </span>
             <input
               type="search"
               value={filters.titleQuery}

@@ -160,6 +160,10 @@ select {
   background: #11151b;
 }
 
+.header-title {
+  margin-bottom: 0.25rem;
+}
+
 .panel-stat span,
 .eyebrow,
 .muted,
