@@ -52,7 +52,7 @@ pnpm build:firefox
 pnpm zip            # packaged zip for Edge; also zip:chrome / zip:firefox
 ```
 
-Load the unpacked output from `.output/` (for example `.output/chrome-mv3` or `.output/edge-mv3`) via the browser’s extension page:
+Load the unpacked output from `.output/` (for example `.output/chrome-mv3-0.1.0` or `.output/edge-mv3-0.1.0`) via the browser’s extension page:
 
 - Chrome: `chrome://extensions` → Developer mode → Load unpacked
 - Edge: `edge://extensions` → Developer mode → Load unpacked
@@ -105,7 +105,7 @@ assets/
 | --- | --- |
 | `pnpm test` | Vitest (parsers, stats, filters, CSV) |
 | `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build |
-| `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox` | Packaged zip named `beatport-analyst` |
+| `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox` | Packaged zip named `beatport-analyst-<version>-<browser>.zip` |
 
 ## Permissions
 

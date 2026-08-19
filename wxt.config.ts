@@ -1,8 +1,10 @@
 import { defineConfig } from 'wxt';
+import { version } from './package.json';
 
 export default defineConfig({
   manifestVersion: 3,
   modules: ['@wxt-dev/module-react'],
+  outDirTemplate: `{{browser}}-mv{{manifestVersion}}{{modeSuffix}}-${version}`,
   webExt: {
     binaries: {
       edge: '/usr/bin/microsoft-edge-stable',
@@ -13,7 +15,7 @@ export default defineConfig({
     name: 'Beatport Analyst',
     description:
       'Analyze Beatport lists for BPM, key, and label composition.',
-    version: '0.1.0',
+    version,
     minimum_chrome_version: browser === 'firefox' ? undefined : '116',
     permissions: browser === 'firefox' ? ['storage'] : ['storage', 'sidePanel', 'tabs'],
     host_permissions: ['*://*.beatport.com/*'],
@@ -49,6 +51,8 @@ export default defineConfig({
   },
   zip: {
     name: 'beatport-analyst',
+    artifactTemplate: '{{name}}-{{packageVersion}}-{{browser}}{{modeSuffix}}.zip',
+    sourcesTemplate: '{{name}}-{{packageVersion}}-sources{{modeSuffix}}.zip',
   },
   suppressWarnings: {
     firefoxDataCollection: true,
