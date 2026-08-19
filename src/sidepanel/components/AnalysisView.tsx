@@ -65,6 +65,7 @@ export function AnalysisView({
         hypeOnly={filters.includeHypeOnly}
         mixTypes={filters.mixTypes}
         publishedWithinDays={filters.publishedWithinDays}
+        keyNotation={keyNotation}
         onToggleExclusive={onToggleExclusive}
         onToggleHype={onToggleHype}
         onToggleMixType={(mixType) => onToggleFilter("mixTypes", mixType)}

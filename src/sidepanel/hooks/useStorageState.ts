@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { browser } from "wxt/browser";
 import {
+  DEFAULT_KEY_NOTATION,
   STORAGE_KEYS,
   type ExtractionErrorState,
   type KeyNotation,
@@ -12,7 +13,8 @@ export function useStorageState() {
   const [snapshot, setSnapshot] = useState<ExtractionSnapshot | null>(null);
   const [extractionError, setExtractionError] =
     useState<ExtractionErrorState | null>(null);
-  const [keyNotation, setKeyNotationState] = useState<KeyNotation>("camelot");
+  const [keyNotation, setKeyNotationState] =
+    useState<KeyNotation>(DEFAULT_KEY_NOTATION);
 
   useEffect(() => {
     let active = true;
@@ -31,7 +33,7 @@ export function useStorageState() {
         );
         setKeyNotationState(
           (stored[STORAGE_KEYS.keyNotation] as KeyNotation | undefined) ??
-            "camelot",
+            DEFAULT_KEY_NOTATION,
         );
         setExtractionError(
           (stored[STORAGE_KEYS.extractionError] as
@@ -55,7 +57,7 @@ export function useStorageState() {
         setKeyNotationState(
           (changes[STORAGE_KEYS.keyNotation].newValue as
             | KeyNotation
-            | undefined) ?? "camelot",
+            | undefined) ?? DEFAULT_KEY_NOTATION,
         );
       }
       if (changes[STORAGE_KEYS.extractionError]) {

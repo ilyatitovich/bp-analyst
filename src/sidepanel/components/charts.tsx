@@ -137,18 +137,18 @@ export function KeyHistogram({
           />
           <div className="segmented" role="group" aria-label="Key notation">
             <button
-              className={notation === "camelot" ? "active" : undefined}
-              onClick={() => onNotationChange("camelot")}
-              type="button"
-            >
-              Camelot
-            </button>
-            <button
               className={notation === "scale" ? "active" : undefined}
               onClick={() => onNotationChange("scale")}
               type="button"
             >
               Scale
+            </button>
+            <button
+              className={notation === "camelot" ? "active" : undefined}
+              onClick={() => onNotationChange("camelot")}
+              type="button"
+            >
+              Camelot
             </button>
           </div>
         </>

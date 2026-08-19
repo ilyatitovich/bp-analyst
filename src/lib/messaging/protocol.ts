@@ -13,7 +13,9 @@ export type ExtractionErrorState = {
   at: string;
 };
 
-export type KeyNotation = 'camelot' | 'scale';
+export type KeyNotation = 'scale' | 'camelot';
+
+export const DEFAULT_KEY_NOTATION: KeyNotation = 'scale';
 
 export type TracksExtractedMessage = {
   type: 'TRACKS_EXTRACTED';

@@ -1,4 +1,6 @@
+import { formatTrackKey } from "../../lib/analysis/camelot";
 import type { Bucket, TrackStats } from "../../lib/analysis/stats";
+import type { KeyNotation } from "../../lib/messaging/protocol";
 import {
   coverageLabel,
   formatBpm,
@@ -91,6 +93,7 @@ export function MarketBrief({
   hypeOnly,
   mixTypes,
   publishedWithinDays,
+  keyNotation,
   onToggleExclusive,
   onToggleHype,
   onToggleMixType,
@@ -104,6 +107,7 @@ export function MarketBrief({
   hypeOnly: boolean;
   mixTypes: string[];
   publishedWithinDays: 7 | 30 | null;
+  keyNotation: KeyNotation;
   onToggleExclusive: () => void;
   onToggleHype: () => void;
   onToggleMixType: (mixType: string) => void;
@@ -153,7 +157,9 @@ export function MarketBrief({
           value={formatShare(stats.keyConcentrationShare)}
           hint={
             stats.keyConcentrationKeys.length
-              ? stats.keyConcentrationKeys.join(" · ")
+              ? stats.keyConcentrationKeys
+                  .map((key) => formatTrackKey(key, null, keyNotation) ?? key)
+                  .join(" · ")
               : undefined
           }
         />
