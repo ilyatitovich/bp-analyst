@@ -7,19 +7,22 @@ import {
   formatBpmRange,
   formatShare,
 } from "../../lib/utils/format";
+import { BRIEF_STAT_HINTS } from "./briefStatHints";
 import { cx } from "./ui";
 
 function BriefStat({
   label,
   value,
   hint,
+  detail,
   pressed,
   disabled,
   onClick,
 }: {
   label: string;
   value: string;
-  hint?: string;
+  hint: string;
+  detail?: string;
   pressed?: boolean;
   disabled?: boolean;
   onClick?: () => void;
@@ -34,7 +37,8 @@ function BriefStat({
     <>
       <span>{label}</span>
       <strong>{value}</strong>
-      {hint ? <span className="brief-stat-hint">{hint}</span> : null}
+      {detail ? <span className="brief-stat-hint">{detail}</span> : null}
+      <span className="brief-stat-popup">{hint}</span>
     </>
   );
 
@@ -127,6 +131,7 @@ export function MarketBrief({
         <BriefStat
           label="Exclusive"
           value={formatShare(stats.exclusiveShare)}
+          hint={BRIEF_STAT_HINTS.exclusive}
           pressed={exclusiveOnly}
           disabled={stats.exclusiveCount === 0 && !exclusiveOnly}
           onClick={onToggleExclusive}
@@ -134,6 +139,7 @@ export function MarketBrief({
         <BriefStat
           label="Hype"
           value={formatShare(stats.hypeShare)}
+          hint={BRIEF_STAT_HINTS.hype}
           pressed={hypeOnly}
           disabled={stats.hypeCount === 0 && !hypeOnly}
           onClick={onToggleHype}
@@ -141,6 +147,7 @@ export function MarketBrief({
         <BriefStat
           label="Last 7 days"
           value={formatShare(stats.freshness7Share)}
+          hint={BRIEF_STAT_HINTS.freshness7}
           pressed={publishedWithinDays === 7}
           disabled={stats.freshness7Count === 0 && publishedWithinDays !== 7}
           onClick={() => onToggleFreshness(7)}
@@ -148,6 +155,7 @@ export function MarketBrief({
         <BriefStat
           label="Last 30 days"
           value={formatShare(stats.freshness30Share)}
+          hint={BRIEF_STAT_HINTS.freshness30}
           pressed={publishedWithinDays === 30}
           disabled={stats.freshness30Count === 0 && publishedWithinDays !== 30}
           onClick={() => onToggleFreshness(30)}
@@ -155,7 +163,8 @@ export function MarketBrief({
         <BriefStat
           label="Top 3 keys"
           value={formatShare(stats.keyConcentrationShare)}
-          hint={
+          hint={BRIEF_STAT_HINTS.topKeys}
+          detail={
             stats.keyConcentrationKeys.length
               ? stats.keyConcentrationKeys
                   .map((key) => formatTrackKey(key, null, keyNotation) ?? key)
@@ -163,10 +172,15 @@ export function MarketBrief({
               : undefined
           }
         />
-        <BriefStat label="BPM median" value={formatBpm(stats.bpmMedian)} />
+        <BriefStat
+          label="BPM median"
+          value={formatBpm(stats.bpmMedian)}
+          hint={BRIEF_STAT_HINTS.bpmMedian}
+        />
         <BriefStat
           label="BPM p25–p75"
           value={formatBpmRange(stats.bpmP25, stats.bpmP75)}
+          hint={BRIEF_STAT_HINTS.bpmIqr}
         />
       </div>
 
