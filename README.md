@@ -52,7 +52,7 @@ pnpm build:firefox
 pnpm zip            # packaged zip for Edge; also zip:chrome / zip:firefox
 ```
 
-Load the unpacked output from `.output/` (for example `.output/chrome-mv3-0.1.0` or `.output/edge-mv3-0.1.0`) via the browser’s extension page:
+Download a packaged zip for your current browser from [ilyatitov.vercel.app/api/cases/beatport-analyst/download](https://ilyatitov.vercel.app/api/cases/beatport-analyst/download). Unzip it, or load the unpacked output from `.output/` (for example `.output/chrome-mv3-0.1.0` or `.output/edge-mv3-0.1.0`), via the browser’s extension page:
 
 - Chrome: `chrome://extensions` → Developer mode → Load unpacked
 - Edge: `edge://extensions` → Developer mode → Load unpacked
