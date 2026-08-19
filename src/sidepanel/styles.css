@@ -394,6 +394,42 @@ h1 {
   min-width: 0;
 }
 
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.filter-count {
+  display: none;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid #2f6f55;
+  border-radius: 999px;
+  background: rgba(126, 243, 173, 0.12);
+  color: #b8f5d0;
+  font-size: 11px;
+  line-height: 22px;
+  text-align: center;
+}
+
+.accordion-card.collapsed .filter-summary {
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.accordion-card.collapsed .filter-chips {
+  display: none;
+}
+
+.accordion-card.collapsed .filter-count {
+  display: inline-block;
+}
+
 .filter-chip,
 .filter-reset {
   min-height: 22px;
