@@ -1,5 +1,6 @@
 import { headerStatus } from "../../lib/utils/format";
 import type { TrackFilters } from "../../lib/types/track";
+import { AboutHelpButton } from "./AboutHelp";
 
 interface HeaderProps {
   title: string;
@@ -59,7 +60,10 @@ export function Header({
   return (
     <header className="panel-card header-card">
       <div>
-        <p className="eyebrow">Beatport Analyst</p>
+        <div className="header-brand">
+          <p className="eyebrow">Beatport Analyst</p>
+          <AboutHelpButton />
+        </div>
         <h1 className="header-title">{title}</h1>
         <p className="muted">{status}</p>
       </div>

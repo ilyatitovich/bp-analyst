@@ -119,6 +119,10 @@ Nothing is sent off-device. Previews play Beatport’s own sample URLs in the si
 
 [WXT](https://wxt.dev) (Manifest V3), React 19, TypeScript, Vitest. Targets Chrome 116+, Edge, and Firefox 128+.
 
+## Support
+
+If Beatport Analyst is useful, [here are a few ways to support the project](https://ilyatitov.vercel.app/support). Totally optional.
+
 ## License
 
 ISC
