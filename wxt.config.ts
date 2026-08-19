@@ -51,8 +51,8 @@ export default defineConfig({
   },
   zip: {
     name: 'beatport-analyst',
-    artifactTemplate: '{{name}}-{{packageVersion}}-{{browser}}{{modeSuffix}}.zip',
-    sourcesTemplate: '{{name}}-{{packageVersion}}-sources{{modeSuffix}}.zip',
+    artifactTemplate: '{{name}}-{{packageVersion}}-{{browser}}.zip',
+    sourcesTemplate: '{{name}}-{{packageVersion}}-sources.zip',
   },
   suppressWarnings: {
     firefoxDataCollection: true,
