@@ -178,6 +178,7 @@ export function DistributionChart({
   return (
     <CollapsiblePanel
       title={title}
+      defaultOpen={false}
       headerExtra={
         <FilterChips
           values={selectedLabels}
@@ -242,6 +243,7 @@ export function CountTable({
   return (
     <CollapsiblePanel
       title={title}
+      defaultOpen={false}
       headerExtra={
         <FilterChips
           values={selectedLabels}
