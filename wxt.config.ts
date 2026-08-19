@@ -53,6 +53,7 @@ export default defineConfig({
     name: 'beatport-analyst',
     artifactTemplate: '{{name}}-{{packageVersion}}-{{browser}}.zip',
     sourcesTemplate: '{{name}}-{{packageVersion}}-sources.zip',
+    excludeSources: ['todo.txt'],
   },
   suppressWarnings: {
     firefoxDataCollection: true,
