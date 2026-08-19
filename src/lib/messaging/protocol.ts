@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   keyNotation: 'beatportAnalyst.keyNotation',
   refreshToken: 'beatportAnalyst.refreshToken',
   extractionError: 'beatportAnalyst.extractionError',
+  skipNextAutoRefresh: 'beatportAnalyst.skipNextAutoRefresh',
 } as const;
 
 export type ExtractionErrorState = {
@@ -25,6 +26,7 @@ export type TracksExtractedMessage = {
 export type RequestRefreshMessage = {
   type: 'REQUEST_REFRESH';
   force?: boolean;
+  auto?: boolean;
 };
 
 export type ExtractionFailedMessage = {

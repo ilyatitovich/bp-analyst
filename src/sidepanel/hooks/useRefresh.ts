@@ -14,16 +14,24 @@ export function useRefresh(
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
 
-  const requestRefresh = useCallback(async (force = false) => {
+  const requestRefresh = useCallback(async (force = false, auto = false) => {
     refreshStartedAt.current =
       snapshotRef.current?.extractedAt ?? new Date().toISOString();
-    setRefreshFailed(false);
-    setRefreshing(true);
+    if (!auto) {
+      setRefreshFailed(false);
+      setRefreshing(true);
+    }
     try {
       const result = (await browser.runtime.sendMessage({
         type: "REQUEST_REFRESH",
         force,
-      })) as { reloaded?: boolean } | undefined;
+        auto,
+      })) as { reloaded?: boolean; skipped?: boolean } | undefined;
+      if (result?.skipped) return;
+      if (auto) {
+        setRefreshFailed(false);
+        if (result?.reloaded) setRefreshing(true);
+      }
       setBeatportReloadAttempted(Boolean(result?.reloaded));
       if (!result?.reloaded) {
         setRefreshing(false);
@@ -36,7 +44,7 @@ export function useRefresh(
 
   useEffect(() => {
     const port = browser.runtime.connect({ name: "bp-analyst-panel" });
-    void requestRefresh();
+    void requestRefresh(false, true);
     return () => port.disconnect();
   }, [requestRefresh]);
 
