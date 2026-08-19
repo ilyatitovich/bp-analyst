@@ -66,23 +66,40 @@ export type NormalizeContext = {
   source: TrackSnapshotSource;
 };
 
+function blankToNull(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
 function normalizePeople(values: RawNamed[] | undefined): TrackPerson[] {
-  return (values ?? [])
-    .filter((value): value is Required<Pick<RawNamed, 'name'>> & RawNamed => Boolean(value?.name))
-    .map((value) => ({
-      id: value.id,
-      name: value.name!,
-      slug: value.slug ?? null,
-    }));
+  return (values ?? []).flatMap((value) => {
+    const name = blankToNull(value?.name);
+    if (!name) return [];
+    return [
+      {
+        id: value.id,
+        name,
+        slug: blankToNull(value.slug),
+      },
+    ];
+  });
 }
 
 function normalizeFacet(value: RawNamed | null | undefined): TrackFacet | null {
-  if (!value?.name) return null;
+  const name = blankToNull(value?.name);
+  if (!name || !value) return null;
   return {
     id: value.id,
-    name: value.name,
-    slug: value.slug ?? null,
+    name,
+    slug: blankToNull(value.slug),
   };
+}
+
+function normalizeBpm(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0 || value >= 400) {
+    return null;
+  }
+  return value;
 }
 
 function asHttpUrl(value: unknown): string | null {
@@ -127,7 +144,24 @@ function normalizeArtworkUrl(image: RawImage | null | undefined): string | null 
 export function looksLikeRawTrack(value: unknown): value is RawTrack {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as RawTrack;
-  return typeof candidate.id === 'number' && typeof candidate.name === 'string' && 'bpm' in candidate;
+  return (
+    typeof candidate.id === 'number' &&
+    Number.isFinite(candidate.id) &&
+    candidate.id > 0 &&
+    typeof candidate.name === 'string' &&
+    candidate.name.trim().length > 0 &&
+    'bpm' in candidate
+  );
+}
+
+export function isUsableTrack(track: Track): boolean {
+  return (
+    Number.isFinite(track.id) &&
+    track.id > 0 &&
+    Boolean(track.title.trim()) &&
+    track.artists.some((artist) => artist.name.trim()) &&
+    normalizeBpm(track.bpm) !== null
+  );
 }
 
 export function normalizeTrack(
@@ -137,33 +171,38 @@ export function normalizeTrack(
 ): Track | null {
   if (!looksLikeRawTrack(rawTrack)) return null;
 
-  const pageTrackUrl = rawTrack.slug ? `https://www.beatport.com/track/${rawTrack.slug}/${rawTrack.id}` : null;
+  const title = blankToNull(rawTrack.name);
+  const artists = normalizePeople(rawTrack.artists);
+  const bpm = normalizeBpm(rawTrack.bpm);
+  if (!title || !artists.length || bpm === null) return null;
+
+  const slug = blankToNull(rawTrack.slug);
+  const pageTrackUrl = slug ? `https://www.beatport.com/track/${slug}/${rawTrack.id}` : null;
   const previewWindow = normalizePreviewWindow(rawTrack);
+  const priceDisplay = blankToNull(rawTrack.price?.display);
 
   return {
     id: rawTrack.id!,
     position,
-    title: rawTrack.name!,
-    mixName: rawTrack.mix_name ?? '',
-    artists: normalizePeople(rawTrack.artists),
+    title,
+    mixName: rawTrack.mix_name?.trim() ?? '',
+    artists,
     remixers: normalizePeople(rawTrack.remixers),
-    bpm: typeof rawTrack.bpm === 'number' ? rawTrack.bpm : null,
-    keyName: rawTrack.key?.name ?? null,
+    bpm,
+    keyName: blankToNull(rawTrack.key?.name),
     camelot: toCamelot(rawTrack.key?.camelot_number, rawTrack.key?.camelot_letter),
     genre: normalizeFacet(rawTrack.genre),
     subGenre: normalizeFacet(rawTrack.sub_genre),
     label: normalizeFacet(rawTrack.release?.label),
-    releaseName: rawTrack.release?.name ?? null,
-    length: rawTrack.length ?? null,
-    lengthMs: rawTrack.length_ms ?? null,
-    publishDate: rawTrack.publish_date ?? null,
-    price:
-      rawTrack.price?.display ??
-      (typeof rawTrack.price?.value === 'number' ? String(rawTrack.price.value) : null),
+    releaseName: blankToNull(rawTrack.release?.name),
+    length: blankToNull(rawTrack.length),
+    lengthMs: asMs(rawTrack.length_ms),
+    publishDate: blankToNull(rawTrack.publish_date),
+    price: priceDisplay ?? (typeof rawTrack.price?.value === 'number' ? String(rawTrack.price.value) : null),
     exclusive: Boolean(rawTrack.exclusive),
     hype: Boolean(rawTrack.is_hype),
-    isrc: rawTrack.isrc ?? null,
-    slug: rawTrack.slug ?? null,
+    isrc: blankToNull(rawTrack.isrc),
+    slug,
     trackUrl: pageTrackUrl,
     previewUrl: normalizePreviewUrl(rawTrack),
     previewStartMs: previewWindow.start,
@@ -205,6 +244,7 @@ export function uniqueTracks(tracks: Track[]): Track[] {
   const idOrder: number[] = [];
 
   for (const track of tracks) {
+    if (!isUsableTrack(track)) continue;
     const existing = betterById.get(track.id);
     if (!existing) {
       betterById.set(track.id, track);
