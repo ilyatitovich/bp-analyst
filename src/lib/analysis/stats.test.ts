@@ -172,7 +172,11 @@ describe('computeTrackStats', () => {
       { ...baseTrack, id: 5, bpm: 128, camelot: '4A', keyName: 'F Minor' },
     ]);
 
-    expect(stats.keyConcentrationKeys).toEqual(['8A', '11B', '4A']);
+    expect(stats.keyConcentration).toEqual([
+      { label: '8A', count: 2 },
+      { label: '11B', count: 1 },
+      { label: '4A', count: 1 },
+    ]);
     expect(stats.keyConcentrationShare).toBe(0.8);
     expect(stats.bpmP25).toBe(124);
     expect(stats.bpmMedian).toBe(128);

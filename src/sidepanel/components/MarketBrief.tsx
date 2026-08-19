@@ -14,7 +14,6 @@ function BriefStat({
   label,
   value,
   hint,
-  detail,
   pressed,
   disabled,
   onClick,
@@ -22,7 +21,6 @@ function BriefStat({
   label: string;
   value: string;
   hint: string;
-  detail?: string;
   pressed?: boolean;
   disabled?: boolean;
   onClick?: () => void;
@@ -37,7 +35,6 @@ function BriefStat({
     <>
       <span>{label}</span>
       <strong>{value}</strong>
-      {detail ? <span className="brief-stat-hint">{detail}</span> : null}
       <span className="brief-stat-popup">{hint}</span>
     </>
   );
@@ -161,18 +158,6 @@ export function MarketBrief({
           onClick={() => onToggleFreshness(30)}
         />
         <BriefStat
-          label="Top 3 keys"
-          value={formatShare(stats.keyConcentrationShare)}
-          hint={BRIEF_STAT_HINTS.topKeys}
-          detail={
-            stats.keyConcentrationKeys.length
-              ? stats.keyConcentrationKeys
-                  .map((key) => formatTrackKey(key, null, keyNotation) ?? key)
-                  .join(" · ")
-              : undefined
-          }
-        />
-        <BriefStat
           label="BPM median"
           value={formatBpm(stats.bpmMedian)}
           hint={BRIEF_STAT_HINTS.bpmMedian}
@@ -185,6 +170,14 @@ export function MarketBrief({
       </div>
 
       <div className="brief-groups">
+        <ConcentrationGroup
+          title="Top 3 keys"
+          share={stats.keyConcentrationShare}
+          items={stats.keyConcentration.map((item) => ({
+            ...item,
+            label: formatTrackKey(item.label, null, keyNotation) ?? item.label,
+          }))}
+        />
         <ConcentrationGroup
           title="Top 5 labels"
           share={stats.labelConcentrationShare}

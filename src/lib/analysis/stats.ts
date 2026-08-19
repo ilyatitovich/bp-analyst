@@ -32,7 +32,7 @@ export type TrackStats = {
   freshness30Share: number | null;
   mixTypeHistogram: Bucket[];
   lengthHistogram: Bucket[];
-  keyConcentrationKeys: string[];
+  keyConcentration: Bucket[];
   keyConcentrationShare: number | null;
   labelConcentration: Bucket[];
   labelConcentrationShare: number | null;
@@ -400,7 +400,7 @@ export function computeTrackStats(
     freshness30Share: share(freshness30Count, tracks.length),
     mixTypeHistogram: countedHistogram(mixLabels, MIX_TYPES),
     lengthHistogram: countedHistogram(lengthLabels, LENGTH_BANDS),
-    keyConcentrationKeys: topKeys.map((bucket) => bucket.label),
+    keyConcentration: topKeys,
     keyConcentrationShare: share(top3Count, keyedTotal),
     labelConcentration: labels.items,
     labelConcentrationShare: labels.share,

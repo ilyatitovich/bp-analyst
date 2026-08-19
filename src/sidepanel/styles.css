@@ -271,14 +271,6 @@ select {
   }
 }
 
-.brief-stat-hint {
-  display: block;
-  margin-top: 2px;
-  color: #8f9aac;
-  font-size: 10px;
-  line-height: 1.3;
-}
-
 .brief-groups {
   display: grid;
   gap: 12px;
