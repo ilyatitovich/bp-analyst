@@ -8,6 +8,7 @@ import {
   formatBpm,
   formatBpmRange,
 } from "../../lib/utils/format";
+import { scopedFacetFromPageUrl } from "../../lib/utils/page";
 import { ColumnHistogram, CountTable, DistributionChart, KeyHistogram } from "./charts";
 import { MarketBrief } from "./MarketBrief";
 import { TrackTable } from "./TrackTable";
@@ -23,6 +24,7 @@ export function AnalysisView({
   keyNotation,
   listCount,
   complete,
+  pageUrl,
   currentTrackId,
   playing,
   onKeyNotationChange,
@@ -43,6 +45,7 @@ export function AnalysisView({
   keyNotation: KeyNotation;
   listCount?: number | null;
   complete?: boolean;
+  pageUrl?: string | null;
   currentTrackId: number | null;
   playing: boolean;
   onKeyNotationChange: (notation: KeyNotation) => void;
@@ -54,6 +57,11 @@ export function AnalysisView({
   onSort: (column: TrackSortColumn) => void;
   onPlayTrack: (track: Track) => void;
 }) {
+  const scopedFacet = scopedFacetFromPageUrl(pageUrl);
+  const showGenrePanel = scopedFacet !== "genre" && stats.genreDistribution.length > 1;
+  const showLabelPanel = scopedFacet !== "label" && stats.labelDistribution.length > 1;
+  const showArtistPanel = scopedFacet !== "artist" && stats.artistDistribution.length > 1;
+
   return (
     <>
       <MarketBrief
@@ -66,6 +74,7 @@ export function AnalysisView({
         mixTypes={filters.mixTypes}
         publishedWithinDays={filters.publishedWithinDays}
         keyNotation={keyNotation}
+        scopedFacet={scopedFacet}
         onToggleExclusive={onToggleExclusive}
         onToggleHype={onToggleHype}
         onToggleMixType={(mixType) => onToggleFilter("mixTypes", mixType)}
@@ -110,33 +119,37 @@ export function AnalysisView({
         modeKey={filteredStats.camelotMode}
       />
 
-      {(stats.genreDistribution.length > 1 ||
-        stats.labelDistribution.length > 1 ||
-        stats.artistDistribution.length > 1) && (
+      {(showGenrePanel || showLabelPanel || showArtistPanel) && (
         <section className="chart-grid">
-          <DistributionChart
-            title="Genres"
-            items={stats.genreDistribution}
-            selectedLabels={filters.genreNames}
-            onToggle={(label) => onToggleFilter("genreNames", label)}
-            onReset={() => onClearFilter("genreNames")}
-          />
-          <CountTable
-            title="Labels"
-            nameHeader="Label"
-            items={stats.labelDistribution}
-            selectedLabels={filters.labelNames}
-            onToggle={(label) => onToggleFilter("labelNames", label)}
-            onReset={() => onClearFilter("labelNames")}
-          />
-          <CountTable
-            title="Artists"
-            nameHeader="Artist"
-            items={stats.artistDistribution}
-            selectedLabels={filters.artistNames}
-            onToggle={(label) => onToggleFilter("artistNames", label)}
-            onReset={() => onClearFilter("artistNames")}
-          />
+          {showGenrePanel ? (
+            <DistributionChart
+              title="Genres"
+              items={stats.genreDistribution}
+              selectedLabels={filters.genreNames}
+              onToggle={(label) => onToggleFilter("genreNames", label)}
+              onReset={() => onClearFilter("genreNames")}
+            />
+          ) : null}
+          {showLabelPanel ? (
+            <CountTable
+              title="Labels"
+              nameHeader="Label"
+              items={stats.labelDistribution}
+              selectedLabels={filters.labelNames}
+              onToggle={(label) => onToggleFilter("labelNames", label)}
+              onReset={() => onClearFilter("labelNames")}
+            />
+          ) : null}
+          {showArtistPanel ? (
+            <CountTable
+              title="Artists"
+              nameHeader="Artist"
+              items={stats.artistDistribution}
+              selectedLabels={filters.artistNames}
+              onToggle={(label) => onToggleFilter("artistNames", label)}
+              onReset={() => onClearFilter("artistNames")}
+            />
+          ) : null}
         </section>
       )}
 

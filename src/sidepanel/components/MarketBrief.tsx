@@ -7,6 +7,7 @@ import {
   formatBpmRange,
   formatShare,
 } from "../../lib/utils/format";
+import type { BeatportScopedFacet } from "../../lib/utils/page";
 import { BRIEF_STAT_HINTS } from "./briefStatHints";
 import { cx } from "./ui";
 
@@ -95,6 +96,7 @@ export function MarketBrief({
   mixTypes,
   publishedWithinDays,
   keyNotation,
+  scopedFacet,
   onToggleExclusive,
   onToggleHype,
   onToggleMixType,
@@ -109,6 +111,7 @@ export function MarketBrief({
   mixTypes: string[];
   publishedWithinDays: 7 | 30 | null;
   keyNotation: KeyNotation;
+  scopedFacet: BeatportScopedFacet | null;
   onToggleExclusive: () => void;
   onToggleHype: () => void;
   onToggleMixType: (mixType: string) => void;
@@ -178,16 +181,20 @@ export function MarketBrief({
             label: formatTrackKey(item.label, null, keyNotation) ?? item.label,
           }))}
         />
-        <ConcentrationGroup
-          title="Top 5 labels"
-          share={stats.labelConcentrationShare}
-          items={stats.labelConcentration}
-        />
-        <ConcentrationGroup
-          title="Top 5 artists"
-          share={stats.artistConcentrationShare}
-          items={stats.artistConcentration}
-        />
+        {scopedFacet === "label" ? null : (
+          <ConcentrationGroup
+            title="Top 5 labels"
+            share={stats.labelConcentrationShare}
+            items={stats.labelConcentration}
+          />
+        )}
+        {scopedFacet === "artist" ? null : (
+          <ConcentrationGroup
+            title="Top 5 artists"
+            share={stats.artistConcentrationShare}
+            items={stats.artistConcentration}
+          />
+        )}
         <div>
           <p className="brief-group-label">Mix type</p>
           <div className="brief-chips">

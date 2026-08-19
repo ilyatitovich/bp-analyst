@@ -109,8 +109,9 @@ select {
 }
 
 .support-card {
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   border-color: #4a372e;
   background: #1c1714;
 }
@@ -140,6 +141,11 @@ select {
   color: #edf1f7;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 12px;
+}
+
+.support-email-link {
+  color: inherit;
+  text-decoration: none;
 }
 
 .copy-email-btn {

@@ -66,6 +66,7 @@ export function App() {
             keyNotation={keyNotation}
             listCount={snapshot?.listCount}
             complete={snapshot?.complete}
+            pageUrl={snapshot?.pageUrl}
             currentTrackId={player.currentTrack?.id ?? null}
             playing={player.playing}
             onKeyNotationChange={setKeyNotation}

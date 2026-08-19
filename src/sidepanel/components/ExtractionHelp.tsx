@@ -30,7 +30,11 @@ function CopyEmailButton({ email }: { email: string }) {
 
   return (
     <div className="support-email-row">
-      <span className="support-email">{email}</span>
+      <span className="support-email">
+        <a className="support-email-link" href={`mailto:${email}`}>
+          {email}
+        </a>
+      </span>
       <button
         type="button"
         className="copy-email-btn"
