@@ -44,12 +44,17 @@ function track(id: number, position: number, extras: Partial<Track> = {}): Track
   };
 }
 
-function snapshot(tracks: Track[], source: ExtractionSnapshot['source'] = 'api-payload'): ExtractionSnapshot {
+function snapshot(
+  tracks: Track[],
+  source: ExtractionSnapshot['source'] = 'api-payload',
+  coverage: Pick<ExtractionSnapshot, 'listCount' | 'complete'> = {},
+): ExtractionSnapshot {
   return {
     ...context,
     source,
     trackCount: tracks.length,
     tracks,
+    ...coverage,
   };
 }
 
@@ -103,6 +108,26 @@ describe('mergeSnapshots', () => {
       { artists: 'Rafael', mixName: 'Radio Edit' },
       { artists: 'Other Artist', mixName: 'Extended Mix' },
     ]);
+  });
+
+  it('carries list coverage across merged pages', () => {
+    const current = snapshot(
+      Array.from({ length: 25 }, (_, index) => track(index + 1, index + 1)),
+      'api-payload',
+      { listCount: 40, complete: false },
+    );
+    const incoming = snapshot(
+      Array.from({ length: 15 }, (_, index) => track(index + 26, index + 1)),
+      'api-payload',
+      { listCount: 40, complete: false },
+    );
+
+    const merged = mergeSnapshots(current, incoming);
+    expect(merged).toMatchObject({
+      trackCount: 40,
+      listCount: 40,
+      complete: true,
+    });
   });
 });
 

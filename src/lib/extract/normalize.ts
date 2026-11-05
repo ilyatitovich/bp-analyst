@@ -282,9 +282,10 @@ export function uniqueTracks(tracks: Track[]): Track[] {
 export function buildSnapshot(
   tracks: Track[],
   context: NormalizeContext,
+  coverage?: { listCount?: number | null; complete?: boolean },
 ): ExtractionSnapshot {
   const unique = uniqueTracks(tracks);
-  return {
+  const snapshot: ExtractionSnapshot = {
     pageUrl: context.pageUrl,
     pageTitle: context.pageTitle,
     extractedAt: new Date().toISOString(),
@@ -292,4 +293,13 @@ export function buildSnapshot(
     trackCount: unique.length,
     tracks: unique,
   };
+
+  if (coverage?.listCount !== undefined) {
+    snapshot.listCount = coverage.listCount;
+  }
+  if (coverage?.complete !== undefined) {
+    snapshot.complete = coverage.complete;
+  }
+
+  return snapshot;
 }

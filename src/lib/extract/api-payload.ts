@@ -1,3 +1,4 @@
+import { readCatalogCoverage } from './coverage';
 import { buildSnapshot, looksLikeRawTrack, normalizeTrack, type NormalizeContext } from './normalize';
 import type { ExtractionSnapshot } from '../types/track';
 
@@ -27,5 +28,12 @@ export function extractSnapshotFromApiPayload(
     .filter((track): track is NonNullable<typeof track> => track !== null);
 
   if (!tracks.length) return null;
-  return buildSnapshot(tracks, context);
+
+  const snapshot = buildSnapshot(tracks, context);
+  const coverage = readCatalogCoverage(payload, snapshot.trackCount);
+  if (!coverage) return snapshot;
+
+  snapshot.listCount = coverage.listCount;
+  snapshot.complete = coverage.complete;
+  return snapshot;
 }

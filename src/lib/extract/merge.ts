@@ -1,3 +1,4 @@
+import { mergeCoverage } from './coverage';
 import { buildSnapshot, trackRichness } from './normalize';
 import type { ExtractionSnapshot, Track } from '../types/track';
 
@@ -17,17 +18,28 @@ export function mergeSnapshots(
 ): ExtractionSnapshot | null {
   if (!incoming) return current;
   if (!current || current.pageUrl !== incoming.pageUrl) {
-    return buildSnapshot(incoming.tracks, {
-      pageUrl: incoming.pageUrl,
-      pageTitle: incoming.pageTitle,
-      source: incoming.source,
-    });
+    return buildSnapshot(
+      incoming.tracks,
+      {
+        pageUrl: incoming.pageUrl,
+        pageTitle: incoming.pageTitle,
+        source: incoming.source,
+      },
+      {
+        listCount: incoming.listCount,
+        complete: incoming.complete,
+      },
+    );
   }
 
   const currentIds = new Set(current.tracks.map((track) => track.id));
   const overlap = incoming.tracks.filter((track) => currentIds.has(track.id)).length;
+  // Ignore smaller unrelated payloads (e.g. a top-10 widget after a top-100),
+  // but still append later catalog pages that share the same list size.
   if (incoming.tracks.length < current.tracks.length && overlap === 0) {
-    return current;
+    const sameCatalogList =
+      typeof current.listCount === 'number' && current.listCount === incoming.listCount;
+    if (!sameCatalogList) return current;
   }
 
   const preferIncomingOrder = incoming.tracks.length > current.tracks.length;
@@ -60,7 +72,7 @@ export function mergeSnapshots(
     ordered.push({ ...richer, position: nextPosition });
   }
 
-  return buildSnapshot(
+  const snapshot = buildSnapshot(
     ordered.map((track, index) => ({ ...track, position: track.position ?? index + 1 })),
     {
       pageUrl: incoming.pageUrl,
@@ -68,4 +80,12 @@ export function mergeSnapshots(
       source: preferIncomingOrder ? incoming.source : current.source,
     },
   );
+
+  const coverage = mergeCoverage(current, incoming, snapshot.trackCount);
+  if (coverage) {
+    snapshot.listCount = coverage.listCount;
+    snapshot.complete = coverage.complete;
+  }
+
+  return snapshot;
 }
