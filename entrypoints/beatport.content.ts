@@ -158,12 +158,19 @@ async function captureNow(): Promise<void> {
   await extractAndPublish(latestPayload, true);
 }
 
+function announceTab(): void {
+  void browser.runtime.sendMessage({ type: 'CONTENT_HELLO' }).catch(() => {
+    // Background may not be ready yet; TRACKS_EXTRACTED / next load will retry.
+  });
+}
+
 export default defineContentScript({
   matches: ['*://*.beatport.com/*'],
   runAt: 'document_start',
   main() {
     lastHref = location.href;
     startedAt = Date.now();
+    announceTab();
 
     window.addEventListener(PAYLOAD_EVENT, (event) => {
       const customEvent = event as CustomEvent;

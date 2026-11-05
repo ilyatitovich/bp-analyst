@@ -43,8 +43,14 @@ export type ExtractionFailedMessage = {
   pageTitle: string;
 };
 
+/** Content script → background: this tab is Beatport; enable the panel without `tabs`. */
+export type ContentHelloMessage = {
+  type: 'CONTENT_HELLO';
+};
+
 export type BeatportAnalystMessage =
   | TracksExtractedMessage
   | RequestRefreshMessage
   | RequestTabCaptureMessage
-  | ExtractionFailedMessage;
+  | ExtractionFailedMessage
+  | ContentHelloMessage;

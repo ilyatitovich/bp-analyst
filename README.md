@@ -113,7 +113,7 @@ assets/
 - `sidePanel` — Chromium side panel (Firefox uses the sidebar)
 - Host: `*://*.beatport.com/*` — content script and catalog intercept on Beatport only
 
-Nothing is sent off-device. Previews play Beatport’s own sample URLs in the side panel.
+No `tabs` permission: the content script announces Beatport tabs so the panel can be enabled per tab without “read your browsing history.” Nothing is sent off-device. Previews play Beatport’s own sample URLs in the side panel.
 
 ## Stack
 

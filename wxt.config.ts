@@ -20,7 +20,7 @@ export default defineConfig({
       'Analyze Beatport lists for BPM, key, and label composition.',
     version,
     minimum_chrome_version: browser === 'firefox' ? undefined : '116',
-    permissions: browser === 'firefox' ? ['storage'] : ['storage', 'sidePanel', 'tabs'],
+    permissions: browser === 'firefox' ? ['storage'] : ['storage', 'sidePanel'],
     host_permissions: ['*://*.beatport.com/*'],
     action: {
       default_title: 'Open Beatport Analyst',

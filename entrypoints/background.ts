@@ -218,9 +218,15 @@ async function syncFirefoxSidebar(onBeatport: boolean): Promise<void> {
 }
 
 async function syncPanelAvailability(tabId: number, url: string | undefined): Promise<void> {
+  // Without the `tabs` permission, non-Beatport tabs omit `url`. Treat that as off-Beatport.
   const onBeatport = isBeatportUrl(url);
   await syncChromiumSidePanel(tabId, onBeatport);
   await syncFirefoxSidebar(onBeatport);
+}
+
+async function enablePanelForTab(tabId: number): Promise<void> {
+  await syncChromiumSidePanel(tabId, true);
+  await syncFirefoxSidebar(true);
 }
 
 async function syncPanelForTabId(tabId: number): Promise<void> {
@@ -233,10 +239,9 @@ async function syncPanelForTabId(tabId: number): Promise<void> {
 }
 
 async function syncPanelForExistingTabs(): Promise<void> {
-  const tabs = await browser.tabs.query({});
-  await Promise.all(
-    tabs.flatMap((tab) => (tab.id ? [syncPanelAvailability(tab.id, tab.url)] : [])),
-  );
+  // Host permissions expose Beatport URLs without the broad `tabs` permission.
+  const tabs = await browser.tabs.query({ url: ['*://*.beatport.com/*', '*://beatport.com/*'] });
+  await Promise.all(tabs.flatMap((tab) => (tab.id ? [enablePanelForTab(tab.id)] : [])));
 }
 
 export default defineBackground({
@@ -279,13 +284,25 @@ export default defineBackground({
     });
 
     browser.runtime.onMessage.addListener((message: BeatportAnalystMessage, sender, sendResponse) => {
+      if (message.type === 'CONTENT_HELLO') {
+        const tabId = sender.tab?.id;
+        if (tabId == null) {
+          sendResponse({ ok: false, error: 'missing-tab' });
+          return false;
+        }
+        void enablePanelForTab(tabId).then(() => sendResponse({ ok: true }));
+        return true;
+      }
+
       if (message.type === 'TRACKS_EXTRACTED') {
         const tabId = sender.tab?.id;
         if (tabId == null) {
           sendResponse({ ok: false, error: 'missing-tab' });
           return false;
         }
-        void persistSnapshot(tabId, message.snapshot).then(() => sendResponse({ ok: true }));
+        void persistSnapshot(tabId, message.snapshot)
+          .then(() => enablePanelForTab(tabId))
+          .then(() => sendResponse({ ok: true }));
         return true;
       }
 
@@ -295,7 +312,9 @@ export default defineBackground({
           sendResponse({ ok: false, error: 'missing-tab' });
           return false;
         }
-        void persistExtractionError(tabId, message).then(() => sendResponse({ ok: true }));
+        void persistExtractionError(tabId, message)
+          .then(() => enablePanelForTab(tabId))
+          .then(() => sendResponse({ ok: true }));
         return true;
       }
 
