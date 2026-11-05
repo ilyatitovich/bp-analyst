@@ -3,7 +3,10 @@ import { version } from './package.json';
 
 export default defineConfig({
   manifestVersion: 3,
-  modules: ['@wxt-dev/module-react'],
+  modules: ['@wxt-dev/module-react', '@wxt-dev/auto-icons'],
+  autoIcons: {
+    baseIconPath: 'assets/icon.svg',
+  },
   outDirTemplate: `{{browser}}-mv{{manifestVersion}}{{modeSuffix}}-${version}`,
   webExt: {
     binaries: {
