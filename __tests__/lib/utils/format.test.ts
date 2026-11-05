@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  badgeTextForTrackCount,
   bpmBucketRangeLabel,
   bpmBucketStartLabel,
   coverageLabel,
@@ -8,6 +9,15 @@ import {
   formatShare,
   headerStatus
 } from '../../../src/lib/utils/format'
+
+describe('badgeTextForTrackCount', () => {
+  it('formats counts and caps at 999', () => {
+    expect(badgeTextForTrackCount(0)).toBe('')
+    expect(badgeTextForTrackCount(42)).toBe('42')
+    expect(badgeTextForTrackCount(999)).toBe('999')
+    expect(badgeTextForTrackCount(1500)).toBe('999')
+  })
+})
 
 describe('formatShare', () => {
   it('renders percents and a dash for missing values', () => {

@@ -3,8 +3,25 @@ import type { Track } from '../../../src/lib/types/track'
 import {
   beatportCatalogUrlFromTracks,
   beatportEntityUrl,
+  isBeatportUrl,
   scopedFacetFromPageUrl
 } from '../../../src/lib/utils/page'
+
+describe('isBeatportUrl', () => {
+  it('accepts beatport hosts and rejects others', () => {
+    expect(isBeatportUrl('https://www.beatport.com/genre/tech-house/11')).toBe(
+      true
+    )
+    expect(isBeatportUrl('https://api.beatport.com/v4/catalog/tracks')).toBe(
+      true
+    )
+    expect(isBeatportUrl('https://beatport.com/')).toBe(true)
+    expect(isBeatportUrl('https://evil.example/?q=beatport.com')).toBe(false)
+    expect(isBeatportUrl('https://beatport.com.evil.example/')).toBe(false)
+    expect(isBeatportUrl(undefined)).toBe(false)
+    expect(isBeatportUrl('not-a-url')).toBe(false)
+  })
+})
 
 describe('scopedFacetFromPageUrl', () => {
   it('detects artist, label, and genre entity pages', () => {

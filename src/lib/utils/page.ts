@@ -5,6 +5,16 @@ export type BeatportScopedFacet = 'artist' | 'label' | 'genre'
 const SCOPED_FACET_PATH = /^\/(artist|label|genre)\//
 const BEATPORT_ORIGIN = 'https://www.beatport.com'
 
+export function isBeatportUrl(url: string | null | undefined): boolean {
+  if (!url) return false
+  try {
+    const hostname = new URL(url).hostname
+    return hostname === 'beatport.com' || hostname.endsWith('.beatport.com')
+  } catch {
+    return false
+  }
+}
+
 export function scopedFacetFromPageUrl(
   pageUrl: string | null | undefined
 ): BeatportScopedFacet | null {

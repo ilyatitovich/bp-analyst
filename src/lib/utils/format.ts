@@ -1,3 +1,7 @@
+export function badgeTextForTrackCount(trackCount: number): string {
+  return trackCount > 0 ? String(Math.min(trackCount, 999)) : ''
+}
+
 export function formatShare(share: number | null): string {
   if (share === null) return '-'
   return `${Math.round(share * 100)}%`
