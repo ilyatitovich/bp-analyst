@@ -74,12 +74,12 @@ flowchart LR
   session --> panel
 ```
 
-| Piece | Role |
-| --- | --- |
-| `entrypoints/beatport-fetch.content.ts` | MAIN-world content script (`document_start`). Hooks `fetch` / XHR for `/catalog/` JSON and SPA navigations. |
-| `entrypoints/beatport.content.ts` | Isolated content script. Turns catalog payloads, `__NEXT_DATA__`, and the DOM into a track snapshot and messages the background. |
-| `entrypoints/background.ts` | Service worker. Persists the live snapshot, badge count, and reload-on-refresh. |
-| `src/sidepanel/` | React side panel: brief, charts, filters, table, preview, CSV. |
+| Piece                                   | Role                                                                                                                             |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `entrypoints/beatport-fetch.content.ts` | MAIN-world content script (`document_start`). Hooks `fetch` / XHR for `/catalog/` JSON and SPA navigations.                      |
+| `entrypoints/beatport.content.ts`       | Isolated content script. Turns catalog payloads, `__NEXT_DATA__`, and the DOM into a track snapshot and messages the background. |
+| `entrypoints/background.ts`             | Service worker. Persists the live snapshot, badge count, and reload-on-refresh.                                                  |
+| `src/sidepanel/`                        | React side panel: brief, charts, filters, table, preview, CSV.                                                                   |
 
 Live extraction lives in **session** storage, keyed per Beatport tab, so two charts can stay open side by side and closing the browser does not leave yesterday’s chart as “today.” Key notation preference is stored locally.
 
@@ -101,11 +101,11 @@ assets/
 
 ## Scripts
 
-| Command | |
-| --- | --- |
-| `pnpm test` | Vitest (parsers, stats, filters, CSV) |
-| `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build |
-| `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox` | Packaged zip named `beatport-analyst-<version>-<browser>.zip` |
+| Command                                                   |                                                               |
+| --------------------------------------------------------- | ------------------------------------------------------------- |
+| `pnpm test`                                               | Vitest (parsers, stats, filters, CSV)                         |
+| `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build                                          |
+| `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox`       | Packaged zip named `beatport-analyst-<version>-<browser>.zip` |
 
 ## Permissions
 
