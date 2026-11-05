@@ -1,0 +1,35 @@
+---
+const benefits = [
+  {
+    title: 'Market brief on the list you opened',
+    body: 'Exclusive and hype share, freshness, BPM spread, key concentration, and top labels — from the Beatport chart or search you already have on screen.'
+  },
+  {
+    title: 'Local-only analysis',
+    body: 'Track data stays in your browser session. Nothing is sent to a backend, and closing the browser clears the live snapshot.'
+  },
+  {
+    title: 'No Beatport account required',
+    body: 'No partner API, no login, no crawl of other charts. It only reads the list you opened.'
+  }
+]
+---
+
+<section class="benefits" aria-labelledby="benefits-title">
+  <div class="section-intro">
+    <h2 id="benefits-title" class="section-intro__title">
+      Built for market reconnaissance
+    </h2>
+    <p class="section-intro__lede">
+      For producers scanning a chart — not crate digging, not harmonic mixing.
+    </p>
+  </div>
+  <ul class="benefits__list">
+    {benefits.map(benefit => (
+      <li class="benefits__item reveal">
+        <h3 class="benefits__item-title">{benefit.title}</h3>
+        <p class="benefits__item-body">{benefit.body}</p>
+      </li>
+    ))}
+  </ul>
+</section>

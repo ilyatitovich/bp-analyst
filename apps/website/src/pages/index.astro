@@ -1,26 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Benefits from '../components/Benefits.astro'
+import Features from '../components/Features.astro'
+import Download from '../components/Download.astro'
 ---
 
 <BaseLayout>
-  <section class="scaffold" aria-labelledby="scaffold-title">
-    <div class="scaffold__brand">
-      <img
-        class="scaffold__logo"
-        src="/logo.png"
-        alt="Beatport Analyst"
-        width="104"
-        height="104"
-        decoding="async"
-        fetchpriority="high"
-      />
-      <h1 id="scaffold-title" class="scaffold__title">
-        Beatport Analyst
-      </h1>
-      <p class="scaffold__lede">
-        Pocket market brief for the Beatport list you already have open.
-      </p>
-      <p class="scaffold__note">Marketing landing sections land next.</p>
-    </div>
-  </section>
+  <Hero />
+  <Benefits />
+  <Features />
+  <Download />
 </BaseLayout>

@@ -1,0 +1,37 @@
+---
+import { BROWSERS, DOWNLOAD_URLS } from '../data/downloads'
+
+const primary = BROWSERS[0]
+---
+
+<section class="hero" aria-labelledby="hero-brand">
+  <div class="hero__content">
+    <img
+      class="hero__logo"
+      src="/logo.png"
+      alt=""
+      width="128"
+      height="128"
+      decoding="async"
+      fetchpriority="high"
+    />
+    <h1 id="hero-brand" class="hero__brand" tabindex="-1">
+      Beatport Analyst
+    </h1>
+    <p class="hero__headline">Read the market on any Beatport list.</p>
+    <p class="hero__lede">
+      A pocket market brief for the list you already have open — BPM, key,
+      labels, and freshness, right in your browser.
+    </p>
+    <p class="hero__cta-row">
+      <a
+        class="cta cta--primary"
+        href={DOWNLOAD_URLS[primary.id]}
+        data-hero-download
+        data-browser={primary.id}
+      >
+        Download for {primary.label}
+      </a>
+    </p>
+  </div>
+</section>

@@ -1,0 +1,44 @@
+---
+const features = [
+  {
+    title: 'Market brief',
+    body: 'Exclusives, hype, tracks from the last 7 / 30 days, BPM median and IQR, key concentration, top labels and artists, mix types, and length bands.'
+  },
+  {
+    title: 'Charts and filters',
+    body: 'BPM histogram, Camelot or scale-key breakdown, genre / label / artist views. Click a bucket to filter the list.'
+  },
+  {
+    title: 'Track table and preview',
+    body: 'Search by title, mix, or artist; Exclusive and Hype chips; sortable columns; in-panel audio preview from Beatport’s own samples.'
+  },
+  {
+    title: 'CSV export',
+    body: 'Export the currently visible (filtered) tracks when you want a copy of what’s on screen.'
+  }
+]
+---
+
+<section class="features" aria-labelledby="features-title">
+  <div class="section-intro">
+    <h2 id="features-title" class="section-intro__title">
+      What you get in the side panel
+    </h2>
+    <p class="section-intro__lede">
+      Open a Beatport list, click the toolbar icon, and work from one snapshot.
+    </p>
+  </div>
+  <ol class="features__list">
+    {features.map((feature, index) => (
+      <li class="features__item reveal">
+        <span class="features__index" aria-hidden="true">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <div class="features__copy">
+          <h3 class="features__item-title">{feature.title}</h3>
+          <p class="features__item-body">{feature.body}</p>
+        </div>
+      </li>
+    ))}
+  </ol>
+</section>

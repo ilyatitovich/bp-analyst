@@ -1,5 +1,10 @@
 ---
 import { Font } from 'astro:assets'
+import {
+  GITHUB_REPO_URL,
+  SUPPORT_EMAIL,
+  SUPPORT_PAGE_URL
+} from '../data/downloads'
 import '../styles/tokens.css'
 import '../styles/base.css'
 import '../styles/site.css'
@@ -32,8 +37,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
     <slot name="head" />
   </head>
   <body>
-    <a class="skip-link" href="#content">
-      Skip to main content
+    <a class="skip-link" href="#hero-brand">
+      {' '}
+      Skip to main content{' '}
     </a>
     <div class="page">
       <header class="page__header">
@@ -50,9 +56,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
             <span>Beatport Analyst</span>
           </a>
           <nav class="page__nav" aria-label="Page">
+            <a class="page__nav-link" href="#download">
+              Download
+            </a>
             <a
               class="page__nav-link"
-              href="https://github.com/ilyatitovich/bp-analyst"
+              href={GITHUB_REPO_URL}
               rel="noopener noreferrer"
             >
               GitHub
@@ -61,7 +70,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
         </div>
       </header>
 
-      <main class="page__main" id="content" tabindex="-1">
+      <main class="page__main" id="content">
         <div class="page__main-inner">
           <slot />
         </div>
@@ -69,12 +78,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 
       <footer class="page__footer">
         <div class="page__footer-inner">
-          <p>Beatport Analyst — local track analysis for producers.</p>
+          <p class="page__footer-tagline">
+            Beatport Analyst — local track analysis for producers.
+          </p>
           <ul class="page__footer-links">
             <li>
               <a
                 class="page__footer-link"
-                href="https://github.com/ilyatitovich/bp-analyst"
+                href={GITHUB_REPO_URL}
                 rel="noopener noreferrer"
               >
                 GitHub
@@ -83,14 +94,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
             <li>
               <a
                 class="page__footer-link"
-                href="https://ilyatitov.vercel.app/support"
+                href={SUPPORT_PAGE_URL}
                 rel="noopener noreferrer"
               >
                 Support
               </a>
             </li>
             <li>
-              <a class="page__footer-link" href="mailto:ilyatitovdev@gmail.com">
+              <a class="page__footer-link" href={`mailto:${SUPPORT_EMAIL}`}>
                 Contact
               </a>
             </li>

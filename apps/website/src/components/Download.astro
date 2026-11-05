@@ -1,0 +1,83 @@
+---
+import { BROWSERS, DOWNLOAD_URLS, GITHUB_README_URL } from '../data/downloads'
+
+const defaultBrowser = BROWSERS[0]
+---
+
+<section class="download" id="download" aria-labelledby="download-title">
+  <div class="section-intro">
+    <h2 id="download-title" class="section-intro__title">
+      Download the zip
+    </h2>
+    <p class="section-intro__lede">
+      Packaged archives for Chromium, Edge, and Firefox. No store listing — load
+      the unpacked build from the zip.
+    </p>
+  </div>
+
+  <div class="download__panel" data-download>
+    <ul class="download__ctas">
+      {BROWSERS.map(browser => {
+        const isDefault = browser.id === defaultBrowser.id
+        return (
+          <li>
+            <a
+              class:list={[
+                'cta',
+                isDefault ? 'cta--primary' : 'cta--secondary',
+                'download__cta'
+              ]}
+              href={DOWNLOAD_URLS[browser.id]}
+              data-browser={browser.id}
+              aria-current={isDefault ? 'true' : undefined}
+            >
+              Download for {browser.label}
+            </a>
+          </li>
+        )
+      })}
+    </ul>
+
+    <p class="download__note" id="download-note">
+      Unzip the archive, then load it unpacked (Chrome / Edge) or as a temporary
+      add-on (Firefox). Step-by-step detail lives in the{' '}
+      <a href={GITHUB_README_URL} rel="noopener noreferrer">
+        GitHub README
+      </a>
+      .
+    </p>
+  </div>
+</section>
+
+<script>
+  import { detectPreferredBrowser } from '../scripts/detect-browser'
+  import { BROWSERS, DOWNLOAD_URLS } from '../data/downloads'
+
+  const preferred = detectPreferredBrowser()
+  const match = BROWSERS.find(browser => browser.id === preferred)
+  const root = document.querySelector('[data-download]')
+  const heroLink = document.querySelector<HTMLAnchorElement>(
+    '[data-hero-download]'
+  )
+
+  if (root) {
+    for (const link of root.querySelectorAll<HTMLAnchorElement>(
+      '[data-browser]'
+    )) {
+      const isMatch = link.dataset.browser === preferred
+      link.classList.toggle('cta--primary', isMatch)
+      link.classList.toggle('cta--secondary', !isMatch)
+      if (isMatch) {
+        link.setAttribute('aria-current', 'true')
+      } else {
+        link.removeAttribute('aria-current')
+      }
+    }
+  }
+
+  if (heroLink && match) {
+    heroLink.dataset.browser = match.id
+    heroLink.href = DOWNLOAD_URLS[match.id]
+    heroLink.textContent = `Download for ${match.label}`
+  }
+</script>
