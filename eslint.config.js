@@ -13,7 +13,9 @@ export default defineConfig(
       '.wxt/**',
       'node_modules/**',
       'dist/**',
-      'coverage/**'
+      'coverage/**',
+      'playwright-report/**',
+      'test-results/**'
     ]
   },
   {
@@ -22,6 +24,7 @@ export default defineConfig(
   },
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
+    ignores: ['e2e/**', 'playwright.config.ts'],
     plugins: {
       // Plugin's configs.flat shape does not match ESLint 10's Plugin type yet.
       'react-hooks': /** @type {import('eslint').ESLint.Plugin} */ (reactHooks)

@@ -3,8 +3,13 @@
   "entry": [
     "entrypoints/**/*.{ts,tsx}",
     "src/sidepanel/main.tsx",
-    "src/report/main.tsx"
+    "src/report/main.tsx",
+    "e2e/**/*.{ts,tsx}"
   ],
-  "project": ["entrypoints/**/*.{ts,tsx}", "src/**/*.{ts,tsx}"],
+  "project": [
+    "entrypoints/**/*.{ts,tsx}",
+    "src/**/*.{ts,tsx}",
+    "e2e/**/*.{ts,tsx}"
+  ],
   "ignoreDependencies": ["@types/chrome"]
 }

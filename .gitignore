@@ -5,5 +5,8 @@ node_modules/
 dist/
 coverage/
 .pnpm-store/
+playwright-report/
+test-results/
+blob-report/
 web-ext.config.ts
 todo.txt

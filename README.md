@@ -101,12 +101,13 @@ assets/
 
 ## Scripts
 
-| Command                                                   |                                                                  |
-| --------------------------------------------------------- | ---------------------------------------------------------------- |
-| `pnpm test`                                               | Vitest (parsers, stats, filters, CSV)                            |
-| `pnpm bench:extract`                                      | Extraction + message-size benchmark; writes `docs/BENCHMARKS.md` |
-| `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build                                             |
-| `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox`       | Packaged zip named `beatport-analyst-<version>-<browser>.zip`    |
+| Command                                                   |                                                                                   |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `pnpm test`                                               | Vitest (parsers, stats, filters, CSV)                                             |
+| `pnpm test:e2e`                                           | Playwright E2E against a local Beatport fixture (needs `pnpm build:chrome` first) |
+| `pnpm bench:extract`                                      | Extraction + message-size benchmark; writes `docs/BENCHMARKS.md`                  |
+| `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build                                                              |
+| `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox`       | Packaged zip named `beatport-analyst-<version>-<browser>.zip`                     |
 
 ## Permissions
 
