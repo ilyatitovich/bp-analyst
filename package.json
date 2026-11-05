@@ -20,6 +20,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "knip": "knip",
     "test": "vitest run",
     "prepare": "husky"
   },
@@ -58,6 +59,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "happy-dom": "^21.0.4",
     "husky": "^9.1.7",
+    "knip": "^6.44.1",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
     "typescript": "^5.9.2",

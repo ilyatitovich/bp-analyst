@@ -1,4 +1,5 @@
-import { defineConfig } from 'wxt'
+import { defineConfig, type ConfigEnv, type Wxt } from 'wxt'
+import type { Browser } from 'wxt/browser'
 import { version } from './package.json'
 
 export default defineConfig({
@@ -8,13 +9,7 @@ export default defineConfig({
     baseIconPath: 'assets/icon.svg'
   },
   outDirTemplate: `{{browser}}-mv{{manifestVersion}}{{modeSuffix}}-${version}`,
-  webExt: {
-    binaries: {
-      edge: '/usr/bin/microsoft-edge-stable',
-      firefox: '/usr/bin/firefox'
-    }
-  },
-  manifest: ({ browser }) => ({
+  manifest: ({ browser }: ConfigEnv) => ({
     name: 'Beatport Analyst',
     description: 'Analyze Beatport lists for BPM, key, and label composition.',
     version,
@@ -38,7 +33,10 @@ export default defineConfig({
         : undefined
   }),
   hooks: {
-    'build:manifestGenerated': (wxt, manifest) => {
+    'build:manifestGenerated': (
+      wxt: Wxt,
+      manifest: Browser.runtime.Manifest
+    ) => {
       // default_path makes a global panel that stays open on every tab.
       if (wxt.config.browser !== 'firefox') {
         delete manifest.side_panel
@@ -48,8 +46,7 @@ export default defineConfig({
   zip: {
     name: 'beatport-analyst',
     artifactTemplate: '{{name}}-{{packageVersion}}-{{browser}}.zip',
-    sourcesTemplate: '{{name}}-{{packageVersion}}-sources.zip',
-    excludeSources: ['todo.txt']
+    sourcesTemplate: '{{name}}-{{packageVersion}}-sources.zip'
   },
   suppressWarnings: {
     firefoxDataCollection: true

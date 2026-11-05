@@ -49,7 +49,7 @@ export function toggleListValue(values: string[], value: string): string[] {
 }
 
 export type TrackSortColumn = 'position' | 'bpm' | 'key' | 'date' | 'label'
-export type TrackSortDirection = 'asc' | 'desc'
+type TrackSortDirection = 'asc' | 'desc'
 
 export type TrackSort = {
   column: TrackSortColumn
@@ -63,9 +63,7 @@ export const DEFAULT_TRACK_SORT: TrackSort = {
 
 const CAMELOT_INDEX = new Map(CAMELOT_KEYS.map((key, index) => [key, index]))
 
-export function defaultSortDirection(
-  column: TrackSortColumn
-): TrackSortDirection {
+function defaultSortDirection(column: TrackSortColumn): TrackSortDirection {
   return column === 'date' ? 'desc' : 'asc'
 }
 

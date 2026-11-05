@@ -6,7 +6,7 @@ export const CAPTURE_TIMING = {
   extractDebounceMs: 150
 } as const
 
-export type TimerId = ReturnType<typeof setTimeout>
+type TimerId = ReturnType<typeof setTimeout>
 
 export type CaptureTimers = {
   setTimeout: (fn: () => void, ms: number) => TimerId
@@ -129,5 +129,3 @@ export function createCaptureLifecycle(
     pathChanged
   }
 }
-
-export type CaptureLifecycle = ReturnType<typeof createCaptureLifecycle>

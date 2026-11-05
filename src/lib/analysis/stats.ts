@@ -11,17 +11,11 @@ export type Bucket = {
   count: number
 }
 
-export const MIX_TYPES = [
-  'Original',
-  'Extended',
-  'Radio',
-  'Remix',
-  'Other'
-] as const
+const MIX_TYPES = ['Original', 'Extended', 'Radio', 'Remix', 'Other'] as const
 export type MixType = (typeof MIX_TYPES)[number]
 
-export const LENGTH_BANDS = ['<4', '4–6', '6–8', '8+'] as const
-export type LengthBand = (typeof LENGTH_BANDS)[number]
+const LENGTH_BANDS = ['<4', '4–6', '6–8', '8+'] as const
+type LengthBand = (typeof LENGTH_BANDS)[number]
 
 export type TrackStats = {
   count: number
@@ -159,7 +153,7 @@ export function classifyMixType(mixName: string): MixType {
   return 'Other'
 }
 
-export function trackLengthMs(
+function trackLengthMs(
   track: Pick<Track, 'lengthMs' | 'length'>
 ): number | null {
   if (

@@ -7,8 +7,6 @@ import {
 import { extractSnapshotFromDom } from '../src/lib/extract/dom'
 import { extractSnapshotFromNextData } from '../src/lib/extract/next-data'
 import { mergeSnapshots, pickLargestSnapshot } from '../src/lib/extract/merge'
-import { STORAGE_KEYS } from '../src/lib/messaging/protocol'
-import { extensionStorageArea } from '../src/lib/messaging/storage'
 import { type ExtractionSnapshot } from '../src/lib/types/track'
 
 const PAYLOAD_EVENT = 'bp-analyst:payload'
@@ -187,13 +185,6 @@ export default defineContentScript({
         return true
       }
       return false
-    })
-
-    browser.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName !== extensionStorageArea) return
-      if (changes[STORAGE_KEYS.refreshToken]) {
-        void captureNow()
-      }
     })
 
     observeDom()

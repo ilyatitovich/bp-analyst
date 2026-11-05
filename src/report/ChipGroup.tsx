@@ -1,7 +1,7 @@
 import type { Bucket } from '../lib/analysis/stats'
 import { formatShare } from '../lib/utils/format'
 
-export type ChipItem = Bucket & { href?: string | null }
+type ChipItem = Bucket & { href?: string | null }
 
 export interface ChipGroupProps {
   title: string

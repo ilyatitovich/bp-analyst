@@ -8,14 +8,14 @@ import {
 import { getSidebarAction, getSidePanel, SIDEPANEL_PATH } from './panel-api'
 import { extensionStorage } from './storage'
 
-export async function getOpenPanelCount(): Promise<number> {
+async function getOpenPanelCount(): Promise<number> {
   const stored = await extensionStorage.get(PANEL_STORAGE_KEYS.sessions)
   return panelSessionCount(
     stored[PANEL_STORAGE_KEYS.sessions] as PanelSessions | undefined
   )
 }
 
-export async function getRestoreFirefoxSidebar(): Promise<boolean> {
+async function getRestoreFirefoxSidebar(): Promise<boolean> {
   const stored = await extensionStorage.get(
     PANEL_STORAGE_KEYS.restoreFirefoxSidebar
   )

@@ -1,8 +1,7 @@
 import type { ExtractionSnapshot } from '../types/track'
 
 export const STORAGE_KEYS = {
-  keyNotation: 'beatportAnalyst.keyNotation',
-  refreshToken: 'beatportAnalyst.refreshToken'
+  keyNotation: 'beatportAnalyst.keyNotation'
 } as const
 
 export type ExtractionErrorState = {

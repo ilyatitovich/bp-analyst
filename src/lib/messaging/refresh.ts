@@ -3,7 +3,7 @@ import { isBeatportUrl } from '../utils/page'
 import type { RequestTabCaptureResponse } from './protocol'
 import { shouldReloadForRefresh } from './refresh-strategy'
 
-export async function findActiveBeatportTab(): Promise<{
+async function findActiveBeatportTab(): Promise<{
   id: number
   url: string
 } | null> {
@@ -24,7 +24,7 @@ export async function findActiveBeatportTab(): Promise<{
   return { id: matched.id, url: matched.url ?? '' }
 }
 
-export async function requestTabCapture(
+async function requestTabCapture(
   tabId: number
 ): Promise<RequestTabCaptureResponse | null> {
   try {

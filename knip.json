@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "entrypoints/**/*.{ts,tsx}",
+    "src/sidepanel/main.tsx",
+    "src/report/main.tsx"
+  ],
+  "project": ["entrypoints/**/*.{ts,tsx}", "src/**/*.{ts,tsx}"],
+  "ignoreDependencies": ["@types/chrome"]
+}

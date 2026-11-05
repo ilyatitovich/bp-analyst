@@ -1,4 +1,4 @@
-export const DEFAULT_PREVIEW_MS = 120_000
+const DEFAULT_PREVIEW_MS = 120_000
 
 export type PreviewWindow = {
   startSec: number

@@ -1,4 +1,4 @@
-export const TAB_STORAGE_PREFIXES = {
+const TAB_STORAGE_PREFIXES = {
   snapshot: 'beatportAnalyst.snapshot.',
   extractionError: 'beatportAnalyst.extractionError.'
 } as const

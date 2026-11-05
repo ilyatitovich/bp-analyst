@@ -130,9 +130,7 @@ export function camelotToScale(
   return CAMELOT_TO_SCALE[key] ?? parseScaleName(camelot)
 }
 
-export function isCamelotKey(
-  value: string | null | undefined
-): value is CamelotKey {
+function isCamelotKey(value: string | null | undefined): value is CamelotKey {
   return Boolean(value && CAMELOT_TO_SCALE[value.toUpperCase() as CamelotKey])
 }
 

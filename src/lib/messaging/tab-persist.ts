@@ -21,7 +21,7 @@ export async function ensureStorageDefaults(): Promise<void> {
   await extensionStorage.remove([...LEGACY_GLOBAL_TAB_KEYS])
 }
 
-export async function clearTabBadge(tabId: number): Promise<void> {
+async function clearTabBadge(tabId: number): Promise<void> {
   try {
     await browser.action.setBadgeText({ text: '', tabId })
   } catch {

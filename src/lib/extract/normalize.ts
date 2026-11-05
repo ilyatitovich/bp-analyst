@@ -180,7 +180,7 @@ export function looksLikeRawTrack(value: unknown): value is RawTrack {
   )
 }
 
-export function isUsableTrack(track: Track): boolean {
+function isUsableTrack(track: Track): boolean {
   return (
     Number.isFinite(track.id) &&
     track.id > 0 &&
@@ -267,7 +267,7 @@ function normalizeName(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
-export function trackIdentity(track: Track): string {
+function trackIdentity(track: Track): string {
   const artists = track.artists
     .map(artist => normalizeName(artist.name))
     .filter(Boolean)
