@@ -1,6 +1,8 @@
 ---
 import { Font } from 'astro:assets'
+import Analytics from '../components/Analytics.astro'
 import {
+  DOWNLOAD_URLS,
   GITHUB_REPO_URL,
   SUPPORT_EMAIL,
   SUPPORT_PAGE_URL
@@ -15,11 +17,36 @@ interface Props {
 }
 
 const {
-  title = 'Beatport Analyst',
+  title = 'Beatport Analyst — BPM, key & genre analysis for Beatport',
   description = 'A pocket market brief for the Beatport list you already have open — BPM, key, and genre analysis in your browser.'
 } = Astro.props
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site)
+const site = Astro.site ?? new URL('https://bp-analyst.vercel.app')
+const canonicalURL = new URL(Astro.url.pathname, site)
+const ogImageURL = new URL('/logo.png', site)
+const pageTitle = title
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  'name': 'Beatport Analyst',
+  'applicationCategory': 'BrowserApplication',
+  'operatingSystem': 'Chrome, Edge, Firefox',
+  description,
+  'url': canonicalURL.href,
+  'downloadUrl': DOWNLOAD_URLS.chrome,
+  'image': ogImageURL.href,
+  'offers': {
+    '@type': 'Offer',
+    'price': '0',
+    'priceCurrency': 'USD'
+  },
+  'author': {
+    '@type': 'Person',
+    'name': 'Ilya Titovich',
+    'url': GITHUB_REPO_URL
+  }
+}
 ---
 
 <!doctype html>
@@ -27,11 +54,27 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#07090d" />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Beatport Analyst" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <Font cssVariable="--font-display" />
     <Font cssVariable="--font-body" />
     <slot name="head" />
@@ -109,5 +152,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site)
         </div>
       </footer>
     </div>
+    <Analytics />
   </body>
 </html>

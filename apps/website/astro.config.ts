@@ -1,8 +1,10 @@
+import sitemap from '@astrojs/sitemap'
 import { defineConfig, fontProviders } from 'astro/config'
 
 // Placeholder until the Vercel project URL / custom domain is known.
 export default defineConfig({
   site: 'https://bp-analyst.vercel.app',
+  integrations: [sitemap()],
   fonts: [
     {
       provider: fontProviders.google(),
