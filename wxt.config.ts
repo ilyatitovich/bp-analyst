@@ -22,12 +22,6 @@ export default defineConfig({
     action: {
       default_title: 'Open Beatport Analyst',
     },
-    web_accessible_resources: [
-      {
-        resources: ['beatport-fetch.js'],
-        matches: ['*://*.beatport.com/*'],
-      },
-    ],
     browser_specific_settings:
       browser === 'firefox'
         ? {

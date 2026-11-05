@@ -161,10 +161,9 @@ async function captureNow(): Promise<void> {
 export default defineContentScript({
   matches: ['*://*.beatport.com/*'],
   runAt: 'document_start',
-  async main() {
+  main() {
     lastHref = location.href;
     startedAt = Date.now();
-    await injectScript('/beatport-fetch.js', { keepInDom: true });
 
     window.addEventListener(PAYLOAD_EVENT, (event) => {
       const customEvent = event as CustomEvent;

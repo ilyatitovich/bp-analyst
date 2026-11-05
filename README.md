@@ -76,8 +76,8 @@ flowchart LR
 
 | Piece | Role |
 | --- | --- |
-| `entrypoints/beatport-fetch.ts` | Page-world script. Hooks `fetch` / XHR for same-origin `/catalog/` responses and SPA navigations. |
-| `entrypoints/beatport.content.ts` | Content script. Turns catalog payloads, `__NEXT_DATA__`, and the DOM into a track snapshot and messages the background. |
+| `entrypoints/beatport-fetch.content.ts` | MAIN-world content script (`document_start`). Hooks `fetch` / XHR for `/catalog/` JSON and SPA navigations. |
+| `entrypoints/beatport.content.ts` | Isolated content script. Turns catalog payloads, `__NEXT_DATA__`, and the DOM into a track snapshot and messages the background. |
 | `entrypoints/background.ts` | Service worker. Persists the live snapshot, badge count, and reload-on-refresh. |
 | `src/sidepanel/` | React side panel: brief, charts, filters, table, preview, CSV. |
 
