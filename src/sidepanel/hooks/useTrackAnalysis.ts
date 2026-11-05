@@ -20,7 +20,10 @@ import {
   type TrackFilters,
 } from "../../lib/types/track";
 
-export function useTrackAnalysis(snapshot: ExtractionSnapshot | null) {
+export function useTrackAnalysis(
+  snapshot: ExtractionSnapshot | null,
+  tabId: number | null = null,
+) {
   const [filters, setFilters] = useState<TrackFilters>(DEFAULT_FILTERS);
   const [sort, setSort] = useState<TrackSort>(DEFAULT_TRACK_SORT);
   const tracks = useMemo(
@@ -103,11 +106,12 @@ export function useTrackAnalysis(snapshot: ExtractionSnapshot | null) {
     const url = new URL(browser.runtime.getURL("/report.html"));
     url.searchParams.set("print", "1");
     url.searchParams.set("t", String(Date.now()));
+    if (tabId != null) url.searchParams.set("tab", String(tabId));
     const opened = window.open(url.href, "bp-analyst-report");
     if (!opened) {
       void browser.tabs.create({ url: url.href });
     }
-  }, []);
+  }, [tabId]);
 
   return {
     tracks,

@@ -81,7 +81,7 @@ flowchart LR
 | `entrypoints/background.ts` | Service worker. Persists the live snapshot, badge count, and reload-on-refresh. |
 | `src/sidepanel/` | React side panel: brief, charts, filters, table, preview, CSV. |
 
-Live extraction lives in **session** storage so closing the browser does not leave yesterday’s chart as “today.” Key notation preference is stored locally.
+Live extraction lives in **session** storage, keyed per Beatport tab, so two charts can stay open side by side and closing the browser does not leave yesterday’s chart as “today.” Key notation preference is stored locally.
 
 The extension only follows lists **you opened**. It does not crawl other charts or call `api.beatport.com`.
 

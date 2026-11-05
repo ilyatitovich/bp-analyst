@@ -9,9 +9,9 @@ import { useStorageState } from "./hooks/useStorageState";
 import { useTrackAnalysis } from "./hooks/useTrackAnalysis";
 
 export function App() {
-  const { snapshot, extractionError, keyNotation, setKeyNotation } =
+  const { tabId, snapshot, extractionError, keyNotation, setKeyNotation } =
     useStorageState();
-  const analysis = useTrackAnalysis(snapshot);
+  const analysis = useTrackAnalysis(snapshot, tabId);
   const { refreshing, refreshFailed, beatportReloadAttempted, requestRefresh } =
     useRefresh(snapshot, extractionError);
   const player = usePreviewPlayer(analysis.sortedTracks);

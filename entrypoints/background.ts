@@ -1,11 +1,15 @@
 import { browser } from 'wxt/browser';
 import { type ExtractionSnapshot } from '../src/lib/types/track';
 import {
-  STORAGE_KEYS,
   type BeatportAnalystMessage,
   type ExtractionFailedMessage,
 } from '../src/lib/messaging/protocol';
 import { extensionStorage } from '../src/lib/messaging/storage';
+import {
+  LEGACY_GLOBAL_TAB_KEYS,
+  tabScopedStorageKeys,
+  tabStorageKey,
+} from '../src/lib/messaging/tab-state';
 
 async function ensureDefaults(): Promise<void> {
   if (browser.storage.session?.setAccessLevel) {
@@ -13,32 +17,49 @@ async function ensureDefaults(): Promise<void> {
       accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS',
     });
   }
+  await extensionStorage.remove([...LEGACY_GLOBAL_TAB_KEYS]);
 }
 
-async function persistSnapshot(snapshot: ExtractionSnapshot): Promise<void> {
-  await extensionStorage.set({
-    [STORAGE_KEYS.snapshot]: snapshot,
-    [STORAGE_KEYS.extractionError]: null,
-  });
-
-  const badgeText = snapshot.trackCount ? String(Math.min(snapshot.trackCount, 999)) : '';
-  await browser.action.setBadgeText({ text: badgeText });
-  await browser.action.setBadgeBackgroundColor({ color: '#17181c' });
-  if (browser.action.setBadgeTextColor) {
-    await browser.action.setBadgeTextColor({ color: '#7ef3ad' });
+async function clearTabBadge(tabId: number): Promise<void> {
+  try {
+    await browser.action.setBadgeText({ text: '', tabId });
+  } catch {
+    // Tab may already be gone.
   }
 }
 
-async function persistExtractionError(message: ExtractionFailedMessage): Promise<void> {
+async function persistSnapshot(tabId: number, snapshot: ExtractionSnapshot): Promise<void> {
   await extensionStorage.set({
-    [STORAGE_KEYS.snapshot]: null,
-    [STORAGE_KEYS.extractionError]: {
+    [tabStorageKey('snapshot', tabId)]: snapshot,
+    [tabStorageKey('extractionError', tabId)]: null,
+  });
+
+  const badgeText = snapshot.trackCount ? String(Math.min(snapshot.trackCount, 999)) : '';
+  await browser.action.setBadgeText({ text: badgeText, tabId });
+  await browser.action.setBadgeBackgroundColor({ color: '#17181c', tabId });
+  if (browser.action.setBadgeTextColor) {
+    await browser.action.setBadgeTextColor({ color: '#7ef3ad', tabId });
+  }
+}
+
+async function persistExtractionError(
+  tabId: number,
+  message: ExtractionFailedMessage,
+): Promise<void> {
+  await extensionStorage.set({
+    [tabStorageKey('snapshot', tabId)]: null,
+    [tabStorageKey('extractionError', tabId)]: {
       pageUrl: message.pageUrl,
       pageTitle: message.pageTitle,
       at: new Date().toISOString(),
     },
   });
-  await browser.action.setBadgeText({ text: '' });
+  await clearTabBadge(tabId);
+}
+
+async function removeTabState(tabId: number): Promise<void> {
+  await extensionStorage.remove(tabScopedStorageKeys(tabId));
+  await clearTabBadge(tabId);
 }
 
 function isBeatportUrl(url: string | undefined): boolean {
@@ -82,23 +103,22 @@ const AUTO_RELOAD_COOLDOWN_MS = 2000;
 let lastAutoReload = { tabId: -1, url: '', at: 0 };
 let openPanelCount = 0;
 let restoreFirefoxSidebar = false;
-let skipNextAutoRefresh = false;
 let reloadInFlight: Promise<{ reloaded: boolean }> | null = null;
 
-async function setSkipNextAutoRefresh(skip: boolean): Promise<void> {
-  skipNextAutoRefresh = skip;
-  await extensionStorage.set({ [STORAGE_KEYS.skipNextAutoRefresh]: skip });
+async function setSkipNextAutoRefresh(tabId: number, skip: boolean): Promise<void> {
+  const key = tabStorageKey('skipNextAutoRefresh', tabId);
+  if (skip) {
+    await extensionStorage.set({ [key]: true });
+    return;
+  }
+  await extensionStorage.remove(key);
 }
 
-async function consumeSkipNextAutoRefresh(): Promise<boolean> {
-  if (skipNextAutoRefresh) {
-    await setSkipNextAutoRefresh(false);
-    return true;
-  }
-
-  const stored = await extensionStorage.get(STORAGE_KEYS.skipNextAutoRefresh);
-  if (!stored[STORAGE_KEYS.skipNextAutoRefresh]) return false;
-  await setSkipNextAutoRefresh(false);
+async function consumeSkipNextAutoRefresh(tabId: number): Promise<boolean> {
+  const key = tabStorageKey('skipNextAutoRefresh', tabId);
+  const stored = await extensionStorage.get(key);
+  if (!stored[key]) return false;
+  await setSkipNextAutoRefresh(tabId, false);
   return true;
 }
 
@@ -199,7 +219,7 @@ async function syncFirefoxSidebar(onBeatport: boolean): Promise<void> {
 async function syncPanelAvailability(tabId: number, url: string | undefined): Promise<void> {
   const onBeatport = isBeatportUrl(url);
   if (!onBeatport && openPanelCount > 0) {
-    void setSkipNextAutoRefresh(true);
+    void setSkipNextAutoRefresh(tabId, true);
   }
   await syncChromiumSidePanel(tabId, onBeatport);
   await syncFirefoxSidebar(onBeatport);
@@ -260,20 +280,35 @@ export default defineBackground({
       void syncPanelForTabId(tabId);
     });
 
-    browser.runtime.onMessage.addListener((message: BeatportAnalystMessage, _sender, sendResponse) => {
+    browser.tabs.onRemoved.addListener((tabId) => {
+      void removeTabState(tabId);
+    });
+
+    browser.runtime.onMessage.addListener((message: BeatportAnalystMessage, sender, sendResponse) => {
       if (message.type === 'TRACKS_EXTRACTED') {
-        void persistSnapshot(message.snapshot).then(() => sendResponse({ ok: true }));
+        const tabId = sender.tab?.id;
+        if (tabId == null) {
+          sendResponse({ ok: false, error: 'missing-tab' });
+          return false;
+        }
+        void persistSnapshot(tabId, message.snapshot).then(() => sendResponse({ ok: true }));
         return true;
       }
 
       if (message.type === 'EXTRACTION_FAILED') {
-        void persistExtractionError(message).then(() => sendResponse({ ok: true }));
+        const tabId = sender.tab?.id;
+        if (tabId == null) {
+          sendResponse({ ok: false, error: 'missing-tab' });
+          return false;
+        }
+        void persistExtractionError(tabId, message).then(() => sendResponse({ ok: true }));
         return true;
       }
 
       if (message.type === 'REQUEST_REFRESH') {
         void (async () => {
-          if (message.auto && (await consumeSkipNextAutoRefresh())) {
+          const tab = await findActiveBeatportTab();
+          if (message.auto && tab && (await consumeSkipNextAutoRefresh(tab.id))) {
             sendResponse({ reloaded: false, skipped: true });
             return;
           }
