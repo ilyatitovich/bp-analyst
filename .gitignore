@@ -2,6 +2,7 @@
 node_modules/
 .output/
 .wxt/
+.astro/
 dist/
 coverage/
 .pnpm-store/

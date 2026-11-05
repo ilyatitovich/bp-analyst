@@ -1,0 +1,102 @@
+---
+import { Font } from 'astro:assets'
+import '../styles/tokens.css'
+import '../styles/base.css'
+import '../styles/site.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const {
+  title = 'Beatport Analyst',
+  description = 'A pocket market brief for the Beatport list you already have open — BPM, key, and genre analysis in your browser.'
+} = Astro.props
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site)
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#07090d" />
+    <Font cssVariable="--font-display" />
+    <Font cssVariable="--font-body" />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#content">
+      Skip to main content
+    </a>
+    <div class="page">
+      <header class="page__header">
+        <div class="page__header-inner">
+          <a class="page__brand" href="/">
+            <img
+              class="page__brand-mark"
+              src="/icon.svg"
+              alt=""
+              width="36"
+              height="36"
+              decoding="async"
+            />
+            <span>Beatport Analyst</span>
+          </a>
+          <nav class="page__nav" aria-label="Page">
+            <a
+              class="page__nav-link"
+              href="https://github.com/ilyatitovich/bp-analyst"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="page__main" id="content" tabindex="-1">
+        <div class="page__main-inner">
+          <slot />
+        </div>
+      </main>
+
+      <footer class="page__footer">
+        <div class="page__footer-inner">
+          <p>Beatport Analyst — local track analysis for producers.</p>
+          <ul class="page__footer-links">
+            <li>
+              <a
+                class="page__footer-link"
+                href="https://github.com/ilyatitovich/bp-analyst"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
+            </li>
+            <li>
+              <a
+                class="page__footer-link"
+                href="https://ilyatitov.vercel.app/support"
+                rel="noopener noreferrer"
+              >
+                Support
+              </a>
+            </li>
+            <li>
+              <a class="page__footer-link" href="mailto:ilyatitovdev@gmail.com">
+                Contact
+              </a>
+            </li>
+          </ul>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

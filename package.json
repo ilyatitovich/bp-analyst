@@ -6,14 +6,17 @@
   "scripts": {
     "dev": "pnpm --filter @bp-analyst/extension dev",
     "dev:chrome": "pnpm --filter @bp-analyst/extension dev:chrome",
+    "dev:website": "pnpm --filter @bp-analyst/website dev",
     "build": "pnpm --filter @bp-analyst/extension build",
     "build:chrome": "pnpm --filter @bp-analyst/extension build:chrome",
+    "build:website": "pnpm --filter @bp-analyst/website build",
     "zip": "pnpm --filter @bp-analyst/extension zip",
     "zip:chrome": "pnpm --filter @bp-analyst/extension zip:chrome",
     "dev:firefox": "pnpm --filter @bp-analyst/extension dev:firefox",
     "build:firefox": "pnpm --filter @bp-analyst/extension build:firefox",
     "zip:firefox": "pnpm --filter @bp-analyst/extension zip:firefox",
     "typecheck": "pnpm --filter @bp-analyst/extension typecheck",
+    "typecheck:website": "pnpm --filter @bp-analyst/website typecheck",
     "lint": "pnpm --filter @bp-analyst/extension lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -29,6 +32,9 @@
       "pnpm --filter @bp-analyst/extension exec eslint --fix",
       "prettier --write"
     ],
+    "apps/website/**/*.{astro,css,ts,mjs,js}": [
+      "prettier --write"
+    ],
     "*.{json,md,css,html,yml,yaml}": [
       "prettier --write"
     ]
@@ -36,6 +42,7 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
-    "prettier": "^3.9.10"
+    "prettier": "^3.9.10",
+    "prettier-plugin-astro": "^1.1.2"
   }
 }
