@@ -52,7 +52,7 @@ pnpm build:firefox
 pnpm zip            # packaged zip for Edge; also zip:chrome / zip:firefox
 ```
 
-Download a packaged zip for your current browser from [ilyatitov.vercel.app/api/cases/beatport-analyst/download](https://ilyatitov.vercel.app/api/cases/beatport-analyst/download). Unzip it, or load the unpacked output from `.output/` (for example `.output/chrome-mv3-0.1.0` or `.output/edge-mv3-0.1.0`), via the browser’s extension page:
+Download a packaged zip for your current browser from [ilyatitov.vercel.app/api/cases/beatport-analyst/download](https://ilyatitov.vercel.app/api/cases/beatport-analyst/download). Unzip it, or load the unpacked output from `apps/extension/.output/` (for example `apps/extension/.output/chrome-mv3-0.1.0` or `apps/extension/.output/edge-mv3-0.1.0`), via the browser’s extension page:
 
 - Chrome: `chrome://extensions` → Developer mode → Load unpacked
 - Edge: `edge://extensions` → Developer mode → Load unpacked
@@ -74,12 +74,12 @@ flowchart LR
   session --> panel
 ```
 
-| Piece                                   | Role                                                                                                                             |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `entrypoints/beatport-fetch.content.ts` | MAIN-world content script (`document_start`). Hooks `fetch` / XHR for `/catalog/` JSON and SPA navigations.                      |
-| `entrypoints/beatport.content.ts`       | Isolated content script. Turns catalog payloads, `__NEXT_DATA__`, and the DOM into a track snapshot and messages the background. |
-| `entrypoints/background.ts`             | Service worker. Persists the live snapshot, badge count, and reload-on-refresh.                                                  |
-| `src/sidepanel/`                        | React side panel: brief, charts, filters, table, preview, CSV.                                                                   |
+| Piece                                                  | Role                                                                                                                             |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/extension/entrypoints/beatport-fetch.content.ts` | MAIN-world content script (`document_start`). Hooks `fetch` / XHR for `/catalog/` JSON and SPA navigations.                      |
+| `apps/extension/entrypoints/beatport.content.ts`       | Isolated content script. Turns catalog payloads, `__NEXT_DATA__`, and the DOM into a track snapshot and messages the background. |
+| `apps/extension/entrypoints/background.ts`             | Service worker. Persists the live snapshot, badge count, and reload-on-refresh.                                                  |
+| `apps/extension/src/sidepanel/`                        | React side panel: brief, charts, filters, table, preview, CSV.                                                                   |
 
 Live extraction lives in **session** storage, keyed per Beatport tab, so two charts can stay open side by side and closing the browser does not leave yesterday’s chart as “today.” Key notation preference is stored locally.
 
@@ -88,15 +88,17 @@ The extension only follows lists **you opened**. It does not crawl other charts 
 ## Project layout
 
 ```
-entrypoints/          # WXT entry: background, content script, fetch hook, side panel HTML
-src/
-  lib/analysis/       # BPM / Camelot stats, filters, Camelot conversion
-  lib/extract/        # Catalog JSON, Next.js data, DOM parsers, merge
-  lib/export/         # CSV
-  lib/messaging/      # Protocol + storage keys
-  lib/player/         # Preview URLs
-  sidepanel/          # React UI, hooks, charts
-assets/
+apps/
+  extension/            # WXT Manifest V3 extension (@bp-analyst/extension)
+    entrypoints/        # background, content script, fetch hook, side panel HTML
+    src/
+      lib/analysis/     # BPM / Camelot stats, filters, Camelot conversion
+      lib/extract/      # Catalog JSON, Next.js data, DOM parsers, merge
+      lib/export/       # CSV
+      lib/messaging/    # Protocol + storage keys
+      lib/player/       # Preview URLs
+      sidepanel/        # React UI, hooks, charts
+    assets/
 ```
 
 ## Scripts
@@ -105,7 +107,7 @@ assets/
 | --------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | `pnpm test`                                               | Vitest (parsers, stats, filters, CSV)                                             |
 | `pnpm test:e2e`                                           | Playwright E2E against a local Beatport fixture (needs `pnpm build:chrome` first) |
-| `pnpm bench:extract`                                      | Extraction + message-size benchmark; writes `docs/BENCHMARKS.md`                  |
+| `pnpm bench:extract`                                      | Extraction + message-size benchmark; writes `apps/extension/docs/BENCHMARKS.md`   |
 | `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build                                                              |
 | `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox`       | Packaged zip named `beatport-analyst-<version>-<browser>.zip`                     |
 

@@ -29,31 +29,31 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: pnpm --filter @bp-analyst/extension typecheck
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm --filter @bp-analyst/extension lint
 
       - name: Format
         run: pnpm format:check
 
       - name: Dead code
-        run: pnpm knip
+        run: pnpm --filter @bp-analyst/extension knip
 
       - name: Test
-        run: pnpm test
+        run: pnpm --filter @bp-analyst/extension test
 
       - name: Build Chrome
-        run: pnpm build:chrome
+        run: pnpm --filter @bp-analyst/extension build:chrome
 
       - name: Build Edge
-        run: pnpm build
+        run: pnpm --filter @bp-analyst/extension build
 
       - name: Build Firefox
-        run: pnpm build:firefox
+        run: pnpm --filter @bp-analyst/extension build:firefox
 
       - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm --filter @bp-analyst/extension exec playwright install --with-deps chromium
 
       - name: E2E
-        run: pnpm test:e2e
+        run: pnpm --filter @bp-analyst/extension test:e2e

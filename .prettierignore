@@ -1,6 +1,6 @@
 # Build / generated (also gitignored; kept explicit for local --write runs)
-.output/
-.wxt/
+**/.output/
+**/.wxt/
 dist/
 coverage/
 .pnpm-store/
