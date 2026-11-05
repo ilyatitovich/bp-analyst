@@ -1,28 +1,28 @@
-import { useCallback, useId, useState, type ReactNode } from "react";
-import { AccordionChevron } from "../icons/AccordionChevron";
+import { useCallback, useId, useState, type ReactNode } from 'react'
+import { AccordionChevron } from '../icons/AccordionChevron'
 
 export interface CollapsiblePanelProps {
-  title: string;
-  headerExtra?: ReactNode;
-  children: ReactNode;
-  defaultOpen?: boolean;
+  title: string
+  headerExtra?: ReactNode
+  children: ReactNode
+  defaultOpen?: boolean
 }
 
 export function CollapsiblePanel({
   title,
   headerExtra,
   children,
-  defaultOpen = true,
+  defaultOpen = true
 }: CollapsiblePanelProps) {
-  const [open, setOpen] = useState(defaultOpen);
-  const contentId = `${useId()}-content`;
+  const [open, setOpen] = useState(defaultOpen)
+  const contentId = `${useId()}-content`
 
   const toggle = useCallback(() => {
-    setOpen((value) => !value);
-  }, []);
+    setOpen(value => !value)
+  }, [])
 
   return (
-    <section className={`panel-card accordion-card${open ? "" : " collapsed"}`}>
+    <section className={`panel-card accordion-card${open ? '' : ' collapsed'}`}>
       <div className="accordion-header">
         <button
           type="button"
@@ -36,7 +36,7 @@ export function CollapsiblePanel({
         {headerExtra}
         <button
           type="button"
-          className={`accordion-chevron${open ? " open" : ""}`}
+          className={`accordion-chevron${open ? ' open' : ''}`}
           aria-expanded={open}
           aria-controls={contentId}
           aria-label={open ? `Collapse ${title}` : `Expand ${title}`}
@@ -46,7 +46,7 @@ export function CollapsiblePanel({
         </button>
       </div>
       <div
-        className={`accordion-body${open ? " open" : ""}`}
+        className={`accordion-body${open ? ' open' : ''}`}
         id={contentId}
         aria-hidden={!open}
         inert={!open}
@@ -54,5 +54,5 @@ export function CollapsiblePanel({
         <div className="accordion-body-inner">{children}</div>
       </div>
     </section>
-  );
+  )
 }

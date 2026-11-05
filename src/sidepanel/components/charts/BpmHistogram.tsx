@@ -2,19 +2,19 @@ import {
   bpmBucketRangeLabel,
   bpmBucketStartLabel,
   formatBpm,
-  formatBpmRange,
-} from "../../../lib/utils/format";
-import type { TrackAnalysis } from "../../hooks/useTrackAnalysis";
-import { FilterChips } from "../ui/FilterChips";
-import { StatCard } from "../ui/StatCard";
-import { ColumnHistogram } from "./ColumnHistogram";
+  formatBpmRange
+} from '../../../lib/utils/format'
+import type { TrackAnalysis } from '../../hooks/useTrackAnalysis'
+import { FilterChips } from '../ui/FilterChips'
+import { StatCard } from '../ui/StatCard'
+import { ColumnHistogram } from './ColumnHistogram'
 
 export interface BpmHistogramProps {
-  analysis: TrackAnalysis;
+  analysis: TrackAnalysis
 }
 
 export function BpmHistogram({ analysis }: BpmHistogramProps) {
-  const { stats, filteredStats, filters, toggleFilter, clearFilter } = analysis;
+  const { stats, filteredStats, filters, toggleFilter, clearFilter } = analysis
 
   return (
     <ColumnHistogram
@@ -22,13 +22,13 @@ export function BpmHistogram({ analysis }: BpmHistogramProps) {
       items={stats.bpmHistogram}
       formatLabel={bpmBucketStartLabel}
       selectedLabels={new Set(filters.bpmBuckets)}
-      onToggle={(label) => toggleFilter("bpmBuckets", label)}
+      onToggle={label => toggleFilter('bpmBuckets', label)}
       headerExtra={
         <FilterChips
           values={filters.bpmBuckets}
           formatValue={bpmBucketRangeLabel}
-          onRemove={(label) => toggleFilter("bpmBuckets", label)}
-          onReset={() => clearFilter("bpmBuckets")}
+          onRemove={label => toggleFilter('bpmBuckets', label)}
+          onReset={() => clearFilter('bpmBuckets')}
         />
       }
       leading={
@@ -42,5 +42,5 @@ export function BpmHistogram({ analysis }: BpmHistogramProps) {
         </div>
       }
     />
-  );
+  )
 }

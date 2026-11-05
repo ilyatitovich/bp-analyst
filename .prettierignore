@@ -1,0 +1,16 @@
+# Build / generated (also gitignored; kept explicit for local --write runs)
+.output/
+.wxt/
+dist/
+coverage/
+.pnpm-store/
+node_modules/
+
+# Lockfile — do not let Prettier rewrite it
+pnpm-lock.yaml
+
+# Editor / agent state
+.cursor/
+
+# Packaged extension artifacts
+*.zip

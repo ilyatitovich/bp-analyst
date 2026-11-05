@@ -1,7 +1,7 @@
 export interface ReportStatProps {
-  label: string;
-  value: string;
-  caption: string;
+  label: string
+  value: string
+  caption: string
 }
 
 export function ReportStat({ label, value, caption }: ReportStatProps) {
@@ -11,5 +11,5 @@ export function ReportStat({ label, value, caption }: ReportStatProps) {
       <strong>{value}</strong>
       <p>{caption}</p>
     </div>
-  );
+  )
 }

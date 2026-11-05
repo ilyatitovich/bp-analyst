@@ -1,21 +1,21 @@
-import type { KeyNotation } from "../../lib/messaging/protocol";
-import type { ExtractionSnapshot } from "../../lib/types/track";
-import { scopedFacetFromPageUrl } from "../../lib/utils/page";
-import type { PreviewPlayerHandle } from "../hooks/usePreviewPlayer";
-import type { TrackAnalysis } from "../hooks/useTrackAnalysis";
-import { BpmHistogram } from "./charts/BpmHistogram";
-import { CountTable } from "./charts/CountTable";
-import { DistributionChart } from "./charts/DistributionChart";
-import { KeyHistogram } from "./charts/KeyHistogram";
-import { MarketBrief } from "./MarketBrief";
-import { TrackTable } from "./TrackTable";
+import type { KeyNotation } from '../../lib/messaging/protocol'
+import type { ExtractionSnapshot } from '../../lib/types/track'
+import { scopedFacetFromPageUrl } from '../../lib/utils/page'
+import type { PreviewPlayerHandle } from '../hooks/usePreviewPlayer'
+import type { TrackAnalysis } from '../hooks/useTrackAnalysis'
+import { BpmHistogram } from './charts/BpmHistogram'
+import { CountTable } from './charts/CountTable'
+import { DistributionChart } from './charts/DistributionChart'
+import { KeyHistogram } from './charts/KeyHistogram'
+import { MarketBrief } from './MarketBrief'
+import { TrackTable } from './TrackTable'
 
 export interface AnalysisViewProps {
-  snapshot: ExtractionSnapshot | null;
-  analysis: TrackAnalysis;
-  keyNotation: KeyNotation;
-  onKeyNotationChange: (notation: KeyNotation) => void;
-  player: PreviewPlayerHandle;
+  snapshot: ExtractionSnapshot | null
+  analysis: TrackAnalysis
+  keyNotation: KeyNotation
+  onKeyNotationChange: (notation: KeyNotation) => void
+  player: PreviewPlayerHandle
 }
 
 export function AnalysisView({
@@ -23,13 +23,16 @@ export function AnalysisView({
   analysis,
   keyNotation,
   onKeyNotationChange,
-  player,
+  player
 }: AnalysisViewProps) {
-  const scopedFacet = scopedFacetFromPageUrl(snapshot?.pageUrl);
-  const { stats } = analysis;
-  const showGenrePanel = scopedFacet !== "genre" && stats.genreDistribution.length > 1;
-  const showLabelPanel = scopedFacet !== "label" && stats.labelDistribution.length > 1;
-  const showArtistPanel = scopedFacet !== "artist" && stats.artistDistribution.length > 1;
+  const scopedFacet = scopedFacetFromPageUrl(snapshot?.pageUrl)
+  const { stats } = analysis
+  const showGenrePanel =
+    scopedFacet !== 'genre' && stats.genreDistribution.length > 1
+  const showLabelPanel =
+    scopedFacet !== 'label' && stats.labelDistribution.length > 1
+  const showArtistPanel =
+    scopedFacet !== 'artist' && stats.artistDistribution.length > 1
 
   return (
     <>
@@ -79,7 +82,11 @@ export function AnalysisView({
         </section>
       )}
 
-      <TrackTable analysis={analysis} keyNotation={keyNotation} player={player} />
+      <TrackTable
+        analysis={analysis}
+        keyNotation={keyNotation}
+        player={player}
+      />
     </>
-  );
+  )
 }

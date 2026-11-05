@@ -1,29 +1,29 @@
-import { useEffect } from "react";
-import { AnalysisView } from "./components/AnalysisView";
-import { ExtractionHelpCard } from "./components/ExtractionHelp";
-import { Header } from "./components/Header";
-import { PreviewPlayer } from "./components/PreviewPlayer";
-import { usePreviewPlayer } from "./hooks/usePreviewPlayer";
-import { useRefresh } from "./hooks/useRefresh";
-import { useStorageState } from "./hooks/useStorageState";
-import { useTrackAnalysis } from "./hooks/useTrackAnalysis";
+import { useEffect } from 'react'
+import { AnalysisView } from './components/AnalysisView'
+import { ExtractionHelpCard } from './components/ExtractionHelp'
+import { Header } from './components/Header'
+import { PreviewPlayer } from './components/PreviewPlayer'
+import { usePreviewPlayer } from './hooks/usePreviewPlayer'
+import { useRefresh } from './hooks/useRefresh'
+import { useStorageState } from './hooks/useStorageState'
+import { useTrackAnalysis } from './hooks/useTrackAnalysis'
 
 export function App() {
   const { tabId, snapshot, extractionError, keyNotation, setKeyNotation } =
-    useStorageState();
-  const analysis = useTrackAnalysis(snapshot, tabId);
+    useStorageState()
+  const analysis = useTrackAnalysis(snapshot, tabId)
   const { refreshing, refreshFailed, beatportReloadAttempted, requestRefresh } =
-    useRefresh(snapshot, extractionError);
-  const player = usePreviewPlayer(analysis.sortedTracks);
+    useRefresh(snapshot, extractionError)
+  const player = usePreviewPlayer(analysis.sortedTracks)
 
   useEffect(() => {
-    player.stop();
-  }, [player.stop, snapshot?.pageUrl]);
+    player.stop()
+  }, [player.stop, snapshot?.pageUrl])
 
   const showExtractionHelp =
     !refreshing &&
     analysis.tracks.length === 0 &&
-    (Boolean(extractionError) || refreshFailed || beatportReloadAttempted);
+    (Boolean(extractionError) || refreshFailed || beatportReloadAttempted)
 
   return (
     <div className="app">
@@ -51,5 +51,5 @@ export function App() {
       </main>
       <PreviewPlayer player={player} />
     </div>
-  );
+  )
 }

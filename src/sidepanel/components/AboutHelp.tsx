@@ -1,25 +1,25 @@
-import { useEffect, useId, useRef, useState } from "react";
-import { CloseIcon } from "./icons/CloseIcon";
-import { HelpIcon } from "./icons/HelpIcon";
-import { SupportContact } from "./SupportContact";
-import { SupportMeLink } from "./SupportMeLink";
+import { useEffect, useId, useRef, useState } from 'react'
+import { CloseIcon } from './icons/CloseIcon'
+import { HelpIcon } from './icons/HelpIcon'
+import { SupportContact } from './SupportContact'
+import { SupportMeLink } from './SupportMeLink'
 
 export function AboutHelpButton() {
-  const [open, setOpen] = useState(false);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
-  const dialogId = useId();
+  const [open, setOpen] = useState(false)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const titleId = useId()
+  const dialogId = useId()
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
+    const dialog = dialogRef.current
+    if (!dialog) return
 
     if (open) {
-      if (!dialog.open) dialog.showModal();
+      if (!dialog.open) dialog.showModal()
     } else if (dialog.open) {
-      dialog.close();
+      dialog.close()
     }
-  }, [open]);
+  }, [open])
 
   return (
     <>
@@ -42,9 +42,9 @@ export function AboutHelpButton() {
         closedby="any"
         aria-labelledby={titleId}
         onClose={() => setOpen(false)}
-        onClick={(event) => {
+        onClick={event => {
           if (event.target === event.currentTarget) {
-            event.currentTarget.close();
+            event.currentTarget.close()
           }
         }}
       >
@@ -121,5 +121,5 @@ export function AboutHelpButton() {
         </div>
       </dialog>
     </>
-  );
+  )
 }

@@ -1,31 +1,31 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { SUPPORT_EMAIL } from "../../lib/constants/support";
-import { copyTextToClipboard } from "../../lib/utils/clipboard";
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { SUPPORT_EMAIL } from '../../lib/constants/support'
+import { copyTextToClipboard } from '../../lib/utils/clipboard'
 
 export function CopyEmailButton() {
-  const [copied, setCopied] = useState(false);
-  const resetTimer = useRef<number | null>(null);
+  const [copied, setCopied] = useState(false)
+  const resetTimer = useRef<number | null>(null)
 
   useEffect(() => {
     return () => {
       if (resetTimer.current !== null) {
-        window.clearTimeout(resetTimer.current);
+        window.clearTimeout(resetTimer.current)
       }
-    };
-  }, []);
+    }
+  }, [])
 
   const copy = useCallback(async () => {
     try {
-      await copyTextToClipboard(SUPPORT_EMAIL);
-      setCopied(true);
+      await copyTextToClipboard(SUPPORT_EMAIL)
+      setCopied(true)
       if (resetTimer.current !== null) {
-        window.clearTimeout(resetTimer.current);
+        window.clearTimeout(resetTimer.current)
       }
-      resetTimer.current = window.setTimeout(() => setCopied(false), 2000);
+      resetTimer.current = window.setTimeout(() => setCopied(false), 2000)
     } catch {
-      setCopied(false);
+      setCopied(false)
     }
-  }, []);
+  }, [])
 
   return (
     <div className="support-email-row">
@@ -38,10 +38,10 @@ export function CopyEmailButton() {
         type="button"
         className="copy-email-btn"
         onClick={() => void copy()}
-        aria-label={copied ? "Email copied" : `Copy ${SUPPORT_EMAIL}`}
+        aria-label={copied ? 'Email copied' : `Copy ${SUPPORT_EMAIL}`}
       >
-        {copied ? "Copied" : "Copy"}
+        {copied ? 'Copied' : 'Copy'}
       </button>
     </div>
-  );
+  )
 }

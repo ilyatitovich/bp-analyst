@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { buildCsvFilename, tracksToCsv } from '../../../src/lib/export/csv';
-import type { Track } from '../../../src/lib/types/track';
+import { describe, expect, it } from 'vitest'
+import { buildCsvFilename, tracksToCsv } from '../../../src/lib/export/csv'
+import type { Track } from '../../../src/lib/types/track'
 
 const track: Track = {
   id: 1,
@@ -32,18 +32,20 @@ const track: Track = {
   pageUrl: 'https://www.beatport.com/genre/melodic-house-techno/90/top-100',
   pageTitle: 'Beatport',
   extractedAt: '2026-08-18T08:00:00.000Z',
-  source: 'next-data',
-};
+  source: 'next-data'
+}
 
 describe('tracksToCsv', () => {
   it('serializes rows with escaping and bom', () => {
-    const csv = tracksToCsv([track]);
-    expect(csv.startsWith('\uFEFFposition,title')).toBe(true);
-    expect(csv).toContain('"Reason, Why"');
-    expect(csv).toContain('Artist One; Artist Two');
-  });
+    const csv = tracksToCsv([track])
+    expect(csv.startsWith('\uFEFFposition,title')).toBe(true)
+    expect(csv).toContain('"Reason, Why"')
+    expect(csv).toContain('Artist One; Artist Two')
+  })
 
   it('builds a descriptive filename', () => {
-    expect(buildCsvFilename(track.pageUrl)).toMatch(/^beatport-genre-melodic-house-techno-90-top-100-\d{4}-\d{2}-\d{2}\.csv$/);
-  });
-});
+    expect(buildCsvFilename(track.pageUrl)).toMatch(
+      /^beatport-genre-melodic-house-techno-90-top-100-\d{4}-\d{2}-\d{2}\.csv$/
+    )
+  })
+})

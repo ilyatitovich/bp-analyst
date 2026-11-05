@@ -9,5 +9,5 @@ export function CloseIcon() {
         strokeLinecap="round"
       />
     </svg>
-  );
+  )
 }

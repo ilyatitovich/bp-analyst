@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { browser } from "wxt/browser";
-import { computeTrackStats } from "../../lib/analysis/stats";
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { browser } from 'wxt/browser'
+import { computeTrackStats } from '../../lib/analysis/stats'
 import {
   DEFAULT_TRACK_SORT,
   filterTracks,
@@ -10,108 +10,106 @@ import {
   toggleListValue,
   type FilterListKey,
   type TrackSort,
-  type TrackSortColumn,
-} from "../../lib/analysis/filters";
-import { buildCsvFilename, downloadCsv, tracksToCsv } from "../../lib/export/csv";
-import { uniqueTracks } from "../../lib/extract/normalize";
+  type TrackSortColumn
+} from '../../lib/analysis/filters'
+import {
+  buildCsvFilename,
+  downloadCsv,
+  tracksToCsv
+} from '../../lib/export/csv'
+import { uniqueTracks } from '../../lib/extract/normalize'
 import {
   DEFAULT_FILTERS,
   type ExtractionSnapshot,
-  type TrackFilters,
-} from "../../lib/types/track";
+  type TrackFilters
+} from '../../lib/types/track'
 
 export function useTrackAnalysis(
   snapshot: ExtractionSnapshot | null,
-  tabId: number | null = null,
+  tabId: number | null = null
 ) {
-  const [filters, setFilters] = useState<TrackFilters>(DEFAULT_FILTERS);
-  const [sort, setSort] = useState<TrackSort>(DEFAULT_TRACK_SORT);
-  const tracks = useMemo(
-    () => uniqueTracks(snapshot?.tracks ?? []),
-    [snapshot],
-  );
-  const stats = useMemo(() => computeTrackStats(tracks), [tracks]);
+  const [filters, setFilters] = useState<TrackFilters>(DEFAULT_FILTERS)
+  const [sort, setSort] = useState<TrackSort>(DEFAULT_TRACK_SORT)
+  const tracks = useMemo(() => uniqueTracks(snapshot?.tracks ?? []), [snapshot])
+  const stats = useMemo(() => computeTrackStats(tracks), [tracks])
   const filteredTracks = useMemo(
     () => filterTracks(tracks, filters),
-    [filters, tracks],
-  );
+    [filters, tracks]
+  )
   const sortedTracks = useMemo(
     () => sortTracks(filteredTracks, sort),
-    [filteredTracks, sort],
-  );
+    [filteredTracks, sort]
+  )
   const filteredStats = useMemo(
     () => computeTrackStats(filteredTracks),
-    [filteredTracks],
-  );
-  const filtersActive = hasActiveFilters(filters);
+    [filteredTracks]
+  )
+  const filtersActive = hasActiveFilters(filters)
 
   useEffect(() => {
-    setFilters(DEFAULT_FILTERS);
-    setSort(DEFAULT_TRACK_SORT);
-  }, [snapshot?.pageUrl]);
+    setFilters(DEFAULT_FILTERS)
+    setSort(DEFAULT_TRACK_SORT)
+  }, [snapshot?.pageUrl])
 
   const toggleFilter = useCallback((key: FilterListKey, value: string) => {
-    setFilters((current) => ({
+    setFilters(current => ({
       ...current,
-      [key]: toggleListValue(current[key], value),
-    }));
-  }, []);
+      [key]: toggleListValue(current[key], value)
+    }))
+  }, [])
 
   const clearFilter = useCallback((key: FilterListKey) => {
-    setFilters((current) => ({ ...current, [key]: [] }));
-  }, []);
+    setFilters(current => ({ ...current, [key]: [] }))
+  }, [])
 
   const resetFilters = useCallback(() => {
-    setFilters(DEFAULT_FILTERS);
-  }, []);
+    setFilters(DEFAULT_FILTERS)
+  }, [])
 
   const setTitleQuery = useCallback((titleQuery: string) => {
-    setFilters((current) => ({ ...current, titleQuery }));
-  }, []);
+    setFilters(current => ({ ...current, titleQuery }))
+  }, [])
 
   const toggleExclusive = useCallback(() => {
-    setFilters((current) => ({
+    setFilters(current => ({
       ...current,
-      includeExclusiveOnly: !current.includeExclusiveOnly,
-    }));
-  }, []);
+      includeExclusiveOnly: !current.includeExclusiveOnly
+    }))
+  }, [])
 
   const toggleHype = useCallback(() => {
-    setFilters((current) => ({
+    setFilters(current => ({
       ...current,
-      includeHypeOnly: !current.includeHypeOnly,
-    }));
-  }, []);
+      includeHypeOnly: !current.includeHypeOnly
+    }))
+  }, [])
 
   const cycleSort = useCallback((column: TrackSortColumn) => {
-    setSort((current) => nextTrackSort(current, column));
-  }, []);
+    setSort(current => nextTrackSort(current, column))
+  }, [])
 
   const toggleFreshness = useCallback((days: 7 | 30) => {
-    setFilters((current) => ({
+    setFilters(current => ({
       ...current,
-      publishedWithinDays: current.publishedWithinDays === days ? null : days,
-    }));
-  }, []);
+      publishedWithinDays: current.publishedWithinDays === days ? null : days
+    }))
+  }, [])
 
   const exportCsv = useCallback(() => {
-    if (!snapshot) return;
-    downloadCsv(
-      buildCsvFilename(snapshot.pageUrl),
-      tracksToCsv(sortedTracks),
-    );
-  }, [sortedTracks, snapshot]);
+    if (!snapshot) return
+    downloadCsv(buildCsvFilename(snapshot.pageUrl), tracksToCsv(sortedTracks))
+  }, [sortedTracks, snapshot])
 
   const downloadReport = useCallback(() => {
-    const url = new URL(browser.runtime.getURL("/report.html"));
-    url.searchParams.set("print", "1");
-    url.searchParams.set("t", String(Date.now()));
-    if (tabId != null) url.searchParams.set("tab", String(tabId));
-    const opened = window.open(url.href, "bp-analyst-report");
+    const url = new URL(browser.runtime.getURL('/report.html'))
+    url.searchParams.set('print', '1')
+    url.searchParams.set('t', String(Date.now()))
+    if (tabId != null) url.searchParams.set('tab', String(tabId))
+    const opened = window.open(url.href, 'bp-analyst-report')
     if (!opened) {
-      void browser.tabs.create({ url: url.href });
+      void browser.tabs.create({ url: url.href })
     }
-  }, [tabId]);
+  }, [tabId])
 
   return {
     tracks,
@@ -130,8 +128,8 @@ export function useTrackAnalysis(
     toggleFreshness,
     cycleSort,
     exportCsv,
-    downloadReport,
-  };
+    downloadReport
+  }
 }
 
-export type TrackAnalysis = ReturnType<typeof useTrackAnalysis>;
+export type TrackAnalysis = ReturnType<typeof useTrackAnalysis>

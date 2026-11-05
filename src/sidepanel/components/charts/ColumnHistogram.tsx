@@ -1,17 +1,17 @@
-import type { ReactNode } from "react";
-import type { Bucket } from "../../../lib/analysis/stats";
-import { cx, selectionClassName } from "../../../lib/utils/cx";
-import { CollapsiblePanel } from "../ui/CollapsiblePanel";
+import type { ReactNode } from 'react'
+import type { Bucket } from '../../../lib/analysis/stats'
+import { cx, selectionClassName } from '../../../lib/utils/cx'
+import { CollapsiblePanel } from '../ui/CollapsiblePanel'
 
 export interface ColumnHistogramProps {
-  title: string;
-  items: Bucket[];
-  dense?: boolean;
-  formatLabel?: (label: string) => string;
-  headerExtra?: ReactNode;
-  selectedLabels?: Set<string>;
-  onToggle?: (label: string) => void;
-  leading?: ReactNode;
+  title: string
+  items: Bucket[]
+  dense?: boolean
+  formatLabel?: (label: string) => string
+  headerExtra?: ReactNode
+  selectedLabels?: Set<string>
+  onToggle?: (label: string) => void
+  leading?: ReactNode
 }
 
 export function ColumnHistogram({
@@ -22,25 +22,28 @@ export function ColumnHistogram({
   headerExtra,
   selectedLabels,
   onToggle,
-  leading,
+  leading
 }: ColumnHistogramProps) {
-  const max = Math.max(1, ...items.map((item) => item.count));
-  const hasSelection = Boolean(selectedLabels?.size);
+  const max = Math.max(1, ...items.map(item => item.count))
+  const hasSelection = Boolean(selectedLabels?.size)
 
   return (
     <CollapsiblePanel title={title} headerExtra={headerExtra}>
       {leading}
       {items.length ? (
         <div
-          className={`column-histogram${dense ? " column-histogram-dense" : ""}`}
+          className={`column-histogram${dense ? ' column-histogram-dense' : ''}`}
         >
-          {items.map((item) => {
-            const selected = selectedLabels?.has(item.label) ?? false;
-            const label = formatLabel ? formatLabel(item.label) : item.label;
+          {items.map(item => {
+            const selected = selectedLabels?.has(item.label) ?? false
+            const label = formatLabel ? formatLabel(item.label) : item.label
 
             return (
               <button
-                className={cx("hist-col", selectionClassName(selected, hasSelection))}
+                className={cx(
+                  'hist-col',
+                  selectionClassName(selected, hasSelection)
+                )}
                 disabled={!item.count || !onToggle}
                 key={item.label}
                 onClick={() => onToggle?.(item.label)}
@@ -50,10 +53,10 @@ export function ColumnHistogram({
                 }
                 type="button"
               >
-                <span className="hist-count">{item.count || ""}</span>
+                <span className="hist-count">{item.count || ''}</span>
                 <div className="hist-track">
                   <span className="hist-popup" aria-hidden="true">
-                    {item.label.replace("-", "–")}
+                    {item.label.replace('-', '–')}
                   </span>
                   <div
                     className="hist-fill"
@@ -62,12 +65,12 @@ export function ColumnHistogram({
                 </div>
                 <span className="hist-label">{label}</span>
               </button>
-            );
+            )
           })}
         </div>
       ) : (
         <p className="muted">No data</p>
       )}
     </CollapsiblePanel>
-  );
+  )
 }

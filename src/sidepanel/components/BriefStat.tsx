@@ -1,12 +1,12 @@
-import { cx } from "../../lib/utils/cx";
+import { cx } from '../../lib/utils/cx'
 
 export interface BriefStatProps {
-  label: string;
-  value: string;
-  hint: string;
-  pressed?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
+  label: string
+  value: string
+  hint: string
+  pressed?: boolean
+  disabled?: boolean
+  onClick?: () => void
 }
 
 export function BriefStat({
@@ -15,13 +15,13 @@ export function BriefStat({
   hint,
   pressed,
   disabled,
-  onClick,
+  onClick
 }: BriefStatProps) {
   const className = cx(
-    "brief-stat",
-    !onClick && "brief-stat-static",
-    pressed && "selected",
-  );
+    'brief-stat',
+    !onClick && 'brief-stat-static',
+    pressed && 'selected'
+  )
 
   const body = (
     <>
@@ -29,10 +29,10 @@ export function BriefStat({
       <strong>{value}</strong>
       <span className="brief-stat-popup">{hint}</span>
     </>
-  );
+  )
 
   if (!onClick) {
-    return <div className={className}>{body}</div>;
+    return <div className={className}>{body}</div>
   }
 
   return (
@@ -45,5 +45,5 @@ export function BriefStat({
     >
       {body}
     </button>
-  );
+  )
 }

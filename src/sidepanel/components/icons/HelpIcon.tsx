@@ -18,5 +18,5 @@ export function HelpIcon() {
       />
       <circle cx="8" cy="11.2" r="0.8" fill="currentColor" />
     </svg>
-  );
+  )
 }

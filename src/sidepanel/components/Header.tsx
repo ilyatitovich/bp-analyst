@@ -1,17 +1,17 @@
-import { cleanPageTitle } from "../../lib/export/report";
-import type { ExtractionErrorState } from "../../lib/messaging/protocol";
-import type { ExtractionSnapshot } from "../../lib/types/track";
-import { headerStatus } from "../../lib/utils/format";
-import type { TrackAnalysis } from "../hooks/useTrackAnalysis";
-import { AboutHelpButton } from "./AboutHelp";
+import { cleanPageTitle } from '../../lib/export/report'
+import type { ExtractionErrorState } from '../../lib/messaging/protocol'
+import type { ExtractionSnapshot } from '../../lib/types/track'
+import { headerStatus } from '../../lib/utils/format'
+import type { TrackAnalysis } from '../hooks/useTrackAnalysis'
+import { AboutHelpButton } from './AboutHelp'
 
 export interface HeaderProps {
-  snapshot: ExtractionSnapshot | null;
-  extractionError: ExtractionErrorState | null;
-  analysis: TrackAnalysis;
-  refreshing: boolean;
-  showExtractionHelp: boolean;
-  onRefresh: () => void;
+  snapshot: ExtractionSnapshot | null
+  extractionError: ExtractionErrorState | null
+  analysis: TrackAnalysis
+  refreshing: boolean
+  showExtractionHelp: boolean
+  onRefresh: () => void
 }
 
 export function Header({
@@ -20,14 +20,14 @@ export function Header({
   analysis,
   refreshing,
   showExtractionHelp,
-  onRefresh,
+  onRefresh
 }: HeaderProps) {
-  const { tracks, sortedTracks, filtersActive, filters, stats } = analysis;
+  const { tracks, sortedTracks, filtersActive, filters, stats } = analysis
   const title = snapshot?.pageTitle
     ? cleanPageTitle(snapshot.pageTitle)
     : extractionError?.pageTitle
       ? cleanPageTitle(extractionError.pageTitle)
-      : "Open a Beatport track list page";
+      : 'Open a Beatport track list page'
   const status = headerStatus({
     refreshing,
     showExtractionHelp,
@@ -35,8 +35,8 @@ export function Header({
     source: snapshot?.source,
     trackCount: tracks.length,
     visibleCount: sortedTracks.length,
-    filtersActive,
-  });
+    filtersActive
+  })
 
   return (
     <header className="panel-card header-card">
@@ -55,7 +55,7 @@ export function Header({
           </button>
         ) : null}
         <button disabled={refreshing} onClick={onRefresh} type="button">
-          {refreshing ? "Reloading…" : "Refresh"}
+          {refreshing ? 'Reloading…' : 'Refresh'}
         </button>
         <button
           onClick={analysis.exportCsv}
@@ -81,7 +81,7 @@ export function Header({
             <input
               type="search"
               value={filters.titleQuery}
-              onChange={(event) => analysis.setTitleQuery(event.target.value)}
+              onChange={event => analysis.setTitleQuery(event.target.value)}
               placeholder="Search title, mix, artists"
               autoComplete="off"
               spellCheck={false}
@@ -90,16 +90,18 @@ export function Header({
           <div className="header-filter-chips">
             <button
               type="button"
-              className={`brief-chip${filters.includeExclusiveOnly ? " selected" : ""}`}
+              className={`brief-chip${filters.includeExclusiveOnly ? ' selected' : ''}`}
               aria-pressed={filters.includeExclusiveOnly}
-              disabled={stats.exclusiveCount === 0 && !filters.includeExclusiveOnly}
+              disabled={
+                stats.exclusiveCount === 0 && !filters.includeExclusiveOnly
+              }
               onClick={analysis.toggleExclusive}
             >
               Exclusive
             </button>
             <button
               type="button"
-              className={`brief-chip${filters.includeHypeOnly ? " selected" : ""}`}
+              className={`brief-chip${filters.includeHypeOnly ? ' selected' : ''}`}
               aria-pressed={filters.includeHypeOnly}
               disabled={stats.hypeCount === 0 && !filters.includeHypeOnly}
               onClick={analysis.toggleHype}
@@ -110,5 +112,5 @@ export function Header({
         </div>
       ) : null}
     </header>
-  );
+  )
 }

@@ -1,0 +1,201 @@
+{
+  "props": {
+    "pageProps": {
+      "dehydratedState": {
+        "queries": [
+          {
+            "state": {
+              "data": {
+                "results": [
+                  {
+                    "id": 888001,
+                    "name": "Widget Hit",
+                    "mix_name": "Original Mix",
+                    "artists": [
+                      {
+                        "id": 1,
+                        "name": "Widget Artist",
+                        "slug": "widget-artist"
+                      }
+                    ],
+                    "remixers": [],
+                    "bpm": 120,
+                    "key": {
+                      "name": "G Minor",
+                      "camelot_number": 6,
+                      "camelot_letter": "A"
+                    },
+                    "genre": {
+                      "id": 11,
+                      "name": "Tech House",
+                      "slug": "tech-house"
+                    },
+                    "release": {
+                      "name": "Widget Hit",
+                      "label": {
+                        "id": 1,
+                        "name": "Widget Label",
+                        "slug": "widget-label"
+                      }
+                    },
+                    "slug": "widget-hit"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "state": {
+              "data": {
+                "count": 100,
+                "next": "https://api.beatport.com/v4/catalog/tracks/?genre_id=11&page=2",
+                "previous": null,
+                "results": [
+                  {
+                    "id": 30100101,
+                    "name": "Night Drive",
+                    "mix_name": "Extended Mix",
+                    "artists": [
+                      { "id": 9001, "name": "Alex Reed", "slug": "alex-reed" }
+                    ],
+                    "remixers": [],
+                    "bpm": 126,
+                    "key": {
+                      "name": "F Minor",
+                      "camelot_number": 4,
+                      "camelot_letter": "A"
+                    },
+                    "genre": {
+                      "id": 11,
+                      "name": "Tech House",
+                      "slug": "tech-house"
+                    },
+                    "sub_genre": null,
+                    "release": {
+                      "name": "Night Drive (Extended Mix)",
+                      "label": {
+                        "id": 7001,
+                        "name": "Northline",
+                        "slug": "northline"
+                      }
+                    },
+                    "length": "6:12",
+                    "length_ms": 372000,
+                    "publish_date": "2026-06-12",
+                    "price": { "display": "$1.79" },
+                    "exclusive": false,
+                    "is_hype": true,
+                    "isrc": "QZESX2600101",
+                    "slug": "night-drive",
+                    "sample_url": "https://geo-samples.beatport.com/track/fixture-night-drive.LOFI.mp3",
+                    "sample_start_ms": 90000,
+                    "sample_end_ms": 210000,
+                    "image": {
+                      "uri": "https://geo-media.beatport.com/image_size/590x404/fixture-night-drive.jpg",
+                      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/fixture-night-drive.jpg"
+                    }
+                  },
+                  {
+                    "id": 30100102,
+                    "name": "Warehouse Pulse",
+                    "mix_name": "Original Mix",
+                    "artists": [
+                      { "id": 9002, "name": "Mira Sol", "slug": "mira-sol" },
+                      { "id": 9003, "name": "Jon Vale", "slug": "jon-vale" }
+                    ],
+                    "remixers": [],
+                    "bpm": 128,
+                    "key": {
+                      "name": "A Minor",
+                      "camelot_number": 8,
+                      "camelot_letter": "A"
+                    },
+                    "genre": {
+                      "id": 11,
+                      "name": "Tech House",
+                      "slug": "tech-house"
+                    },
+                    "sub_genre": {
+                      "id": 14,
+                      "name": "Minimal / Deep Tech",
+                      "slug": "minimal-deep-tech"
+                    },
+                    "release": {
+                      "name": "Warehouse Pulse",
+                      "label": {
+                        "id": 7002,
+                        "name": "Dockside",
+                        "slug": "dockside"
+                      }
+                    },
+                    "length": "5:44",
+                    "length_ms": 344000,
+                    "publish_date": "2026-06-05",
+                    "price": { "display": "$1.79" },
+                    "exclusive": true,
+                    "is_hype": false,
+                    "isrc": "QZESX2600102",
+                    "slug": "warehouse-pulse",
+                    "sample_url": "https://geo-samples.beatport.com/track/fixture-warehouse-pulse.LOFI.mp3",
+                    "sample_start_ms": 110000,
+                    "sample_end_ms": 230000,
+                    "image": {
+                      "uri": "https://geo-media.beatport.com/image_size/590x404/fixture-warehouse-pulse.jpg",
+                      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/fixture-warehouse-pulse.jpg"
+                    }
+                  },
+                  {
+                    "id": 30100103,
+                    "name": "Late Signal",
+                    "mix_name": "Radio Edit",
+                    "artists": [
+                      { "id": 9004, "name": "Kade Holt", "slug": "kade-holt" }
+                    ],
+                    "remixers": [
+                      { "id": 9005, "name": "Nova Remix", "slug": "nova-remix" }
+                    ],
+                    "bpm": 124,
+                    "key": {
+                      "name": "C Major",
+                      "camelot_number": 8,
+                      "camelot_letter": "B"
+                    },
+                    "genre": {
+                      "id": 11,
+                      "name": "Tech House",
+                      "slug": "tech-house"
+                    },
+                    "sub_genre": null,
+                    "release": {
+                      "name": "Late Signal (Radio Edit)",
+                      "label": {
+                        "id": 7003,
+                        "name": "Amber Room",
+                        "slug": "amber-room"
+                      }
+                    },
+                    "length": "3:18",
+                    "length_ms": 198000,
+                    "publish_date": "2026-05-29",
+                    "price": { "display": "$1.49" },
+                    "exclusive": false,
+                    "is_hype": false,
+                    "isrc": "QZESX2600103",
+                    "slug": "late-signal",
+                    "sample_url": "https://geo-samples.beatport.com/track/fixture-late-signal.LOFI.mp3",
+                    "sample_start_ms": 45000,
+                    "sample_end_ms": 105000,
+                    "image": {
+                      "uri": "https://geo-media.beatport.com/image_size/590x404/fixture-late-signal.jpg",
+                      "dynamic_uri": "https://geo-media.beatport.com/image_size/{w}x{h}/fixture-late-signal.jpg"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

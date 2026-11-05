@@ -1,4 +1,4 @@
-import { SupportContact } from "./SupportContact";
+import { SupportContact } from './SupportContact'
 
 export function ExtractionHelpCard() {
   return (
@@ -11,5 +11,5 @@ export function ExtractionHelpCard() {
       </p>
       <SupportContact />
     </section>
-  );
+  )
 }

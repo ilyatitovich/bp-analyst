@@ -1,73 +1,81 @@
-import { useEffect, useMemo } from 'react';
-import { formatTrackKey } from '../lib/analysis/camelot';
-import { computeTrackStats } from '../lib/analysis/stats';
-import { BRIEF_STAT_HINTS } from '../lib/constants/briefStatHints';
+import { useEffect, useMemo } from 'react'
+import { formatTrackKey } from '../lib/analysis/camelot'
+import { computeTrackStats } from '../lib/analysis/stats'
+import { BRIEF_STAT_HINTS } from '../lib/constants/briefStatHints'
 import {
   buildReportTitle,
   formatReportDate,
   formatReportSourceUrl,
   reportPrintQuery,
-  statsBasisLabel,
-} from '../lib/export/report';
-import { uniqueTracks } from '../lib/extract/normalize';
-import { coverageLabel, formatBpm, formatBpmRange, formatShare } from '../lib/utils/format';
+  statsBasisLabel
+} from '../lib/export/report'
+import { uniqueTracks } from '../lib/extract/normalize'
+import {
+  coverageLabel,
+  formatBpm,
+  formatBpmRange,
+  formatShare
+} from '../lib/utils/format'
 import {
   beatportCatalogUrlFromTracks,
-  scopedFacetFromPageUrl,
-} from '../lib/utils/page';
-import { useStorageState } from '../sidepanel/hooks/useStorageState';
-import { BarList } from './BarList';
-import { ChipGroup } from './ChipGroup';
-import { ReportStat } from './ReportStat';
+  scopedFacetFromPageUrl
+} from '../lib/utils/page'
+import { useStorageState } from '../sidepanel/hooks/useStorageState'
+import { BarList } from './BarList'
+import { ChipGroup } from './ChipGroup'
+import { ReportStat } from './ReportStat'
 
-let printTimer: number | null = null;
+let printTimer: number | null = null
 
 export function ReportApp() {
-  const { snapshot, keyNotation } = useStorageState();
-  const tracks = useMemo(
-    () => uniqueTracks(snapshot?.tracks ?? []),
-    [snapshot],
-  );
-  const stats = useMemo(() => computeTrackStats(tracks), [tracks]);
-  const title = snapshot ? buildReportTitle(snapshot.pageTitle) : 'Beatport Analyst report';
+  const { snapshot, keyNotation } = useStorageState()
+  const tracks = useMemo(() => uniqueTracks(snapshot?.tracks ?? []), [snapshot])
+  const stats = useMemo(() => computeTrackStats(tracks), [tracks])
+  const title = snapshot
+    ? buildReportTitle(snapshot.pageTitle)
+    : 'Beatport Analyst report'
   const coverage = snapshot
     ? coverageLabel(tracks.length, snapshot.listCount, snapshot.complete)
-    : null;
-  const scopedFacet = scopedFacetFromPageUrl(snapshot?.pageUrl);
+    : null
+  const scopedFacet = scopedFacetFromPageUrl(snapshot?.pageUrl)
   const keyItems = (
     keyNotation === 'camelot' ? stats.camelotHistogram : stats.scaleHistogram
   )
-    .filter((item) => item.count > 0)
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
-  const genreItems = scopedFacet === 'genre' ? [] : stats.genreDistribution;
-  const basis = statsBasisLabel(tracks.length, snapshot?.listCount, snapshot?.complete);
+    .filter(item => item.count > 0)
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+  const genreItems = scopedFacet === 'genre' ? [] : stats.genreDistribution
+  const basis = statsBasisLabel(
+    tracks.length,
+    snapshot?.listCount,
+    snapshot?.complete
+  )
 
   useEffect(() => {
-    document.title = title;
-  }, [title]);
+    document.title = title
+  }, [title])
 
   useEffect(() => {
-    if (!snapshot || !tracks.length) return;
-    if (!reportPrintQuery(window.location.search)) return;
-    if (printTimer != null) return;
+    if (!snapshot || !tracks.length) return
+    if (!reportPrintQuery(window.location.search)) return
+    if (printTimer != null) return
 
     printTimer = window.setTimeout(() => {
-      printTimer = null;
-      window.print();
-      window.history.replaceState(null, '', window.location.pathname);
-    }, 120);
-  }, [snapshot, tracks.length]);
+      printTimer = null
+      window.print()
+      window.history.replaceState(null, '', window.location.pathname)
+    }, 120)
+  }, [snapshot, tracks.length])
 
   if (!snapshot || !tracks.length) {
     return (
       <main className="report-empty">
         <p>No Beatport list is loaded.</p>
         <p className="report-muted">
-          Open Beatport Analyst on a chart, label, or genre page, then download the
-          report again.
+          Open Beatport Analyst on a chart, label, or genre page, then download
+          the report again.
         </p>
       </main>
-    );
+    )
   }
 
   return (
@@ -84,13 +92,15 @@ export function ReportApp() {
           <p className="report-eyebrow">Beatport Analyst</p>
           <h1>{title}</h1>
           <p className="report-meta">
-            <a href={snapshot.pageUrl}>{formatReportSourceUrl(snapshot.pageUrl)}</a>
+            <a href={snapshot.pageUrl}>
+              {formatReportSourceUrl(snapshot.pageUrl)}
+            </a>
             <span>{formatReportDate(snapshot.extractedAt)}</span>
           </p>
           {coverage ? (
             <p className="report-banner">
-              Partial capture. {coverage}, so these figures may not represent the
-              full list.
+              Partial capture. {coverage}, so these figures may not represent
+              the full list.
             </p>
           ) : null}
         </header>
@@ -138,18 +148,18 @@ export function ReportApp() {
           <ChipGroup
             title="Top keys"
             share={stats.keyConcentrationShare}
-            items={stats.keyConcentration.map((item) => ({
+            items={stats.keyConcentration.map(item => ({
               ...item,
-              label: formatTrackKey(item.label, null, keyNotation) ?? item.label,
+              label: formatTrackKey(item.label, null, keyNotation) ?? item.label
             }))}
           />
           {scopedFacet === 'label' ? null : (
             <ChipGroup
               title="Top labels"
               share={stats.labelConcentrationShare}
-              items={stats.labelConcentration.map((item) => ({
+              items={stats.labelConcentration.map(item => ({
                 ...item,
-                href: beatportCatalogUrlFromTracks(tracks, 'label', item.label),
+                href: beatportCatalogUrlFromTracks(tracks, 'label', item.label)
               }))}
             />
           )}
@@ -157,18 +167,18 @@ export function ReportApp() {
             <ChipGroup
               title="Top artists"
               share={stats.artistConcentrationShare}
-              items={stats.artistConcentration.map((item) => ({
+              items={stats.artistConcentration.map(item => ({
                 ...item,
-                href: beatportCatalogUrlFromTracks(tracks, 'artist', item.label),
+                href: beatportCatalogUrlFromTracks(tracks, 'artist', item.label)
               }))}
             />
           )}
           <ChipGroup title="Mix type" items={stats.mixTypeHistogram} />
           <ChipGroup
             title="Length"
-            items={stats.lengthHistogram.map((item) => ({
+            items={stats.lengthHistogram.map(item => ({
               ...item,
-              label: `${item.label} min`,
+              label: `${item.label} min`
             }))}
           />
         </section>
@@ -179,9 +189,10 @@ export function ReportApp() {
         ) : null}
 
         <footer className="report-footer">
-          Generated from the full captured list. Use Export CSV for the track table.
+          Generated from the full captured list. Use Export CSV for the track
+          table.
         </footer>
       </article>
     </div>
-  );
+  )
 }

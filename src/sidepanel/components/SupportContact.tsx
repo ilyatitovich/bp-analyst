@@ -1,5 +1,5 @@
-import { GITHUB_REPO_URL } from "../../lib/constants/support";
-import { CopyEmailButton } from "./CopyEmailButton";
+import { GITHUB_REPO_URL } from '../../lib/constants/support'
+import { CopyEmailButton } from './CopyEmailButton'
 
 export function SupportContact() {
   return (
@@ -14,5 +14,5 @@ export function SupportContact() {
         github.com/ilyatitovich/bp-analyst
       </a>
     </div>
-  );
+  )
 }

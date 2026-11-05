@@ -1,29 +1,28 @@
-import { defineConfig } from 'wxt';
-import { version } from './package.json';
+import { defineConfig } from 'wxt'
+import { version } from './package.json'
 
 export default defineConfig({
   manifestVersion: 3,
   modules: ['@wxt-dev/module-react', '@wxt-dev/auto-icons'],
   autoIcons: {
-    baseIconPath: 'assets/icon.svg',
+    baseIconPath: 'assets/icon.svg'
   },
   outDirTemplate: `{{browser}}-mv{{manifestVersion}}{{modeSuffix}}-${version}`,
   webExt: {
     binaries: {
       edge: '/usr/bin/microsoft-edge-stable',
-      firefox: '/usr/bin/firefox',
-    },
+      firefox: '/usr/bin/firefox'
+    }
   },
   manifest: ({ browser }) => ({
     name: 'Beatport Analyst',
-    description:
-      'Analyze Beatport lists for BPM, key, and label composition.',
+    description: 'Analyze Beatport lists for BPM, key, and label composition.',
     version,
     minimum_chrome_version: browser === 'firefox' ? undefined : '116',
     permissions: browser === 'firefox' ? ['storage'] : ['storage', 'sidePanel'],
     host_permissions: ['*://*.beatport.com/*'],
     action: {
-      default_title: 'Open Beatport Analyst',
+      default_title: 'Open Beatport Analyst'
     },
     browser_specific_settings:
       browser === 'firefox'
@@ -32,27 +31,27 @@ export default defineConfig({
               id: 'bp-analyst@local',
               strict_min_version: '128.0',
               data_collection_permissions: {
-                required: ['none'],
-              },
-            },
+                required: ['none']
+              }
+            }
           }
-        : undefined,
+        : undefined
   }),
   hooks: {
     'build:manifestGenerated': (wxt, manifest) => {
       // default_path makes a global panel that stays open on every tab.
       if (wxt.config.browser !== 'firefox') {
-        delete manifest.side_panel;
+        delete manifest.side_panel
       }
-    },
+    }
   },
   zip: {
     name: 'beatport-analyst',
     artifactTemplate: '{{name}}-{{packageVersion}}-{{browser}}.zip',
     sourcesTemplate: '{{name}}-{{packageVersion}}-sources.zip',
-    excludeSources: ['todo.txt'],
+    excludeSources: ['todo.txt']
   },
   suppressWarnings: {
-    firefoxDataCollection: true,
-  },
-});
+    firefoxDataCollection: true
+  }
+})

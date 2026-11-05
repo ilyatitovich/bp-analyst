@@ -1,6 +1,6 @@
 export interface StatCardProps {
-  label: string;
-  value: string;
+  label: string
+  value: string
 }
 
 export function StatCard({ label, value }: StatCardProps) {
@@ -9,5 +9,5 @@ export function StatCard({ label, value }: StatCardProps) {
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
-  );
+  )
 }

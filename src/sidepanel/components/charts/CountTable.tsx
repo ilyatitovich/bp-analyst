@@ -1,16 +1,16 @@
-import type { FilterListKey } from "../../../lib/analysis/filters";
-import type { Bucket } from "../../../lib/analysis/stats";
-import { cx, selectionClassName } from "../../../lib/utils/cx";
-import type { TrackAnalysis } from "../../hooks/useTrackAnalysis";
-import { CollapsiblePanel } from "../ui/CollapsiblePanel";
-import { FilterChips } from "../ui/FilterChips";
+import type { FilterListKey } from '../../../lib/analysis/filters'
+import type { Bucket } from '../../../lib/analysis/stats'
+import { cx, selectionClassName } from '../../../lib/utils/cx'
+import type { TrackAnalysis } from '../../hooks/useTrackAnalysis'
+import { CollapsiblePanel } from '../ui/CollapsiblePanel'
+import { FilterChips } from '../ui/FilterChips'
 
 export interface CountTableProps {
-  title: string;
-  nameHeader: string;
-  items: Bucket[];
-  analysis: TrackAnalysis;
-  filterKey: FilterListKey;
+  title: string
+  nameHeader: string
+  items: Bucket[]
+  analysis: TrackAnalysis
+  filterKey: FilterListKey
 }
 
 export function CountTable({
@@ -18,12 +18,12 @@ export function CountTable({
   nameHeader,
   items,
   analysis,
-  filterKey,
+  filterKey
 }: CountTableProps) {
-  if (items.length <= 1) return null;
-  const selectedLabels = analysis.filters[filterKey];
-  const selected = new Set(selectedLabels);
-  const hasSelection = selected.size > 0;
+  if (items.length <= 1) return null
+  const selectedLabels = analysis.filters[filterKey]
+  const selected = new Set(selectedLabels)
+  const hasSelection = selected.size > 0
 
   return (
     <CollapsiblePanel
@@ -32,7 +32,7 @@ export function CountTable({
       headerExtra={
         <FilterChips
           values={selectedLabels}
-          onRemove={(label) => analysis.toggleFilter(filterKey, label)}
+          onRemove={label => analysis.toggleFilter(filterKey, label)}
           onReset={() => analysis.clearFilter(filterKey)}
         />
       }
@@ -46,20 +46,20 @@ export function CountTable({
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => {
-              const isSelected = selected.has(item.label);
+            {items.map(item => {
+              const isSelected = selected.has(item.label)
               return (
                 <tr
                   className={cx(
-                    "filter-row",
-                    selectionClassName(isSelected, hasSelection),
+                    'filter-row',
+                    selectionClassName(isSelected, hasSelection)
                   )}
                   key={item.label}
                   onClick={() => analysis.toggleFilter(filterKey, item.label)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      analysis.toggleFilter(filterKey, item.label);
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      analysis.toggleFilter(filterKey, item.label)
                     }
                   }}
                   aria-pressed={isSelected}
@@ -74,11 +74,11 @@ export function CountTable({
                   <td>{item.label}</td>
                   <td className="count-cell">{item.count}</td>
                 </tr>
-              );
+              )
             })}
           </tbody>
         </table>
       </div>
     </CollapsiblePanel>
-  );
+  )
 }

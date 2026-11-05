@@ -291,7 +291,7 @@ select {
 }
 
 .brief-stat-popup::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 100%;
   left: 50%;
@@ -414,7 +414,7 @@ select {
   outline-offset: 2px;
 }
 
-.header-about-btn[aria-expanded="true"] {
+.header-about-btn[aria-expanded='true'] {
   border-color: #2f6f55;
   background: rgba(126, 243, 173, 0.12);
   color: #b8f5d0;
@@ -841,7 +841,7 @@ h1 {
 }
 
 .hist-popup::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 100%;
   left: 50%;
@@ -1211,9 +1211,9 @@ a {
   .preview-player {
     grid-template-columns: 40px minmax(0, 1fr) auto;
     grid-template-areas:
-      "art meta actions"
-      "controls controls controls"
-      "timeline timeline timeline";
+      'art meta actions'
+      'controls controls controls'
+      'timeline timeline timeline';
   }
 
   .preview-artwork {

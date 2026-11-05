@@ -1,4 +1,4 @@
-import { SUPPORT_PAGE_URL } from "../../lib/constants/support";
+import { SUPPORT_PAGE_URL } from '../../lib/constants/support'
 
 export function SupportMeLink() {
   return (
@@ -10,5 +10,5 @@ export function SupportMeLink() {
     >
       Support the project
     </a>
-  );
+  )
 }

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { extractSnapshotFromNextDataObject } from '../../../src/lib/extract/next-data';
+import { describe, expect, it } from 'vitest'
+import { extractSnapshotFromNextDataObject } from '../../../src/lib/extract/next-data'
 
 const nextDataFixture = {
   props: {
@@ -20,13 +20,17 @@ const nextDataFixture = {
                     key: {
                       name: 'A Major',
                       camelot_number: 11,
-                      camelot_letter: 'B',
+                      camelot_letter: 'B'
                     },
                     genre: { id: 11, name: 'Tech House', slug: 'tech-house' },
                     sub_genre: null,
                     release: {
                       name: 'Beat Goes On (Extended Mix)',
-                      label: { id: 96547, name: 'Maccabi House', slug: 'maccabi-house' },
+                      label: {
+                        id: 96547,
+                        name: 'Maccabi House',
+                        slug: 'maccabi-house'
+                      }
                     },
                     length: '5:09',
                     length_ms: 309677,
@@ -36,43 +40,53 @@ const nextDataFixture = {
                     is_hype: false,
                     isrc: 'QMBZ92656424',
                     slug: 'beat-goes-on',
-                    sample_url: 'https://geo-samples.beatport.com/track/abc.LOFI.mp3',
+                    sample_url:
+                      'https://geo-samples.beatport.com/track/abc.LOFI.mp3',
                     sample_start_ms: 130976,
                     sample_end_ms: 250976,
                     image: {
                       uri: 'https://geo-media.beatport.com/image_size/590x404/art.jpg',
-                      dynamic_uri: 'https://geo-media.beatport.com/image_size/{w}x{h}/art.jpg',
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        ],
-      },
-    },
-  },
-};
+                      dynamic_uri:
+                        'https://geo-media.beatport.com/image_size/{w}x{h}/art.jpg'
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
 
 describe('extractSnapshotFromNextDataObject', () => {
   it('normalizes beatport dehydrated track data', () => {
     const snapshot = extractSnapshotFromNextDataObject(nextDataFixture, {
       pageUrl: 'https://www.beatport.com/genre/tech-house/11/top-100',
       pageTitle: 'Tech House Top 100',
-      source: 'next-data',
-    });
+      source: 'next-data'
+    })
 
-    expect(snapshot?.trackCount).toBe(1);
-    expect(snapshot?.tracks[0].camelot).toBe('11B');
-    expect(snapshot?.tracks[0].label?.name).toBe('Maccabi House');
-    expect(snapshot?.tracks[0].trackUrl).toBe('https://www.beatport.com/track/beat-goes-on/29486878');
-    expect(snapshot?.tracks[0].previewUrl).toBe('https://geo-samples.beatport.com/track/abc.LOFI.mp3');
-    expect(snapshot?.tracks[0].previewStartMs).toBe(130976);
-    expect(snapshot?.tracks[0].artworkUrl).toBe('https://geo-media.beatport.com/image_size/80x80/art.jpg');
-  });
+    expect(snapshot?.trackCount).toBe(1)
+    expect(snapshot?.tracks[0].camelot).toBe('11B')
+    expect(snapshot?.tracks[0].label?.name).toBe('Maccabi House')
+    expect(snapshot?.tracks[0].trackUrl).toBe(
+      'https://www.beatport.com/track/beat-goes-on/29486878'
+    )
+    expect(snapshot?.tracks[0].previewUrl).toBe(
+      'https://geo-samples.beatport.com/track/abc.LOFI.mp3'
+    )
+    expect(snapshot?.tracks[0].previewStartMs).toBe(130976)
+    expect(snapshot?.tracks[0].artworkUrl).toBe(
+      'https://geo-media.beatport.com/image_size/80x80/art.jpg'
+    )
+  })
 
   it('uses the largest track query instead of a top-10 widget', () => {
-    const smallTrack = nextDataFixture.props.pageProps.dehydratedState.queries[0].state.data.results[0];
+    const smallTrack =
+      nextDataFixture.props.pageProps.dehydratedState.queries[0].state.data
+        .results[0]
     const snapshot = extractSnapshotFromNextDataObject(
       {
         props: {
@@ -82,9 +96,12 @@ describe('extractSnapshotFromNextDataObject', () => {
                 {
                   state: {
                     data: {
-                      results: [smallTrack, { ...smallTrack, id: 2, name: 'Other' }],
-                    },
-                  },
+                      results: [
+                        smallTrack,
+                        { ...smallTrack, id: 2, name: 'Other' }
+                      ]
+                    }
+                  }
                 },
                 {
                   state: {
@@ -92,23 +109,23 @@ describe('extractSnapshotFromNextDataObject', () => {
                       results: Array.from({ length: 100 }, (_, index) => ({
                         ...smallTrack,
                         id: index + 10,
-                        name: `Track ${index + 10}`,
-                      })),
-                    },
-                  },
-                },
-              ],
-            },
-          },
-        },
+                        name: `Track ${index + 10}`
+                      }))
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
       },
       {
         pageUrl: 'https://www.beatport.com/genre/tech-house/11/top-100',
         pageTitle: 'Tech House Top 100',
-        source: 'next-data',
-      },
-    );
+        source: 'next-data'
+      }
+    )
 
-    expect(snapshot?.trackCount).toBe(100);
-  });
-});
+    expect(snapshot?.trackCount).toBe(100)
+  })
+})
