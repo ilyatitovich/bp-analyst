@@ -4,7 +4,7 @@ import {
   type BrowserContext,
   type Worker
 } from '@playwright/test'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -17,6 +17,15 @@ const { version } = JSON.parse(
 ) as { version: string }
 
 const extensionPath = join(e2eDir, `../.output/chrome-mv3-${version}`)
+
+function requireExtensionBuild(): string {
+  if (!existsSync(extensionPath)) {
+    throw new Error(
+      `Chrome extension build missing at ${extensionPath}. Run \`pnpm build:chrome\` before \`pnpm test:e2e\`.`
+    )
+  }
+  return extensionPath
+}
 
 type ExtensionFixtures = {
   context: BrowserContext
@@ -39,13 +48,14 @@ export const test = base.extend<ExtensionFixtures>({
       throw new Error('Beatport fixture server did not bind a port')
     }
 
+    const builtExtensionPath = requireExtensionBuild()
     const userDataDir = await mkdtemp(join(tmpdir(), 'bp-analyst-e2e-'))
     const context = await chromium.launchPersistentContext(userDataDir, {
       channel: 'chromium',
       headless: true,
       args: [
-        `--disable-extensions-except=${extensionPath}`,
-        `--load-extension=${extensionPath}`,
+        `--disable-extensions-except=${builtExtensionPath}`,
+        `--load-extension=${builtExtensionPath}`,
         // Route Beatport hostnames to the local fixture server without editing /etc/hosts.
         '--host-resolver-rules=MAP www.beatport.com 127.0.0.1,MAP beatport.com 127.0.0.1,EXCLUDE localhost'
       ]
