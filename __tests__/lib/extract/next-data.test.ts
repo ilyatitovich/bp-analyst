@@ -69,23 +69,24 @@ describe('extractSnapshotFromNextDataObject', () => {
     })
 
     expect(snapshot?.trackCount).toBe(1)
-    expect(snapshot?.tracks[0].camelot).toBe('11B')
-    expect(snapshot?.tracks[0].label?.name).toBe('Maccabi House')
-    expect(snapshot?.tracks[0].trackUrl).toBe(
+    const track = snapshot?.tracks[0]
+    expect(track?.camelot).toBe('11B')
+    expect(track?.label?.name).toBe('Maccabi House')
+    expect(track?.trackUrl).toBe(
       'https://www.beatport.com/track/beat-goes-on/29486878'
     )
-    expect(snapshot?.tracks[0].previewUrl).toBe(
+    expect(track?.previewUrl).toBe(
       'https://geo-samples.beatport.com/track/abc.LOFI.mp3'
     )
-    expect(snapshot?.tracks[0].previewStartMs).toBe(130976)
-    expect(snapshot?.tracks[0].artworkUrl).toBe(
+    expect(track?.previewStartMs).toBe(130976)
+    expect(track?.artworkUrl).toBe(
       'https://geo-media.beatport.com/image_size/80x80/art.jpg'
     )
   })
 
   it('uses the largest track query instead of a top-10 widget', () => {
     const smallTrack =
-      nextDataFixture.props.pageProps.dehydratedState.queries[0].state.data
+      nextDataFixture.props.pageProps.dehydratedState.queries[0]?.state.data
         .results[0]
     const snapshot = extractSnapshotFromNextDataObject(
       {

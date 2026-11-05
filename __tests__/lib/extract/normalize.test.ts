@@ -116,9 +116,9 @@ describe('normalizeTrack sanitizes broken rows', () => {
     expect(
       normalizeTrack({ ...baseRaw, artists: [{ name: '  ' }] }, context, 1)
     ).toBeNull()
-    expect(
-      normalizeTrack({ ...baseRaw, artists: undefined }, context, 1)
-    ).toBeNull()
+    const { artists, ...withoutArtists } = baseRaw
+    void artists
+    expect(normalizeTrack(withoutArtists, context, 1)).toBeNull()
   })
 
   it('rejects missing, zero, or out-of-range BPM', () => {

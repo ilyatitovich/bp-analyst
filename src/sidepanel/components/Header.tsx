@@ -32,10 +32,10 @@ export function Header({
     refreshing,
     showExtractionHelp,
     hasSnapshot: Boolean(snapshot),
-    source: snapshot?.source,
     trackCount: tracks.length,
     visibleCount: sortedTracks.length,
-    filtersActive
+    filtersActive,
+    ...(snapshot?.source !== undefined ? { source: snapshot.source } : {})
   })
 
   return (

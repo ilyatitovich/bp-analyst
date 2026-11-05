@@ -118,10 +118,11 @@ export function useStorageState(options?: { tabId?: number | null }) {
       typeof browser.storage.onChanged.addListener
     >[0] = (changes, areaName) => {
       if (areaName !== extensionStorageArea) return
-      if (changes[STORAGE_KEYS.keyNotation]) {
+      const keyNotationChange = changes[STORAGE_KEYS.keyNotation]
+      if (keyNotationChange) {
         setKeyNotationState(
-          (changes[STORAGE_KEYS.keyNotation].newValue as
-            KeyNotation | undefined) ?? DEFAULT_KEY_NOTATION
+          (keyNotationChange.newValue as KeyNotation | undefined) ??
+            DEFAULT_KEY_NOTATION
         )
       }
       if (snapshotKey && changes[snapshotKey]) {

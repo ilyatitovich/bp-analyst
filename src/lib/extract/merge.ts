@@ -18,6 +18,10 @@ export function mergeSnapshots(
 ): ExtractionSnapshot | null {
   if (!incoming) return current
   if (!current || current.pageUrl !== incoming.pageUrl) {
+    const coverage: { listCount?: number | null; complete?: boolean } = {}
+    if (incoming.listCount !== undefined)
+      coverage.listCount = incoming.listCount
+    if (incoming.complete !== undefined) coverage.complete = incoming.complete
     return buildSnapshot(
       incoming.tracks,
       {
@@ -25,10 +29,7 @@ export function mergeSnapshots(
         pageTitle: incoming.pageTitle,
         source: incoming.source
       },
-      {
-        listCount: incoming.listCount,
-        complete: incoming.complete
-      }
+      coverage
     )
   }
 

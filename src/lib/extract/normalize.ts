@@ -82,24 +82,24 @@ function normalizePeople(values: RawNamed[] | undefined): TrackPerson[] {
   return (values ?? []).flatMap(value => {
     const name = blankToNull(value?.name)
     if (!name) return []
-    return [
-      {
-        id: value.id,
-        name,
-        slug: blankToNull(value.slug)
-      }
-    ]
+    const person: TrackPerson = {
+      name,
+      slug: blankToNull(value.slug)
+    }
+    if (typeof value.id === 'number') person.id = value.id
+    return [person]
   })
 }
 
 function normalizeFacet(value: RawNamed | null | undefined): TrackFacet | null {
   const name = blankToNull(value?.name)
   if (!name || !value) return null
-  return {
-    id: value.id,
+  const facet: TrackFacet = {
     name,
     slug: blankToNull(value.slug)
   }
+  if (typeof value.id === 'number') facet.id = value.id
+  return facet
 }
 
 function normalizeBpm(value: unknown): number | null {

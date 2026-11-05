@@ -108,8 +108,8 @@ export function parseScaleName(
     .toLowerCase()
     .replace(/\s+/g, ' ')
   const match = normalized.match(/^([a-g](?:#|b)?)\s*(maj(?:or)?|min(?:or)?)$/i)
-  if (!match) return null
-  const tonic = `${match[1][0].toUpperCase()}${match[1].slice(1)}`
+  if (!match?.[1] || !match[2]) return null
+  const tonic = `${match[1][0]!.toUpperCase()}${match[1].slice(1)}`
   const quality = match[2].startsWith('maj') ? 'maj' : 'min'
   return `${tonic} ${quality}`
 }
@@ -173,7 +173,7 @@ export function toCamelot(
 export function getCompatibleCamelotKeys(camelot: string | null): string[] {
   if (!camelot) return []
   const match = camelot.match(/^(\d{1,2})([AB])$/i)
-  if (!match) return []
+  if (!match?.[1] || !match[2]) return []
 
   const number = Number(match[1])
   const letter = match[2].toUpperCase() as 'A' | 'B'

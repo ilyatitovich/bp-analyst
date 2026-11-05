@@ -114,7 +114,7 @@ export function parsePublishDate(
   }
 
   const monthFirst = trimmed.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/)
-  if (monthFirst) {
+  if (monthFirst?.[1] && monthFirst[2] && monthFirst[3]) {
     const month = MONTH_INDEX[monthFirst[1].toLowerCase()]
     if (month !== undefined) {
       return utcDate(Number(monthFirst[3]), month, Number(monthFirst[2]))
@@ -122,7 +122,7 @@ export function parsePublishDate(
   }
 
   const dayFirst = trimmed.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/)
-  if (dayFirst) {
+  if (dayFirst?.[1] && dayFirst[2] && dayFirst[3]) {
     const month = MONTH_INDEX[dayFirst[2].toLowerCase()]
     if (month !== undefined) {
       return utcDate(Number(dayFirst[3]), month, Number(dayFirst[1]))
@@ -168,8 +168,16 @@ function trackLengthMs(
   if (parts.length < 2 || parts.length > 3) return null
   const nums = parts.map(Number)
   if (nums.some(value => !Number.isFinite(value))) return null
-  if (parts.length === 2) return (nums[0] * 60 + nums[1]) * 1000
-  return (nums[0] * 3600 + nums[1] * 60 + nums[2]) * 1000
+  if (parts.length === 2) {
+    const [minutes, seconds] = nums
+    if (minutes === undefined || seconds === undefined) return null
+    return (minutes * 60 + seconds) * 1000
+  }
+  const [hours, minutes, seconds] = nums
+  if (hours === undefined || minutes === undefined || seconds === undefined) {
+    return null
+  }
+  return (hours * 3600 + minutes * 60 + seconds) * 1000
 }
 
 function lengthBand(ms: number): LengthBand {
@@ -278,9 +286,12 @@ function percentile(values: number[], p: number): number | null {
   const index = (p / 100) * (sorted.length - 1)
   const lower = Math.floor(index)
   const upper = Math.ceil(index)
-  if (lower === upper) return sorted[lower]
+  const lowerValue = sorted[lower]
+  const upperValue = sorted[upper]
+  if (lowerValue === undefined || upperValue === undefined) return null
+  if (lower === upper) return lowerValue
   const weight = index - lower
-  return sorted[lower] * (1 - weight) + sorted[upper] * weight
+  return lowerValue * (1 - weight) + upperValue * weight
 }
 
 function median(values: number[]): number | null {
@@ -321,9 +332,10 @@ function countedHistogram(
 }
 
 function mode(values: number[]): number | null {
-  if (!values.length) return null
+  const first = values[0]
+  if (first === undefined) return null
   const counts = new Map<number, number>()
-  let bestValue = values[0]
+  let bestValue = first
   let bestCount = 0
 
   for (const value of values) {
@@ -344,13 +356,14 @@ function camelotMedian(keys: CamelotKey[]): CamelotKey | null {
     (a, b) => (CAMELOT_INDEX.get(a) ?? 0) - (CAMELOT_INDEX.get(b) ?? 0)
   )
   const middle = Math.floor((sorted.length - 1) / 2)
-  return sorted[middle]
+  return sorted[middle] ?? null
 }
 
 function camelotMode(keys: CamelotKey[]): CamelotKey | null {
-  if (!keys.length) return null
+  const first = keys[0]
+  if (first === undefined) return null
   const counts = new Map<CamelotKey, number>()
-  let bestValue = keys[0]
+  let bestValue = first
   let bestCount = 0
 
   for (const key of keys) {
