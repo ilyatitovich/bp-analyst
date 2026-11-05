@@ -8,13 +8,10 @@ import {
 } from '../../../src/lib/messaging/tab-state';
 
 describe('tab storage keys', () => {
-  it('keys snapshot, error, and skip flags by tab id', () => {
+  it('keys snapshot and error state by tab id', () => {
     expect(tabStorageKey('snapshot', 42)).toBe('beatportAnalyst.snapshot.42');
     expect(tabStorageKey('extractionError', 42)).toBe(
       'beatportAnalyst.extractionError.42',
-    );
-    expect(tabStorageKey('skipNextAutoRefresh', 7)).toBe(
-      'beatportAnalyst.skipNextAutoRefresh.7',
     );
   });
 
@@ -31,6 +28,7 @@ describe('tab storage keys', () => {
     expect(parseTabIdFromStorageKey('beatportAnalyst.snapshot', 'snapshot')).toBeNull();
     expect(parseTabIdFromStorageKey('beatportAnalyst.snapshot.x', 'snapshot')).toBeNull();
     expect(isTabScopedStorageKey('beatportAnalyst.snapshot.3')).toBe(true);
+    expect(isTabScopedStorageKey('beatportAnalyst.skipNextAutoRefresh.3')).toBe(true);
     expect(isTabScopedStorageKey('beatportAnalyst.snapshot')).toBe(false);
   });
 

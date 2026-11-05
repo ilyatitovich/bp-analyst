@@ -185,8 +185,15 @@ export default defineContentScript({
     });
 
     browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-      if (message?.type === 'REQUEST_REFRESH') {
-        void captureNow().then(() => sendResponse({ ok: true }));
+      if (message?.type === 'REQUEST_TAB_CAPTURE' || message?.type === 'REQUEST_REFRESH') {
+        const hadPayload = latestPayload !== undefined;
+        void captureNow().then(() =>
+          sendResponse({
+            ok: true,
+            hadPayload,
+            trackCount: currentSnapshot?.trackCount ?? 0,
+          }),
+        );
         return true;
       }
       return false;

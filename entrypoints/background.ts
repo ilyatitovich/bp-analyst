@@ -3,7 +3,14 @@ import { type ExtractionSnapshot } from '../src/lib/types/track';
 import {
   type BeatportAnalystMessage,
   type ExtractionFailedMessage,
+  type RequestTabCaptureResponse,
 } from '../src/lib/messaging/protocol';
+import {
+  PANEL_STORAGE_KEYS,
+  panelSessionCount,
+  type PanelSessions,
+} from '../src/lib/messaging/panel-state';
+import { shouldReloadForRefresh } from '../src/lib/messaging/refresh-strategy';
 import { extensionStorage } from '../src/lib/messaging/storage';
 import {
   LEGACY_GLOBAL_TAB_KEYS,
@@ -99,27 +106,23 @@ type SidePanelApi = {
 };
 
 const SIDEPANEL_PATH = 'sidepanel.html';
-const AUTO_RELOAD_COOLDOWN_MS = 2000;
-let lastAutoReload = { tabId: -1, url: '', at: 0 };
-let openPanelCount = 0;
-let restoreFirefoxSidebar = false;
-let reloadInFlight: Promise<{ reloaded: boolean }> | null = null;
 
-async function setSkipNextAutoRefresh(tabId: number, skip: boolean): Promise<void> {
-  const key = tabStorageKey('skipNextAutoRefresh', tabId);
-  if (skip) {
-    await extensionStorage.set({ [key]: true });
-    return;
-  }
-  await extensionStorage.remove(key);
+async function getOpenPanelCount(): Promise<number> {
+  const stored = await extensionStorage.get(PANEL_STORAGE_KEYS.sessions);
+  return panelSessionCount(stored[PANEL_STORAGE_KEYS.sessions] as PanelSessions | undefined);
 }
 
-async function consumeSkipNextAutoRefresh(tabId: number): Promise<boolean> {
-  const key = tabStorageKey('skipNextAutoRefresh', tabId);
-  const stored = await extensionStorage.get(key);
-  if (!stored[key]) return false;
-  await setSkipNextAutoRefresh(tabId, false);
-  return true;
+async function getRestoreFirefoxSidebar(): Promise<boolean> {
+  const stored = await extensionStorage.get(PANEL_STORAGE_KEYS.restoreFirefoxSidebar);
+  return Boolean(stored[PANEL_STORAGE_KEYS.restoreFirefoxSidebar]);
+}
+
+async function setRestoreFirefoxSidebar(restore: boolean): Promise<void> {
+  if (restore) {
+    await extensionStorage.set({ [PANEL_STORAGE_KEYS.restoreFirefoxSidebar]: true });
+    return;
+  }
+  await extensionStorage.remove(PANEL_STORAGE_KEYS.restoreFirefoxSidebar);
 }
 
 function getSidebarAction(): SidebarActionApi | undefined {
@@ -131,39 +134,35 @@ function getSidePanel(): SidePanelApi | undefined {
   return chromeApi ?? (browser as typeof browser & { sidePanel?: SidePanelApi }).sidePanel;
 }
 
-async function reloadActiveBeatportPage(force = false): Promise<{ reloaded: boolean }> {
-  if (reloadInFlight && !force) return reloadInFlight;
-
-  reloadInFlight = (async () => {
-    const tab = await findActiveBeatportTab();
-    if (!tab) return { reloaded: false };
-
-    const now = Date.now();
-    if (
-      !force &&
-      lastAutoReload.tabId === tab.id &&
-      lastAutoReload.url === tab.url &&
-      now - lastAutoReload.at < AUTO_RELOAD_COOLDOWN_MS
-    ) {
-      return { reloaded: false };
-    }
-
-    lastAutoReload = { tabId: tab.id, url: tab.url, at: now };
-    await browser.tabs.reload(tab.id);
-    return { reloaded: true };
-  })();
-
+async function requestTabCapture(tabId: number): Promise<RequestTabCaptureResponse | null> {
   try {
-    return await reloadInFlight;
-  } finally {
-    reloadInFlight = null;
+    const response = (await browser.tabs.sendMessage(tabId, {
+      type: 'REQUEST_TAB_CAPTURE',
+    })) as RequestTabCaptureResponse | undefined;
+    if (!response?.ok) return null;
+    return response;
+  } catch {
+    return null;
   }
+}
+
+async function refreshActiveBeatportPage(): Promise<{ reloaded: boolean; captured?: boolean }> {
+  const tab = await findActiveBeatportTab();
+  if (!tab) return { reloaded: false };
+
+  const capture = await requestTabCapture(tab.id);
+  if (!shouldReloadForRefresh(capture != null)) {
+    return { reloaded: false, captured: true };
+  }
+
+  await browser.tabs.reload(tab.id);
+  return { reloaded: true };
 }
 
 function openPanelForTab(tab: { id?: number; url?: string }): void {
   const sidebarAction = getSidebarAction();
   if (sidebarAction?.open) {
-    restoreFirefoxSidebar = false;
+    void setRestoreFirefoxSidebar(false);
     void sidebarAction.open();
     return;
   }
@@ -197,30 +196,29 @@ async function syncFirefoxSidebar(onBeatport: boolean): Promise<void> {
   if (!sidebarAction) return;
 
   if (onBeatport) {
-    if (!restoreFirefoxSidebar || !sidebarAction.open) return;
+    const shouldRestore = await getRestoreFirefoxSidebar();
+    if (!shouldRestore || !sidebarAction.open) return;
     try {
       await sidebarAction.open();
-      restoreFirefoxSidebar = false;
+      await setRestoreFirefoxSidebar(false);
     } catch {
       // Firefox only opens the sidebar from a user gesture.
     }
     return;
   }
 
+  const openPanelCount = await getOpenPanelCount();
   if (openPanelCount === 0 || !sidebarAction.close) return;
-  restoreFirefoxSidebar = true;
+  await setRestoreFirefoxSidebar(true);
   try {
     await sidebarAction.close();
   } catch {
-    restoreFirefoxSidebar = false;
+    await setRestoreFirefoxSidebar(false);
   }
 }
 
 async function syncPanelAvailability(tabId: number, url: string | undefined): Promise<void> {
   const onBeatport = isBeatportUrl(url);
-  if (!onBeatport && openPanelCount > 0) {
-    void setSkipNextAutoRefresh(tabId, true);
-  }
   await syncChromiumSidePanel(tabId, onBeatport);
   await syncFirefoxSidebar(onBeatport);
 }
@@ -264,11 +262,7 @@ export default defineBackground({
 
     browser.runtime.onConnect.addListener((port) => {
       if (port.name !== 'bp-analyst-panel') return;
-      openPanelCount += 1;
-      restoreFirefoxSidebar = false;
-      port.onDisconnect.addListener(() => {
-        openPanelCount = Math.max(0, openPanelCount - 1);
-      });
+      void setRestoreFirefoxSidebar(false);
     });
 
     browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -306,15 +300,7 @@ export default defineBackground({
       }
 
       if (message.type === 'REQUEST_REFRESH') {
-        void (async () => {
-          const tab = await findActiveBeatportTab();
-          if (message.auto && tab && (await consumeSkipNextAutoRefresh(tab.id))) {
-            sendResponse({ reloaded: false, skipped: true });
-            return;
-          }
-
-          sendResponse(await reloadActiveBeatportPage(Boolean(message.force)));
-        })();
+        void refreshActiveBeatportPage().then((result) => sendResponse(result));
         return true;
       }
 

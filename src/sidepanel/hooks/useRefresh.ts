@@ -1,7 +1,33 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { browser } from "wxt/browser";
 import type { ExtractionErrorState } from "../../lib/messaging/protocol";
+import {
+  PANEL_STORAGE_KEYS,
+  addPanelSession,
+  removePanelSession,
+  type PanelSessions,
+} from "../../lib/messaging/panel-state";
+import { extensionStorage } from "../../lib/messaging/storage";
 import type { ExtractionSnapshot } from "../../lib/types/track";
+
+const PANEL_PORT_NAME = "bp-analyst-panel";
+const PORT_RECONNECT_MS = 100;
+
+async function registerPanelSession(sessionId: string): Promise<void> {
+  const stored = await extensionStorage.get(PANEL_STORAGE_KEYS.sessions);
+  const sessions = stored[PANEL_STORAGE_KEYS.sessions] as PanelSessions | undefined;
+  await extensionStorage.set({
+    [PANEL_STORAGE_KEYS.sessions]: addPanelSession(sessions, sessionId),
+  });
+}
+
+async function unregisterPanelSession(sessionId: string): Promise<void> {
+  const stored = await extensionStorage.get(PANEL_STORAGE_KEYS.sessions);
+  const sessions = stored[PANEL_STORAGE_KEYS.sessions] as PanelSessions | undefined;
+  await extensionStorage.set({
+    [PANEL_STORAGE_KEYS.sessions]: removePanelSession(sessions, sessionId),
+  });
+}
 
 export function useRefresh(
   snapshot: ExtractionSnapshot | null,
@@ -26,8 +52,7 @@ export function useRefresh(
         type: "REQUEST_REFRESH",
         force,
         auto,
-      })) as { reloaded?: boolean; skipped?: boolean } | undefined;
-      if (result?.skipped) return;
+      })) as { reloaded?: boolean; captured?: boolean } | undefined;
       if (auto) {
         setRefreshFailed(false);
         if (result?.reloaded) setRefreshing(true);
@@ -43,9 +68,31 @@ export function useRefresh(
   }, []);
 
   useEffect(() => {
-    const port = browser.runtime.connect({ name: "bp-analyst-panel" });
+    const sessionId = crypto.randomUUID();
+    let cancelled = false;
+    let port: ReturnType<typeof browser.runtime.connect> | undefined;
+    let reconnectTimer: number | undefined;
+
+    void registerPanelSession(sessionId);
+
+    const connect = () => {
+      if (cancelled) return;
+      port = browser.runtime.connect({ name: PANEL_PORT_NAME });
+      port.onDisconnect.addListener(() => {
+        if (cancelled) return;
+        reconnectTimer = window.setTimeout(connect, PORT_RECONNECT_MS);
+      });
+    };
+
+    connect();
     void requestRefresh(false, true);
-    return () => port.disconnect();
+
+    return () => {
+      cancelled = true;
+      if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
+      port?.disconnect();
+      void unregisterPanelSession(sessionId);
+    };
   }, [requestRefresh]);
 
   useEffect(() => {

@@ -26,6 +26,17 @@ export type RequestRefreshMessage = {
   auto?: boolean;
 };
 
+/** Background → content script: re-extract from the in-tab payload cache. */
+export type RequestTabCaptureMessage = {
+  type: 'REQUEST_TAB_CAPTURE';
+};
+
+export type RequestTabCaptureResponse = {
+  ok: true;
+  hadPayload: boolean;
+  trackCount: number;
+};
+
 export type ExtractionFailedMessage = {
   type: 'EXTRACTION_FAILED';
   pageUrl: string;
@@ -35,4 +46,5 @@ export type ExtractionFailedMessage = {
 export type BeatportAnalystMessage =
   | TracksExtractedMessage
   | RequestRefreshMessage
+  | RequestTabCaptureMessage
   | ExtractionFailedMessage;
