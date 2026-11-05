@@ -40,10 +40,6 @@ function track(
     previewStartMs: extras.previewStartMs ?? null,
     previewEndMs: extras.previewEndMs ?? null,
     artworkUrl: extras.artworkUrl ?? null,
-    pageUrl: context.pageUrl,
-    pageTitle: context.pageTitle,
-    extractedAt: context.extractedAt,
-    source: 'api-payload',
     ...extras
   }
 }

@@ -28,31 +28,33 @@ const track: Track = {
   previewUrl: null,
   previewStartMs: null,
   previewEndMs: null,
-  artworkUrl: null,
-  pageUrl: 'https://www.beatport.com/genre/melodic-house-techno/90/top-100',
-  pageTitle: 'Beatport',
-  extractedAt: '2026-08-18T08:00:00.000Z',
-  source: 'next-data'
+  artworkUrl: null
 }
+
+const pageUrl = 'https://www.beatport.com/genre/melodic-house-techno/90/top-100'
 
 describe('tracksToCsv', () => {
   it('serializes rows with escaping and bom', () => {
-    const csv = tracksToCsv([track])
+    const csv = tracksToCsv([track], pageUrl)
     expect(csv.startsWith('\uFEFFposition,title')).toBe(true)
     expect(csv).toContain('"Reason, Why"')
     expect(csv).toContain('Artist One; Artist Two')
+    expect(csv).toContain(pageUrl)
   })
 
   it('neutralizes formula-leading cells and quotes carriage returns', () => {
-    const csv = tracksToCsv([
-      {
-        ...track,
-        title: '=cmd|"/C calc"!A0',
-        mixName: '+1-555',
-        artists: [{ name: '-paid' }, { name: '@sum(1+1)' }],
-        releaseName: 'Line\rBreak'
-      }
-    ])
+    const csv = tracksToCsv(
+      [
+        {
+          ...track,
+          title: '=cmd|"/C calc"!A0',
+          mixName: '+1-555',
+          artists: [{ name: '-paid' }, { name: '@sum(1+1)' }],
+          releaseName: 'Line\rBreak'
+        }
+      ],
+      pageUrl
+    )
 
     expect(csv).toContain(`"'=cmd|""/C calc""!A0"`)
     expect(csv).toContain("'+1-555")
@@ -61,7 +63,7 @@ describe('tracksToCsv', () => {
   })
 
   it('builds a descriptive filename', () => {
-    expect(buildCsvFilename(track.pageUrl)).toMatch(
+    expect(buildCsvFilename(pageUrl)).toMatch(
       /^beatport-genre-melodic-house-techno-90-top-100-\d{4}-\d{2}-\d{2}\.csv$/
     )
   })

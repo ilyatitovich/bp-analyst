@@ -36,11 +36,7 @@ const baseTrack: Track = {
   previewUrl: null,
   previewStartMs: null,
   previewEndMs: null,
-  artworkUrl: null,
-  pageUrl: 'https://www.beatport.com/genre/tech-house/11/top-100',
-  pageTitle: 'Tech House Top 100',
-  extractedAt: '2026-08-18T08:00:00.000Z',
-  source: 'next-data'
+  artworkUrl: null
 }
 
 describe('chart filters', () => {

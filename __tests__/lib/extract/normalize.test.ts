@@ -7,12 +7,6 @@ import {
 } from '../../../src/lib/extract/normalize'
 import type { Track } from '../../../src/lib/types/track'
 
-const context = {
-  pageUrl: 'https://www.beatport.com/genre/tech-house/11/top-100',
-  pageTitle: 'Tech House Top 100',
-  source: 'next-data' as const
-}
-
 const baseRaw = {
   id: 29486878,
   name: 'Beat Goes On',
@@ -43,7 +37,6 @@ describe('normalizeTrack preview fields', () => {
             'https://geo-media.beatport.com/image_size/{w}x{h}/art.jpg'
         }
       },
-      context,
       1
     )
 
@@ -74,7 +67,6 @@ describe('normalizeTrack preview fields', () => {
           }
         }
       },
-      context,
       1
     )
 
@@ -97,7 +89,6 @@ describe('normalizeTrack preview fields', () => {
           mp3_url: 'https://geo-media.beatport.com/not-audio.jpg'
         }
       },
-      context,
       1
     )
 
@@ -107,35 +98,38 @@ describe('normalizeTrack preview fields', () => {
 
 describe('normalizeTrack sanitizes broken rows', () => {
   it('rejects empty or whitespace titles', () => {
-    expect(normalizeTrack({ ...baseRaw, name: '' }, context, 1)).toBeNull()
-    expect(normalizeTrack({ ...baseRaw, name: '   ' }, context, 1)).toBeNull()
+    expect(normalizeTrack({ ...baseRaw, name: '' }, 1)).toBeNull()
+    expect(normalizeTrack({ ...baseRaw, name: '   ' }, 1)).toBeNull()
     expect(looksLikeRawTrack({ ...baseRaw, name: '' })).toBe(false)
-    expect(
-      normalizeTrackDetailed({ ...baseRaw, name: '' }, context, 1)
-    ).toEqual({ ok: false, reason: 'not-raw-track' })
+    expect(normalizeTrackDetailed({ ...baseRaw, name: '' }, 1)).toEqual({
+      ok: false,
+      reason: 'not-raw-track'
+    })
   })
 
   it('rejects tracks with no named artists', () => {
-    expect(normalizeTrack({ ...baseRaw, artists: [] }, context, 1)).toBeNull()
+    expect(normalizeTrack({ ...baseRaw, artists: [] }, 1)).toBeNull()
     expect(
-      normalizeTrack({ ...baseRaw, artists: [{ name: '  ' }] }, context, 1)
+      normalizeTrack({ ...baseRaw, artists: [{ name: '  ' }] }, 1)
     ).toBeNull()
-    expect(
-      normalizeTrackDetailed({ ...baseRaw, artists: [] }, context, 1)
-    ).toEqual({ ok: false, reason: 'missing-artists' })
+    expect(normalizeTrackDetailed({ ...baseRaw, artists: [] }, 1)).toEqual({
+      ok: false,
+      reason: 'missing-artists'
+    })
     const { artists, ...withoutArtists } = baseRaw
     void artists
-    expect(normalizeTrack(withoutArtists, context, 1)).toBeNull()
+    expect(normalizeTrack(withoutArtists, 1)).toBeNull()
   })
 
   it('rejects missing, zero, or out-of-range BPM', () => {
-    expect(normalizeTrack({ ...baseRaw, bpm: null }, context, 1)).toBeNull()
-    expect(normalizeTrack({ ...baseRaw, bpm: 0 }, context, 1)).toBeNull()
-    expect(normalizeTrack({ ...baseRaw, bpm: -124 }, context, 1)).toBeNull()
-    expect(normalizeTrack({ ...baseRaw, bpm: 400 }, context, 1)).toBeNull()
-    expect(
-      normalizeTrackDetailed({ ...baseRaw, bpm: null }, context, 1)
-    ).toEqual({ ok: false, reason: 'invalid-bpm' })
+    expect(normalizeTrack({ ...baseRaw, bpm: null }, 1)).toBeNull()
+    expect(normalizeTrack({ ...baseRaw, bpm: 0 }, 1)).toBeNull()
+    expect(normalizeTrack({ ...baseRaw, bpm: -124 }, 1)).toBeNull()
+    expect(normalizeTrack({ ...baseRaw, bpm: 400 }, 1)).toBeNull()
+    expect(normalizeTrackDetailed({ ...baseRaw, bpm: null }, 1)).toEqual({
+      ok: false,
+      reason: 'invalid-bpm'
+    })
   })
 
   it('trims blank optional fields and keeps a valid track', () => {
@@ -149,7 +143,6 @@ describe('normalizeTrack sanitizes broken rows', () => {
         isrc: '   ',
         publish_date: ''
       },
-      context,
       1
     )
 
@@ -192,11 +185,7 @@ describe('uniqueTracks', () => {
     previewUrl: null,
     previewStartMs: null,
     previewEndMs: null,
-    artworkUrl: null,
-    pageUrl: context.pageUrl,
-    pageTitle: context.pageTitle,
-    extractedAt: '2026-08-19T10:00:00.000Z',
-    source: 'dom'
+    artworkUrl: null
   }
 
   it('drops rows that are missing identity or BPM', () => {

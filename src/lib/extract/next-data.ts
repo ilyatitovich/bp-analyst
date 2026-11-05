@@ -26,6 +26,31 @@ type NextData = {
   }
 }
 
+let cachedText: string | null = null
+let cachedParsed: NextData | null = null
+
+/** Parse `__NEXT_DATA__` JSON, reusing the last parse when the text is unchanged. */
+export function parseNextDataText(text: string): NextData | null {
+  if (cachedText === text && cachedParsed) return cachedParsed
+
+  try {
+    const parsed = JSON.parse(text) as NextData
+    cachedText = text
+    cachedParsed = parsed
+    return parsed
+  } catch {
+    cachedText = null
+    cachedParsed = null
+    return null
+  }
+}
+
+/** Test helper — clears the module-level parse cache. */
+export function clearNextDataParseCache(): void {
+  cachedText = null
+  cachedParsed = null
+}
+
 function collectQueryResults(data: QueryData | undefined): unknown[] {
   if (!data) return []
   if (Array.isArray(data.pages)) {
@@ -67,10 +92,8 @@ export function extractSnapshotFromNextData(
     return { snapshot: null, attempt: emptyAttempt(context.source) }
   }
 
-  let parsed: NextData
-  try {
-    parsed = JSON.parse(script.textContent) as NextData
-  } catch {
+  const parsed = parseNextDataText(script.textContent)
+  if (!parsed) {
     return { snapshot: null, attempt: emptyAttempt(context.source) }
   }
   return extractSnapshotFromNextDataObject(parsed, context)

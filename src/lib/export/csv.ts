@@ -40,7 +40,7 @@ function escapeCell(value: string | number | boolean | null): string {
   return stringValue
 }
 
-export function tracksToCsv(tracks: Track[]): string {
+export function tracksToCsv(tracks: Track[], pageUrl: string): string {
   const rows = tracks.map(track =>
     [
       track.position,
@@ -62,7 +62,7 @@ export function tracksToCsv(tracks: Track[]): string {
       track.hype,
       track.isrc,
       track.trackUrl,
-      track.pageUrl
+      pageUrl
     ]
       .map(escapeCell)
       .join(',')

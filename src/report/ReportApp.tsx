@@ -9,7 +9,6 @@ import {
   reportPrintQuery,
   statsBasisLabel
 } from '../lib/export/report'
-import { uniqueTracks } from '../lib/extract/normalize'
 import {
   coverageLabel,
   formatBpm,
@@ -29,7 +28,8 @@ let printTimer: number | null = null
 
 export function ReportApp() {
   const { snapshot, keyNotation } = useStorageState()
-  const tracks = useMemo(() => uniqueTracks(snapshot?.tracks ?? []), [snapshot])
+  // Snapshot tracks are already uniqueTracks()'d at the extraction boundary.
+  const tracks = useMemo(() => snapshot?.tracks ?? [], [snapshot])
   const stats = useMemo(() => computeTrackStats(tracks), [tracks])
   const title = snapshot
     ? buildReportTitle(snapshot.pageTitle)

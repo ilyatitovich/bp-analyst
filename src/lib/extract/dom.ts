@@ -105,11 +105,7 @@ export function extractSnapshotFromDom(
       previewUrl: null,
       previewStartMs: null,
       previewEndMs: null,
-      artworkUrl: null,
-      pageUrl: context.pageUrl,
-      pageTitle: context.pageTitle,
-      extractedAt: new Date().toISOString(),
-      source: context.source
+      artworkUrl: null
     })
   }
 

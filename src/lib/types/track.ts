@@ -63,10 +63,6 @@ export type Track = {
   previewStartMs: number | null
   previewEndMs: number | null
   artworkUrl: string | null
-  pageUrl: string
-  pageTitle: string
-  extractedAt: string
-  source: TrackSnapshotSource
 }
 
 export type ExtractionSnapshot = {

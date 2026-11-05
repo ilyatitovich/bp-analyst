@@ -22,6 +22,7 @@
     "format:check": "prettier --check .",
     "knip": "knip",
     "test": "vitest run",
+    "bench:extract": "vitest run --config vitest.bench.config.ts --pool=threads",
     "prepare": "husky"
   },
   "keywords": [

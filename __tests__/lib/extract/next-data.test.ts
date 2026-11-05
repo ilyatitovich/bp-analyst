@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest'
-import { extractSnapshotFromNextDataObject } from '../../../src/lib/extract/next-data'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  clearNextDataParseCache,
+  extractSnapshotFromNextDataObject,
+  parseNextDataText
+} from '../../../src/lib/extract/next-data'
 
 const nextDataFixture = {
   props: {
@@ -136,5 +140,55 @@ describe('extractSnapshotFromNextDataObject', () => {
     )
 
     expect(snapshot?.trackCount).toBe(100)
+  })
+})
+
+describe('parseNextDataText cache', () => {
+  beforeEach(() => {
+    clearNextDataParseCache()
+  })
+
+  it('reuses the parsed object when the text is unchanged', () => {
+    const text = JSON.stringify(nextDataFixture)
+    const first = parseNextDataText(text)
+    const second = parseNextDataText(text)
+    expect(first).not.toBeNull()
+    expect(second).toBe(first)
+  })
+
+  it('reparses when the text changes', () => {
+    const first = parseNextDataText(JSON.stringify(nextDataFixture))
+    const altered = {
+      ...nextDataFixture,
+      props: {
+        ...nextDataFixture.props,
+        pageProps: {
+          ...nextDataFixture.props.pageProps,
+          dehydratedState: {
+            queries: []
+          }
+        }
+      }
+    }
+    const second = parseNextDataText(JSON.stringify(altered))
+    expect(second).not.toBe(first)
+    expect(second?.props?.pageProps?.dehydratedState?.queries).toEqual([])
+  })
+
+  it('returns null for invalid JSON and clears the cache', () => {
+    const text = JSON.stringify(nextDataFixture)
+    expect(parseNextDataText(text)).not.toBeNull()
+    expect(parseNextDataText('{broken')).toBeNull()
+    expect(parseNextDataText(text)).not.toBeNull()
+  })
+
+  it('avoids JSON.parse on a cache hit', () => {
+    const text = JSON.stringify(nextDataFixture)
+    const parseSpy = vi.spyOn(JSON, 'parse')
+    parseNextDataText(text)
+    const coldCalls = parseSpy.mock.calls.length
+    parseNextDataText(text)
+    expect(parseSpy.mock.calls.length).toBe(coldCalls)
+    parseSpy.mockRestore()
   })
 })

@@ -17,7 +17,6 @@ import {
   downloadCsv,
   tracksToCsv
 } from '../../lib/export/csv'
-import { uniqueTracks } from '../../lib/extract/normalize'
 import {
   DEFAULT_FILTERS,
   type ExtractionSnapshot,
@@ -30,7 +29,8 @@ export function useTrackAnalysis(
 ) {
   const [filters, setFilters] = useState<TrackFilters>(DEFAULT_FILTERS)
   const [sort, setSort] = useState<TrackSort>(DEFAULT_TRACK_SORT)
-  const tracks = useMemo(() => uniqueTracks(snapshot?.tracks ?? []), [snapshot])
+  // Snapshot tracks are already uniqueTracks()'d at the extraction boundary.
+  const tracks = useMemo(() => snapshot?.tracks ?? [], [snapshot])
   const stats = useMemo(() => computeTrackStats(tracks), [tracks])
   const filteredTracks = useMemo(
     () => filterTracks(tracks, filters),
@@ -97,7 +97,10 @@ export function useTrackAnalysis(
 
   const exportCsv = useCallback(() => {
     if (!snapshot) return
-    downloadCsv(buildCsvFilename(snapshot.pageUrl), tracksToCsv(sortedTracks))
+    downloadCsv(
+      buildCsvFilename(snapshot.pageUrl),
+      tracksToCsv(sortedTracks, snapshot.pageUrl)
+    )
   }, [sortedTracks, snapshot])
 
   const downloadReport = useCallback(() => {

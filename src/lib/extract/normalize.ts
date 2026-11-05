@@ -198,7 +198,6 @@ export type NormalizeTrackResult =
 
 export function normalizeTrackDetailed(
   rawTrack: unknown,
-  context: NormalizeContext,
   position: number | null
 ): NormalizeTrackResult {
   if (!looksLikeRawTrack(rawTrack)) {
@@ -258,21 +257,16 @@ export function normalizeTrackDetailed(
       previewEndMs: previewWindow.end,
       artworkUrl:
         normalizeArtworkUrl(rawTrack.image) ??
-        normalizeArtworkUrl(rawTrack.release?.image),
-      pageUrl: context.pageUrl,
-      pageTitle: context.pageTitle,
-      extractedAt: new Date().toISOString(),
-      source: context.source
+        normalizeArtworkUrl(rawTrack.release?.image)
     }
   }
 }
 
 export function normalizeTrack(
   rawTrack: RawTrack,
-  context: NormalizeContext,
   position: number | null
 ): Track | null {
-  const result = normalizeTrackDetailed(rawTrack, context, position)
+  const result = normalizeTrackDetailed(rawTrack, position)
   return result.ok ? result.track : null
 }
 
@@ -285,7 +279,7 @@ export function normalizeRawItems(
   const tracks: Track[] = []
 
   for (let index = 0; index < items.length; index += 1) {
-    const result = normalizeTrackDetailed(items[index], context, index + 1)
+    const result = normalizeTrackDetailed(items[index], index + 1)
     if (result.ok) {
       tracks.push(result.track)
       continue
