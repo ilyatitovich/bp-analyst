@@ -3,14 +3,6 @@ import type { ExtractionSnapshot, Track } from '../types/track';
 
 const TRACK_ROW_SELECTOR = 'div.row.tracks-table';
 
-function parseNames(container: Element | null): { name: string }[] {
-  if (!container) return [];
-  return Array.from(container.querySelectorAll('a'))
-    .map((anchor) => anchor.textContent?.trim() ?? '')
-    .filter(Boolean)
-    .map((name) => ({ name }));
-}
-
 function parseBpmCell(text: string): { bpm: number | null; keyName: string | null } {
   const match = text.trim().match(/(\d{2,3})\s*BPM\s*-\s*(.+)$/i);
   if (!match) {
