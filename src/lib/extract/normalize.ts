@@ -1,4 +1,5 @@
 import { toCamelot } from '../analysis/camelot'
+import { asAllowedPreviewUrl } from '../security/preview-url'
 import type {
   ExtractionSnapshot,
   Track,
@@ -130,9 +131,9 @@ function normalizePreviewUrl(rawTrack: RawTrack): string | null {
   const mp3 = sample?.mp3
   const nestedUrl = typeof mp3 === 'string' ? mp3 : mp3?.url
   return (
-    asHttpUrl(rawTrack.sample_url) ??
-    asHttpUrl(sample?.mp3_url) ??
-    asHttpUrl(nestedUrl)
+    asAllowedPreviewUrl(rawTrack.sample_url) ??
+    asAllowedPreviewUrl(sample?.mp3_url) ??
+    asAllowedPreviewUrl(nestedUrl)
   )
 }
 

@@ -86,6 +86,22 @@ describe('normalizeTrack preview fields', () => {
       'https://geo-media.beatport.com/image_size/80x80/release.jpg'
     )
   })
+
+  it('drops preview URLs outside the Beatport sample allowlist', () => {
+    const track = normalizeTrack(
+      {
+        ...baseRaw,
+        sample_url: 'https://evil.example/steal.mp3',
+        sample: {
+          mp3_url: 'https://geo-media.beatport.com/not-audio.jpg'
+        }
+      },
+      context,
+      1
+    )
+
+    expect(track?.previewUrl).toBeNull()
+  })
 })
 
 describe('normalizeTrack sanitizes broken rows', () => {

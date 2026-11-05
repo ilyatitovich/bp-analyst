@@ -43,6 +43,23 @@ describe('tracksToCsv', () => {
     expect(csv).toContain('Artist One; Artist Two')
   })
 
+  it('neutralizes formula-leading cells and quotes carriage returns', () => {
+    const csv = tracksToCsv([
+      {
+        ...track,
+        title: '=cmd|"/C calc"!A0',
+        mixName: '+1-555',
+        artists: [{ name: '-paid' }, { name: '@sum(1+1)' }],
+        releaseName: 'Line\rBreak'
+      }
+    ])
+
+    expect(csv).toContain(`"'=cmd|""/C calc""!A0"`)
+    expect(csv).toContain("'+1-555")
+    expect(csv).toContain("'-paid; @sum(1+1)")
+    expect(csv).toContain('"Line\rBreak"')
+  })
+
   it('builds a descriptive filename', () => {
     expect(buildCsvFilename(track.pageUrl)).toMatch(
       /^beatport-genre-melodic-house-techno-90-top-100-\d{4}-\d{2}-\d{2}\.csv$/

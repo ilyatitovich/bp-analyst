@@ -1,7 +1,6 @@
 import { browser } from 'wxt/browser'
 import { type ExtractionSnapshot } from '../src/lib/types/track'
 import {
-  type BeatportAnalystMessage,
   type ExtractionFailedMessage,
   type RequestTabCaptureResponse
 } from '../src/lib/messaging/protocol'
@@ -17,6 +16,10 @@ import {
   tabScopedStorageKeys,
   tabStorageKey
 } from '../src/lib/messaging/tab-state'
+import {
+  isExtensionSender,
+  parseBeatportAnalystMessage
+} from '../src/lib/messaging/validate'
 
 async function ensureDefaults(): Promise<void> {
   if (browser.storage.session?.setAccessLevel) {
@@ -192,7 +195,10 @@ async function refreshActiveBeatportPage(): Promise<{
   return { reloaded: true }
 }
 
-function openPanelForTab(tab: { id?: number; url?: string }): void {
+function openPanelForTab(tab: {
+  id?: number | undefined
+  url?: string | undefined
+}): void {
   const sidebarAction = getSidebarAction()
   if (sidebarAction?.open) {
     void setRestoreFirefoxSidebar(false)
@@ -332,7 +338,17 @@ export default defineBackground({
     })
 
     browser.runtime.onMessage.addListener(
-      (message: BeatportAnalystMessage, sender, sendResponse) => {
+      (rawMessage, sender, sendResponse) => {
+        if (!isExtensionSender(sender, browser.runtime.id)) {
+          return false
+        }
+
+        const message = parseBeatportAnalystMessage(rawMessage)
+        if (!message) {
+          sendResponse({ ok: false, error: 'invalid-message' })
+          return false
+        }
+
         if (message.type === 'CONTENT_HELLO') {
           const tabId = sender.tab?.id
           if (tabId == null) {

@@ -23,10 +23,18 @@ const CSV_COLUMNS = [
   'page_url'
 ] as const
 
+function neutralizeFormula(value: string): string {
+  // Excel/Sheets treat leading = + - @ (and tab/CR) as formulas.
+  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value
+}
+
 function escapeCell(value: string | number | boolean | null): string {
   if (value === null) return ''
-  const stringValue = String(value)
-  if (/[",\n]/.test(stringValue)) {
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  const stringValue = neutralizeFormula(value)
+  if (/[",\n\r]/.test(stringValue)) {
     return `"${stringValue.replaceAll('"', '""')}"`
   }
   return stringValue

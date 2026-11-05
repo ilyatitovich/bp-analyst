@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import { resolvedPreviewWindow } from '../../lib/player/preview'
+import { isAllowedPreviewUrl } from '../../lib/security/preview-url'
 import type { Track } from '../../lib/types/track'
 
 export type PreviewPlayerHandle = {
@@ -114,7 +115,11 @@ export function usePreviewPlayer(queue: Track[]): PreviewPlayerHandle {
 
       const onError = async () => {
         if (generation !== generationRef.current) return
-        if (!allowBlobFallback || !track.previewUrl) {
+        if (
+          !allowBlobFallback ||
+          !track.previewUrl ||
+          !isAllowedPreviewUrl(track.previewUrl)
+        ) {
           setError(true)
           setPlaying(false)
           return
@@ -150,7 +155,7 @@ export function usePreviewPlayer(queue: Track[]): PreviewPlayerHandle {
 
   const playTrack = useCallback(
     (track: Track) => {
-      if (!track.previewUrl) return
+      if (!track.previewUrl || !isAllowedPreviewUrl(track.previewUrl)) return
       const audio = getAudio()
       if (trackRef.current?.id === track.id && audio.src && !errorRef.current) {
         if (audio.src) {
