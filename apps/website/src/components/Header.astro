@@ -1,0 +1,90 @@
+---
+import { GITHUB_REPO_URL } from '../data/downloads'
+---
+
+<header class="page__header">
+  <div class="page__header-inner">
+    <a class="page__brand" href="/">
+      <img
+        class="page__brand-mark"
+        src="/icon.svg"
+        alt=""
+        width="36"
+        height="36"
+        decoding="async"
+      />
+      <span>Beatport Analyst</span>
+    </a>
+    <nav class="page__nav" aria-label="Page">
+      <a class="page__nav-link" href="#download">
+        Download
+      </a>
+      <a
+        class="page__nav-link"
+        href={GITHUB_REPO_URL}
+        rel="noopener noreferrer"
+      >
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  @layer components {
+    .page__header {
+      position: fixed;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      width: 100%;
+      z-index: 100;
+      padding-block: var(--space-5);
+      padding-inline: var(--space-5);
+    }
+
+    .page__header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      max-inline-size: var(--content-max);
+      margin-inline: auto;
+    }
+
+    .page__brand {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      color: var(--color-fg);
+      text-decoration: none;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: var(--text-lg);
+      letter-spacing: -0.02em;
+    }
+
+    .page__brand-mark {
+      inline-size: 2.25rem;
+      block-size: 2.25rem;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .page__nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-4);
+    }
+
+    .page__nav-link {
+      color: var(--color-fg-muted);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      font-weight: 500;
+    }
+
+    .page__nav-link:hover {
+      color: var(--color-fg);
+    }
+  }
+</style>

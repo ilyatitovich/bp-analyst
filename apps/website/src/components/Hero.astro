@@ -31,27 +31,21 @@ const primary = BROWSERS[0]
   @layer components {
     .hero {
       display: grid;
-      align-content: end;
-      min-block-size: min(72dvh, 40rem);
+      place-content: center;
+      justify-items: center;
+      min-block-size: 100dvh;
       padding-block: var(--space-7) var(--space-8);
+      text-align: center;
     }
 
     .hero__content {
       display: grid;
       gap: var(--space-4);
-      justify-items: start;
-      max-inline-size: 38rem;
-    }
-
-    .hero__logo {
-      inline-size: clamp(5rem, 14vw, 8rem);
-      block-size: auto;
-      filter: drop-shadow(0 0 2rem var(--surface-glow));
+      justify-items: center;
     }
 
     .hero__brand {
       margin: 0;
-      max-inline-size: 12ch;
     }
 
     .hero__headline {

@@ -10,6 +10,7 @@ import {
 import '../styles/tokens.css'
 import '../styles/base.css'
 import '../styles/site.css'
+import Header from '../components/Header.astro'
 
 interface Props {
   title?: string
@@ -85,33 +86,7 @@ const jsonLd = {
       Skip to main content{' '}
     </a>
     <div class="page">
-      <header class="page__header">
-        <div class="page__header-inner">
-          <a class="page__brand" href="/">
-            <img
-              class="page__brand-mark"
-              src="/icon.svg"
-              alt=""
-              width="36"
-              height="36"
-              decoding="async"
-            />
-            <span>Beatport Analyst</span>
-          </a>
-          <nav class="page__nav" aria-label="Page">
-            <a class="page__nav-link" href="#download">
-              Download
-            </a>
-            <a
-              class="page__nav-link"
-              href={GITHUB_REPO_URL}
-              rel="noopener noreferrer"
-            >
-              GitHub
-            </a>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main class="page__main" id="content">
         <div class="page__main-inner">
