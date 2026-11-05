@@ -52,11 +52,21 @@ pnpm build:firefox
 pnpm zip            # packaged zip for Edge; also zip:chrome / zip:firefox
 ```
 
-Download a packaged zip for your current browser from [ilyatitov.vercel.app/api/cases/beatport-analyst/download](https://ilyatitov.vercel.app/api/cases/beatport-analyst/download). Unzip it, or load the unpacked output from `apps/extension/.output/` (for example `apps/extension/.output/chrome-mv3-0.1.0` or `apps/extension/.output/edge-mv3-0.1.0`), via the browser’s extension page:
+Download a packaged zip for your current browser from the [marketing site](https://bp-analyst.vercel.app) download section, or directly from [ilyatitov.vercel.app/api/cases/beatport-analyst/download](https://ilyatitov.vercel.app/api/cases/beatport-analyst/download). Unzip it, or load the unpacked output from `apps/extension/.output/` (for example `apps/extension/.output/chrome-mv3-0.1.0` or `apps/extension/.output/edge-mv3-0.1.0`), via the browser’s extension page:
 
 - Chrome: `chrome://extensions` → Developer mode → Load unpacked
 - Edge: `edge://extensions` → Developer mode → Load unpacked
 - Firefox: `about:debugging` → This Firefox → Load Temporary Add-on → pick the built `manifest.json`
+
+### Marketing site
+
+```bash
+pnpm dev:website       # Astro local preview
+pnpm build:website     # static output → apps/website/dist
+pnpm typecheck:website
+```
+
+Optional analytics IDs are listed in `apps/website/.env.example`. Copy to `apps/website/.env` for local builds; leave them empty to skip injection.
 
 ## How it works
 
@@ -99,6 +109,10 @@ apps/
       lib/player/       # Preview URLs
       sidepanel/        # React UI, hooks, charts
     assets/
+  website/              # Astro marketing landing (@bp-analyst/website)
+    src/pages/          # index + robots
+    src/components/     # hero, benefits, features, download, footer, analytics
+    public/             # favicon, logo
 ```
 
 ## Scripts
@@ -110,6 +124,20 @@ apps/
 | `pnpm bench:extract`                                      | Extraction + message-size benchmark; writes `apps/extension/docs/BENCHMARKS.md`   |
 | `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build                                                              |
 | `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox`       | Packaged zip named `beatport-analyst-<version>-<browser>.zip`                     |
+| `pnpm dev:website` / `pnpm build:website`                 | Marketing site local preview / static build                                       |
+| `pnpm typecheck:website`                                  | Astro + TypeScript check for `apps/website`                                       |
+
+## Deploy marketing site (Vercel)
+
+Static Astro output — no `@astrojs/vercel` adapter.
+
+1. Create a **new** Vercel project from this repo (do not reuse an unrelated portfolio project).
+2. Set **Root Directory** to `apps/website`. Vercel should auto-detect Astro; build command `astro build` (or `pnpm build`) and output `dist`.
+3. Optionally add environment variables (see `apps/website/.env.example`):
+   - `PUBLIC_GA_MEASUREMENT_ID` — GA4 measurement ID
+   - `PUBLIC_YANDEX_METRIKA_ID` — Yandex Metrika counter ID
+     Leave both unset to ship without analytics scripts.
+4. After the first production URL is known, update `site` in `apps/website/astro.config.ts` (and redeploy) so canonical URLs, Open Graph, and the sitemap match the live domain.
 
 ## Permissions
 
