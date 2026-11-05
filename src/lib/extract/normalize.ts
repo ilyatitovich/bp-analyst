@@ -236,7 +236,7 @@ export function trackIdentity(track: Track): string {
     .filter(Boolean)
     .sort()
     .join(',');
-  return `${artists}\0${normalizeName(track.title)}`;
+  return `${artists}\0${normalizeName(track.title)}\0${normalizeName(track.mixName)}`;
 }
 
 export function uniqueTracks(tracks: Track[]): Track[] {

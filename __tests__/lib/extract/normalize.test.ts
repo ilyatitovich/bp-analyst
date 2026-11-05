@@ -121,40 +121,40 @@ describe('normalizeTrack sanitizes broken rows', () => {
 });
 
 describe('uniqueTracks', () => {
-  it('drops rows that are missing identity or BPM', () => {
-    const usable: Track = {
-      id: 1,
-      position: 1,
-      title: 'Keep Me',
-      mixName: '',
-      artists: [{ name: 'DJ' }],
-      remixers: [],
-      bpm: 128,
-      keyName: null,
-      camelot: null,
-      genre: null,
-      subGenre: null,
-      label: null,
-      releaseName: null,
-      length: null,
-      lengthMs: null,
-      publishDate: null,
-      price: null,
-      exclusive: false,
-      hype: false,
-      isrc: null,
-      slug: null,
-      trackUrl: null,
-      previewUrl: null,
-      previewStartMs: null,
-      previewEndMs: null,
-      artworkUrl: null,
-      pageUrl: context.pageUrl,
-      pageTitle: context.pageTitle,
-      extractedAt: '2026-08-19T10:00:00.000Z',
-      source: 'dom',
-    };
+  const usable: Track = {
+    id: 1,
+    position: 1,
+    title: 'Keep Me',
+    mixName: '',
+    artists: [{ name: 'DJ' }],
+    remixers: [],
+    bpm: 128,
+    keyName: null,
+    camelot: null,
+    genre: null,
+    subGenre: null,
+    label: null,
+    releaseName: null,
+    length: null,
+    lengthMs: null,
+    publishDate: null,
+    price: null,
+    exclusive: false,
+    hype: false,
+    isrc: null,
+    slug: null,
+    trackUrl: null,
+    previewUrl: null,
+    previewStartMs: null,
+    previewEndMs: null,
+    artworkUrl: null,
+    pageUrl: context.pageUrl,
+    pageTitle: context.pageTitle,
+    extractedAt: '2026-08-19T10:00:00.000Z',
+    source: 'dom',
+  };
 
+  it('drops rows that are missing identity or BPM', () => {
     const tracks = uniqueTracks([
       { ...usable, id: 2, title: '', bpm: 130 },
       { ...usable, id: 3, artists: [], bpm: 130 },
@@ -164,5 +164,44 @@ describe('uniqueTracks', () => {
 
     expect(tracks).toHaveLength(1);
     expect(tracks[0]).toMatchObject({ id: 1, title: 'Keep Me', position: 1 });
+  });
+
+  it('keeps same title and artists when mix names differ', () => {
+    const tracks = uniqueTracks([
+      { ...usable, id: 10, title: 'Beat Goes On', mixName: 'Extended Mix', artists: [{ name: 'Rafael' }] },
+      { ...usable, id: 11, title: 'Beat Goes On', mixName: 'Radio Edit', artists: [{ name: 'Rafael' }] },
+      { ...usable, id: 12, title: 'Beat Goes On', mixName: 'Original Mix', artists: [{ name: 'Rafael' }] },
+    ]);
+
+    expect(tracks).toHaveLength(3);
+    expect(tracks.map((track) => track.mixName)).toEqual([
+      'Extended Mix',
+      'Radio Edit',
+      'Original Mix',
+    ]);
+  });
+
+  it('collapses same title, artists, and mix across whitespace/case', () => {
+    const tracks = uniqueTracks([
+      {
+        ...usable,
+        id: 20,
+        title: 'Beat Goes On',
+        mixName: 'Extended Mix',
+        artists: [{ name: 'Rafael' }],
+        isrc: null,
+      },
+      {
+        ...usable,
+        id: 21,
+        title: '  beat goes on ',
+        mixName: '  EXTENDED   MIX ',
+        artists: [{ name: 'RAFAEL' }],
+        isrc: 'US-ABC-00-00000',
+      },
+    ]);
+
+    expect(tracks).toHaveLength(1);
+    expect(tracks[0]).toMatchObject({ id: 21, isrc: 'US-ABC-00-00000', position: 1 });
   });
 });

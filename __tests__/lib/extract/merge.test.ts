@@ -87,14 +87,22 @@ describe('mergeSnapshots', () => {
     expect(merged?.tracks.map((item) => item.id)).toEqual([1, 2]);
   });
 
-  it('drops the same title by the same artists even when ids and mix differ', () => {
+  it('keeps the same title by the same artists when mix names differ', () => {
     const incoming = snapshot([
       track(10, 1, { title: 'Beat Goes On', mixName: 'Extended Mix', artists: [{ name: 'Rafael' }] }),
       track(99, 2, { title: 'Beat Goes On', mixName: 'Radio Edit', artists: [{ name: 'Rafael' }] }),
       track(11, 3, { title: 'Beat Goes On', artists: [{ name: 'Other Artist' }] }),
     ]);
     const merged = mergeSnapshots(null, incoming);
-    expect(merged?.trackCount).toBe(2);
-    expect(merged?.tracks.map((item) => item.artists[0]?.name)).toEqual(['Rafael', 'Other Artist']);
+    expect(merged?.trackCount).toBe(3);
+    expect(merged?.tracks.map((item) => ({
+      artists: item.artists[0]?.name,
+      mixName: item.mixName,
+    }))).toEqual([
+      { artists: 'Rafael', mixName: 'Extended Mix' },
+      { artists: 'Rafael', mixName: 'Radio Edit' },
+      { artists: 'Other Artist', mixName: 'Extended Mix' },
+    ]);
   });
 });
+
