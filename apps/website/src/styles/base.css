@@ -11,6 +11,12 @@
     hanging-punctuation: first last;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    scroll-padding-block-start: 5.5rem;
+    scroll-behavior: smooth;
+
+    @media (prefers-reduced-motion: reduce) {
+      scroll-behavior: auto;
+    }
   }
 
   body {
@@ -51,7 +57,6 @@
     color: var(--color-fg);
     background-color: var(--color-bg);
     background-image: var(--surface-page);
-    background-attachment: fixed;
     overflow-wrap: break-word;
   }
 
