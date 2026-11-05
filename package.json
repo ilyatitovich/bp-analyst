@@ -4,7 +4,7 @@
   "description": "Beatport Analyst Chromium extension for producer-facing track analysis and CSV export.",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.13.0",
+  "packageManager": "pnpm@12.16.1",
   "scripts": {
     "dev": "wxt -b edge",
     "dev:chrome": "wxt -b chrome",
