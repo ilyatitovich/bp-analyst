@@ -1,11 +1,11 @@
 import { readCatalogCoverage } from './coverage'
+import { emptyAttempt } from './diagnostics'
 import {
   buildSnapshot,
-  looksLikeRawTrack,
-  normalizeTrack,
+  normalizeRawItems,
   type NormalizeContext
 } from './normalize'
-import type { ExtractionSnapshot } from '../types/track'
+import type { ExtractResult } from '../types/track'
 
 type ApiPayload = {
   results?: unknown[]
@@ -24,29 +24,23 @@ function collectPayloadResults(payload: ApiPayload): unknown[] {
 export function extractSnapshotFromApiPayload(
   payload: unknown,
   context: NormalizeContext
-): ExtractionSnapshot | null {
-  if (!payload || typeof payload !== 'object') return null
+): ExtractResult {
+  if (!payload || typeof payload !== 'object') {
+    return { snapshot: null, attempt: emptyAttempt(context.source) }
+  }
 
   const results = collectPayloadResults(payload as ApiPayload)
-  if (!results.some(looksLikeRawTrack)) return null
+  const { tracks, attempt } = normalizeRawItems(results, context)
 
-  const tracks = results
-    .map((item, index) =>
-      normalizeTrack(
-        item as Parameters<typeof normalizeTrack>[0],
-        context,
-        index + 1
-      )
-    )
-    .filter((track): track is NonNullable<typeof track> => track !== null)
-
-  if (!tracks.length) return null
+  if (!tracks.length) {
+    return { snapshot: null, attempt }
+  }
 
   const snapshot = buildSnapshot(tracks, context)
   const coverage = readCatalogCoverage(payload, snapshot.trackCount)
-  if (!coverage) return snapshot
+  if (!coverage) return { snapshot, attempt }
 
   snapshot.listCount = coverage.listCount
   snapshot.complete = coverage.complete
-  return snapshot
+  return { snapshot, attempt }
 }

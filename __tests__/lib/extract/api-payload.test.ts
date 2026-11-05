@@ -29,7 +29,7 @@ function rawTrack(id: number, name = `Track ${id}`) {
 
 describe('extractSnapshotFromApiPayload coverage', () => {
   it('sets listCount and incomplete when a next page exists', () => {
-    const snapshot = extractSnapshotFromApiPayload(
+    const { snapshot, attempt } = extractSnapshotFromApiPayload(
       {
         count: 100,
         next: 'https://api.beatport.com/v4/catalog/tracks/?page=2',
@@ -44,6 +44,11 @@ describe('extractSnapshotFromApiPayload coverage', () => {
       listCount: 100,
       complete: false
     })
+    expect(attempt).toMatchObject({
+      source: 'api-payload',
+      rawItemCount: 25,
+      acceptedCount: 25
+    })
     expect(
       coverageLabel(
         snapshot!.trackCount,
@@ -54,7 +59,7 @@ describe('extractSnapshotFromApiPayload coverage', () => {
   })
 
   it('marks a fully captured catalog page complete', () => {
-    const snapshot = extractSnapshotFromApiPayload(
+    const { snapshot } = extractSnapshotFromApiPayload(
       {
         count: 10,
         next: null,
@@ -86,7 +91,7 @@ describe('extractSnapshotFromApiPayload coverage', () => {
         results: Array.from({ length: 25 }, (_, index) => rawTrack(index + 1))
       },
       context
-    )
+    ).snapshot
     const page2 = extractSnapshotFromApiPayload(
       {
         count: 40,
@@ -95,7 +100,7 @@ describe('extractSnapshotFromApiPayload coverage', () => {
         results: Array.from({ length: 15 }, (_, index) => rawTrack(index + 26))
       },
       context
-    )
+    ).snapshot
 
     const merged = mergeSnapshots(page1, page2)
     expect(merged).toMatchObject({
@@ -106,5 +111,30 @@ describe('extractSnapshotFromApiPayload coverage', () => {
     expect(
       coverageLabel(merged!.trackCount, merged!.listCount, merged!.complete)
     ).toBeNull()
+  })
+
+  it('records reject reasons when catalog rows fail validation', () => {
+    const { snapshot, attempt } = extractSnapshotFromApiPayload(
+      {
+        results: [
+          rawTrack(1),
+          { ...rawTrack(2), bpm: null },
+          { id: 3, name: 'Nope' },
+          { ...rawTrack(4), artists: [] }
+        ]
+      },
+      context
+    )
+
+    expect(snapshot?.trackCount).toBe(1)
+    expect(attempt).toMatchObject({
+      rawItemCount: 4,
+      acceptedCount: 1,
+      rejects: {
+        'invalid-bpm': 1,
+        'not-raw-track': 1,
+        'missing-artists': 1
+      }
+    })
   })
 })

@@ -27,7 +27,7 @@ describe('extractSnapshotFromDom', () => {
   })
 
   it('extracts usable tracks from chart HTML and skips broken rows', () => {
-    const snapshot = extractSnapshotFromDom({
+    const { snapshot, attempt } = extractSnapshotFromDom({
       ...pageContext,
       source: 'dom'
     })
@@ -36,6 +36,8 @@ describe('extractSnapshotFromDom', () => {
       trackCount: 3,
       source: 'dom'
     })
+    expect(attempt.acceptedCount).toBe(3)
+    expect(attempt.rawItemCount).toBeGreaterThanOrEqual(3)
     expect(snapshot!.tracks.map(track => track.title)).toEqual([
       'Night Drive',
       'Warehouse Pulse',
@@ -63,12 +65,15 @@ describe('extractSnapshotFromDom', () => {
 
   it('returns null when the tracks table is absent', () => {
     document.body.innerHTML = '<div class="empty">No tracks</div>'
-    expect(
-      extractSnapshotFromDom({
-        ...pageContext,
-        source: 'dom'
-      })
-    ).toBeNull()
+    const { snapshot, attempt } = extractSnapshotFromDom({
+      ...pageContext,
+      source: 'dom'
+    })
+    expect(snapshot).toBeNull()
+    expect(attempt).toMatchObject({
+      rawItemCount: 0,
+      acceptedCount: 0
+    })
   })
 })
 
@@ -81,7 +86,7 @@ describe('extractSnapshotFromNextData (document)', () => {
       </head><body></body></html>
     `
 
-    const snapshot = extractSnapshotFromNextData({
+    const { snapshot } = extractSnapshotFromNextData({
       ...pageContext,
       source: 'next-data'
     })
@@ -102,7 +107,7 @@ describe('extractSnapshotFromNextData (document)', () => {
       extractSnapshotFromNextData({
         ...pageContext,
         source: 'next-data'
-      })
+      }).snapshot
     ).toBeNull()
 
     document.documentElement.innerHTML = `
@@ -114,7 +119,7 @@ describe('extractSnapshotFromNextData (document)', () => {
       extractSnapshotFromNextData({
         ...pageContext,
         source: 'next-data'
-      })
+      }).snapshot
     ).toBeNull()
   })
 })

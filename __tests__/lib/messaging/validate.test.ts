@@ -66,6 +66,31 @@ describe('parseBeatportAnalystMessage', () => {
       pageTitle: snapshot.pageTitle
     })
 
+    const diagnostics = {
+      winningSource: null,
+      sources: [
+        {
+          source: 'api-payload' as const,
+          rawItemCount: 0,
+          acceptedCount: 0,
+          rejects: {}
+        }
+      ]
+    }
+    expect(
+      parseBeatportAnalystMessage({
+        type: 'EXTRACTION_FAILED',
+        pageUrl: snapshot.pageUrl,
+        pageTitle: snapshot.pageTitle,
+        diagnostics
+      })
+    ).toEqual({
+      type: 'EXTRACTION_FAILED',
+      pageUrl: snapshot.pageUrl,
+      pageTitle: snapshot.pageTitle,
+      diagnostics
+    })
+
     expect(
       parseBeatportAnalystMessage({
         type: 'REQUEST_REFRESH',
@@ -95,6 +120,14 @@ describe('parseBeatportAnalystMessage', () => {
       parseBeatportAnalystMessage({
         type: 'EXTRACTION_FAILED',
         pageUrl: snapshot.pageUrl
+      })
+    ).toBeNull()
+    expect(
+      parseBeatportAnalystMessage({
+        type: 'EXTRACTION_FAILED',
+        pageUrl: snapshot.pageUrl,
+        pageTitle: snapshot.pageTitle,
+        diagnostics: { winningSource: 'forged', sources: [] }
       })
     ).toBeNull()
     expect(

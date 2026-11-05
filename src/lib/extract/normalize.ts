@@ -1,12 +1,15 @@
 import { toCamelot } from '../analysis/camelot'
 import { asAllowedPreviewUrl } from '../security/preview-url'
 import type {
+  ExtractAttempt,
   ExtractionSnapshot,
+  NormalizeRejectReason,
   Track,
   TrackFacet,
   TrackPerson,
   TrackSnapshotSource
 } from '../types/track'
+import { emptyAttempt, incrementReject } from './diagnostics'
 
 type RawNamed = {
   id?: number
@@ -190,17 +193,26 @@ function isUsableTrack(track: Track): boolean {
   )
 }
 
-export function normalizeTrack(
-  rawTrack: RawTrack,
+export type NormalizeTrackResult =
+  { ok: true; track: Track } | { ok: false; reason: NormalizeRejectReason }
+
+export function normalizeTrackDetailed(
+  rawTrack: unknown,
   context: NormalizeContext,
   position: number | null
-): Track | null {
-  if (!looksLikeRawTrack(rawTrack)) return null
+): NormalizeTrackResult {
+  if (!looksLikeRawTrack(rawTrack)) {
+    return { ok: false, reason: 'not-raw-track' }
+  }
 
   const title = blankToNull(rawTrack.name)
+  if (!title) return { ok: false, reason: 'missing-title' }
+
   const artists = normalizePeople(rawTrack.artists)
+  if (!artists.length) return { ok: false, reason: 'missing-artists' }
+
   const bpm = normalizeBpm(rawTrack.bpm)
-  if (!title || !artists.length || bpm === null) return null
+  if (bpm === null) return { ok: false, reason: 'invalid-bpm' }
 
   const slug = blankToNull(rawTrack.slug)
   const pageTrackUrl = slug
@@ -210,46 +222,79 @@ export function normalizeTrack(
   const priceDisplay = blankToNull(rawTrack.price?.display)
 
   return {
-    id: rawTrack.id!,
-    position,
-    title,
-    mixName: rawTrack.mix_name?.trim() ?? '',
-    artists,
-    remixers: normalizePeople(rawTrack.remixers),
-    bpm,
-    keyName: blankToNull(rawTrack.key?.name),
-    camelot: toCamelot(
-      rawTrack.key?.camelot_number,
-      rawTrack.key?.camelot_letter
-    ),
-    genre: normalizeFacet(rawTrack.genre),
-    subGenre: normalizeFacet(rawTrack.sub_genre),
-    label: normalizeFacet(rawTrack.release?.label),
-    releaseName: blankToNull(rawTrack.release?.name),
-    length: blankToNull(rawTrack.length),
-    lengthMs: asMs(rawTrack.length_ms),
-    publishDate: blankToNull(rawTrack.publish_date),
-    price:
-      priceDisplay ??
-      (typeof rawTrack.price?.value === 'number'
-        ? String(rawTrack.price.value)
-        : null),
-    exclusive: Boolean(rawTrack.exclusive),
-    hype: Boolean(rawTrack.is_hype),
-    isrc: blankToNull(rawTrack.isrc),
-    slug,
-    trackUrl: pageTrackUrl,
-    previewUrl: normalizePreviewUrl(rawTrack),
-    previewStartMs: previewWindow.start,
-    previewEndMs: previewWindow.end,
-    artworkUrl:
-      normalizeArtworkUrl(rawTrack.image) ??
-      normalizeArtworkUrl(rawTrack.release?.image),
-    pageUrl: context.pageUrl,
-    pageTitle: context.pageTitle,
-    extractedAt: new Date().toISOString(),
-    source: context.source
+    ok: true,
+    track: {
+      id: rawTrack.id!,
+      position,
+      title,
+      mixName: rawTrack.mix_name?.trim() ?? '',
+      artists,
+      remixers: normalizePeople(rawTrack.remixers),
+      bpm,
+      keyName: blankToNull(rawTrack.key?.name),
+      camelot: toCamelot(
+        rawTrack.key?.camelot_number,
+        rawTrack.key?.camelot_letter
+      ),
+      genre: normalizeFacet(rawTrack.genre),
+      subGenre: normalizeFacet(rawTrack.sub_genre),
+      label: normalizeFacet(rawTrack.release?.label),
+      releaseName: blankToNull(rawTrack.release?.name),
+      length: blankToNull(rawTrack.length),
+      lengthMs: asMs(rawTrack.length_ms),
+      publishDate: blankToNull(rawTrack.publish_date),
+      price:
+        priceDisplay ??
+        (typeof rawTrack.price?.value === 'number'
+          ? String(rawTrack.price.value)
+          : null),
+      exclusive: Boolean(rawTrack.exclusive),
+      hype: Boolean(rawTrack.is_hype),
+      isrc: blankToNull(rawTrack.isrc),
+      slug,
+      trackUrl: pageTrackUrl,
+      previewUrl: normalizePreviewUrl(rawTrack),
+      previewStartMs: previewWindow.start,
+      previewEndMs: previewWindow.end,
+      artworkUrl:
+        normalizeArtworkUrl(rawTrack.image) ??
+        normalizeArtworkUrl(rawTrack.release?.image),
+      pageUrl: context.pageUrl,
+      pageTitle: context.pageTitle,
+      extractedAt: new Date().toISOString(),
+      source: context.source
+    }
   }
+}
+
+export function normalizeTrack(
+  rawTrack: RawTrack,
+  context: NormalizeContext,
+  position: number | null
+): Track | null {
+  const result = normalizeTrackDetailed(rawTrack, context, position)
+  return result.ok ? result.track : null
+}
+
+export function normalizeRawItems(
+  items: unknown[],
+  context: NormalizeContext
+): { tracks: Track[]; attempt: ExtractAttempt } {
+  const attempt = emptyAttempt(context.source)
+  attempt.rawItemCount = items.length
+  const tracks: Track[] = []
+
+  for (let index = 0; index < items.length; index += 1) {
+    const result = normalizeTrackDetailed(items[index], context, index + 1)
+    if (result.ok) {
+      tracks.push(result.track)
+      continue
+    }
+    incrementReject(attempt.rejects, result.reason)
+  }
+
+  attempt.acceptedCount = tracks.length
+  return { tracks, attempt }
 }
 
 export function trackRichness(track: Track): number {

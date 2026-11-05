@@ -62,13 +62,21 @@ const nextDataFixture = {
 
 describe('extractSnapshotFromNextDataObject', () => {
   it('normalizes beatport dehydrated track data', () => {
-    const snapshot = extractSnapshotFromNextDataObject(nextDataFixture, {
-      pageUrl: 'https://www.beatport.com/genre/tech-house/11/top-100',
-      pageTitle: 'Tech House Top 100',
-      source: 'next-data'
-    })
+    const { snapshot, attempt } = extractSnapshotFromNextDataObject(
+      nextDataFixture,
+      {
+        pageUrl: 'https://www.beatport.com/genre/tech-house/11/top-100',
+        pageTitle: 'Tech House Top 100',
+        source: 'next-data'
+      }
+    )
 
     expect(snapshot?.trackCount).toBe(1)
+    expect(attempt).toMatchObject({
+      source: 'next-data',
+      rawItemCount: 1,
+      acceptedCount: 1
+    })
     const track = snapshot?.tracks[0]
     expect(track?.camelot).toBe('11B')
     expect(track?.label?.name).toBe('Maccabi House')
@@ -88,7 +96,7 @@ describe('extractSnapshotFromNextDataObject', () => {
     const smallTrack =
       nextDataFixture.props.pageProps.dehydratedState.queries[0]?.state.data
         .results[0]
-    const snapshot = extractSnapshotFromNextDataObject(
+    const { snapshot } = extractSnapshotFromNextDataObject(
       {
         props: {
           pageProps: {

@@ -60,7 +60,8 @@ export async function persistExtractionError(
     [tabStorageKey('extractionError', tabId)]: {
       pageUrl: message.pageUrl,
       pageTitle: message.pageTitle,
-      at: new Date().toISOString()
+      at: new Date().toISOString(),
+      ...(message.diagnostics ? { diagnostics: message.diagnostics } : {})
     }
   })
   await clearTabBadge(tabId)

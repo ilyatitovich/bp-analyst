@@ -4,10 +4,15 @@ import {
   CAPTURE_TIMING,
   createCaptureLifecycle
 } from '../src/lib/extract/capture-lifecycle'
+import {
+  buildExtractionDiagnostics,
+  emptyAttempt
+} from '../src/lib/extract/diagnostics'
 import { extractSnapshotFromDom } from '../src/lib/extract/dom'
 import { extractSnapshotFromNextData } from '../src/lib/extract/next-data'
 import { mergeSnapshots, pickLargestSnapshot } from '../src/lib/extract/merge'
 import { type ExtractionSnapshot } from '../src/lib/types/track'
+import { debugLog, loadDebugLoggingFlag } from '../src/lib/utils/debug'
 
 const PAYLOAD_EVENT = 'bp-analyst:payload'
 const LOCATION_EVENT = 'bp-analyst:location-change'
@@ -51,7 +56,8 @@ function armCapture(): void {
 }
 
 async function publishSnapshot(
-  snapshot: ExtractionSnapshot | null
+  snapshot: ExtractionSnapshot | null,
+  diagnostics: ExtractionSnapshot['diagnostics']
 ): Promise<void> {
   const capture = getLifecycle()
   try {
@@ -61,7 +67,8 @@ async function publishSnapshot(
           .sendMessage({
             type: 'EXTRACTION_FAILED',
             pageUrl: location.href,
-            pageTitle: document.title
+            pageTitle: document.title,
+            diagnostics: diagnostics ?? undefined
           })
           .catch(() => {
             capture.setFailurePublished(false)
@@ -93,16 +100,34 @@ async function extractAndPublish(
     capture.clearFailure()
   }
 
+  const api = payload
+    ? extractSnapshotFromApiPayload(payload, getContext('api-payload'))
+    : { snapshot: null, attempt: emptyAttempt('api-payload') }
+  const next = extractSnapshotFromNextData(getContext('next-data'))
+  const dom = extractSnapshotFromDom(getContext('dom'))
+
   const incoming = pickLargestSnapshot(
-    payload
-      ? extractSnapshotFromApiPayload(payload, getContext('api-payload'))
-      : null,
-    extractSnapshotFromNextData(getContext('next-data')),
-    extractSnapshotFromDom(getContext('dom'))
+    api.snapshot,
+    next.snapshot,
+    dom.snapshot
+  )
+  const snapshot = mergeSnapshots(currentSnapshot, incoming)
+  const diagnostics = buildExtractionDiagnostics(
+    [api.attempt, next.attempt, dom.attempt],
+    snapshot?.source ?? null
   )
 
-  const snapshot = mergeSnapshots(currentSnapshot, incoming)
-  await publishSnapshot(snapshot)
+  if (snapshot) {
+    snapshot.diagnostics = diagnostics
+  }
+
+  debugLog('extraction attempt', {
+    winningSource: diagnostics.winningSource,
+    trackCount: snapshot?.trackCount ?? 0,
+    sources: diagnostics.sources
+  })
+
+  await publishSnapshot(snapshot, diagnostics)
 }
 
 function scheduleExtraction(
@@ -145,6 +170,7 @@ export default defineContentScript({
       },
       { href: location.href, startedAt: Date.now() }
     )
+    void loadDebugLoggingFlag()
     announceTab()
 
     window.addEventListener(PAYLOAD_EVENT, event => {

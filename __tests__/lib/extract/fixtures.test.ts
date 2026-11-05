@@ -24,7 +24,7 @@ describe('catalog API fixture', () => {
   const payload = loadJson<unknown>('catalog-tracks-page.json')
 
   it('normalizes tracks and pagination coverage from a real-shaped page', () => {
-    const snapshot = extractSnapshotFromApiPayload(payload, {
+    const { snapshot } = extractSnapshotFromApiPayload(payload, {
       ...pageContext,
       source: 'api-payload'
     })
@@ -72,7 +72,7 @@ describe('__NEXT_DATA__ fixture', () => {
   >('next-data-top-100.json')
 
   it('picks the largest dehydrated track query', () => {
-    const snapshot = extractSnapshotFromNextDataObject(nextData, {
+    const { snapshot } = extractSnapshotFromNextDataObject(nextData, {
       ...pageContext,
       source: 'next-data'
     })

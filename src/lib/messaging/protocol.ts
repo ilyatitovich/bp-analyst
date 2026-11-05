@@ -1,4 +1,4 @@
-import type { ExtractionSnapshot } from '../types/track'
+import type { ExtractionDiagnostics, ExtractionSnapshot } from '../types/track'
 
 export const STORAGE_KEYS = {
   keyNotation: 'beatportAnalyst.keyNotation'
@@ -8,6 +8,7 @@ export type ExtractionErrorState = {
   pageUrl: string
   pageTitle: string
   at: string
+  diagnostics?: ExtractionDiagnostics
 }
 
 export type KeyNotation = 'scale' | 'camelot'
@@ -40,6 +41,7 @@ export type ExtractionFailedMessage = {
   type: 'EXTRACTION_FAILED'
   pageUrl: string
   pageTitle: string
+  diagnostics?: ExtractionDiagnostics
 }
 
 /** Content script → background: this tab is Beatport; enable the panel without `tabs`. */

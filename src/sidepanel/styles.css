@@ -167,6 +167,29 @@ select {
   padding: 8px 12px;
 }
 
+.diagnostics-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.diagnostics-preview {
+  margin: 0;
+  max-height: 11rem;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 1px solid #3a4458;
+  border-radius: 8px;
+  background: #11151b;
+  color: #c8d0dc;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .panel-stats {
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: 8px;

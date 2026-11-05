@@ -38,7 +38,18 @@ export function App() {
         />
 
         {showExtractionHelp ? (
-          <ExtractionHelpCard />
+          <ExtractionHelpCard
+            pageUrl={snapshot?.pageUrl ?? extractionError?.pageUrl ?? ''}
+            pageTitle={snapshot?.pageTitle ?? extractionError?.pageTitle ?? ''}
+            extractedAt={snapshot?.extractedAt}
+            errorAt={extractionError?.at}
+            trackCount={snapshot?.trackCount}
+            listCount={snapshot?.listCount}
+            complete={snapshot?.complete}
+            diagnostics={
+              snapshot?.diagnostics ?? extractionError?.diagnostics ?? null
+            }
+          />
         ) : (
           <AnalysisView
             snapshot={snapshot}

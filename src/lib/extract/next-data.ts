@@ -1,10 +1,11 @@
+import { emptyAttempt } from './diagnostics'
 import {
   buildSnapshot,
   looksLikeRawTrack,
-  normalizeTrack,
+  normalizeRawItems,
   type NormalizeContext
 } from './normalize'
-import type { ExtractionSnapshot } from '../types/track'
+import type { ExtractResult } from '../types/track'
 
 type QueryData = {
   results?: unknown[]
@@ -38,7 +39,7 @@ function collectQueryResults(data: QueryData | undefined): unknown[] {
 export function extractSnapshotFromNextDataObject(
   parsed: NextData,
   context: NormalizeContext
-): ExtractionSnapshot | null {
+): ExtractResult {
   const queries = parsed.props?.pageProps?.dehydratedState?.queries ?? []
   const ranked = queries
     .map(query =>
@@ -46,33 +47,31 @@ export function extractSnapshotFromNextDataObject(
     )
     .sort((left, right) => right.length - left.length)
   const results = ranked[0]
-  if (!results?.length) return null
+  if (!results?.length) {
+    return { snapshot: null, attempt: emptyAttempt(context.source) }
+  }
 
-  const tracks = results
-    .map((item, index) =>
-      normalizeTrack(
-        item as Parameters<typeof normalizeTrack>[0],
-        context,
-        index + 1
-      )
-    )
-    .filter((track): track is NonNullable<typeof track> => track !== null)
+  const { tracks, attempt } = normalizeRawItems(results, context)
+  if (!tracks.length) {
+    return { snapshot: null, attempt }
+  }
 
-  if (!tracks.length) return null
-  return buildSnapshot(tracks, context)
+  return { snapshot: buildSnapshot(tracks, context), attempt }
 }
 
 export function extractSnapshotFromNextData(
   context: NormalizeContext
-): ExtractionSnapshot | null {
+): ExtractResult {
   const script = document.getElementById('__NEXT_DATA__')
-  if (!script?.textContent) return null
+  if (!script?.textContent) {
+    return { snapshot: null, attempt: emptyAttempt(context.source) }
+  }
 
   let parsed: NextData
   try {
     parsed = JSON.parse(script.textContent) as NextData
   } catch {
-    return null
+    return { snapshot: null, attempt: emptyAttempt(context.source) }
   }
   return extractSnapshotFromNextDataObject(parsed, context)
 }

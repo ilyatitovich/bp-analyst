@@ -1,4 +1,8 @@
-import type { ExtractionSnapshot, TrackSnapshotSource } from '../types/track'
+import type {
+  ExtractionDiagnostics,
+  ExtractionSnapshot,
+  TrackSnapshotSource
+} from '../types/track'
 import type {
   BeatportAnalystMessage,
   ContentHelloMessage,
@@ -21,12 +25,45 @@ export function isExtensionSender(
   return Boolean(extensionId && sender.id === extensionId)
 }
 
+function isExtractAttempt(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false
+  const attempt = value as Record<string, unknown>
+  return (
+    typeof attempt.source === 'string' &&
+    SNAPSHOT_SOURCES.has(attempt.source as TrackSnapshotSource) &&
+    typeof attempt.rawItemCount === 'number' &&
+    Number.isFinite(attempt.rawItemCount) &&
+    typeof attempt.acceptedCount === 'number' &&
+    Number.isFinite(attempt.acceptedCount) &&
+    attempt.rejects !== null &&
+    typeof attempt.rejects === 'object' &&
+    !Array.isArray(attempt.rejects)
+  )
+}
+
+function isExtractionDiagnostics(
+  value: unknown
+): value is ExtractionDiagnostics {
+  if (!value || typeof value !== 'object') return false
+  const diagnostics = value as Record<string, unknown>
+  const winning = diagnostics.winningSource
+  const winningOk =
+    winning === null ||
+    (typeof winning === 'string' &&
+      SNAPSHOT_SOURCES.has(winning as TrackSnapshotSource))
+  return (
+    winningOk &&
+    Array.isArray(diagnostics.sources) &&
+    diagnostics.sources.every(isExtractAttempt)
+  )
+}
+
 export function isExtractionSnapshot(
   value: unknown
 ): value is ExtractionSnapshot {
   if (!value || typeof value !== 'object') return false
   const snapshot = value as Record<string, unknown>
-  return (
+  if (!(
     typeof snapshot.pageUrl === 'string' &&
     typeof snapshot.pageTitle === 'string' &&
     typeof snapshot.extractedAt === 'string' &&
@@ -36,7 +73,16 @@ export function isExtractionSnapshot(
     Number.isFinite(snapshot.trackCount) &&
     Array.isArray(snapshot.tracks) &&
     snapshot.tracks.every(track => track !== null && typeof track === 'object')
-  )
+  )) {
+    return false
+  }
+  if (
+    snapshot.diagnostics !== undefined &&
+    !isExtractionDiagnostics(snapshot.diagnostics)
+  ) {
+    return false
+  }
+  return true
 }
 
 function asTracksExtractedMessage(
@@ -55,11 +101,21 @@ function asExtractionFailedMessage(
   ) {
     return null
   }
-  return {
+  if (
+    message.diagnostics !== undefined &&
+    !isExtractionDiagnostics(message.diagnostics)
+  ) {
+    return null
+  }
+  const parsed: ExtractionFailedMessage = {
     type: 'EXTRACTION_FAILED',
     pageUrl: message.pageUrl,
     pageTitle: message.pageTitle
   }
+  if (message.diagnostics !== undefined) {
+    parsed.diagnostics = message.diagnostics
+  }
+  return parsed
 }
 
 function asRequestRefreshMessage(

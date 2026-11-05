@@ -12,6 +12,30 @@ export type TrackFacet = {
 
 export type TrackSnapshotSource = 'next-data' | 'api-payload' | 'dom'
 
+export type NormalizeRejectReason =
+  | 'not-raw-track'
+  | 'missing-title'
+  | 'missing-artists'
+  | 'invalid-bpm'
+  | 'missing-id'
+
+export type ExtractAttempt = {
+  source: TrackSnapshotSource
+  rawItemCount: number
+  acceptedCount: number
+  rejects: Partial<Record<NormalizeRejectReason, number>>
+}
+
+export type ExtractionDiagnostics = {
+  winningSource: TrackSnapshotSource | null
+  sources: ExtractAttempt[]
+}
+
+export type ExtractResult = {
+  snapshot: ExtractionSnapshot | null
+  attempt: ExtractAttempt
+}
+
 export type Track = {
   id: number
   position: number | null
@@ -54,6 +78,7 @@ export type ExtractionSnapshot = {
   tracks: Track[]
   listCount?: number | null
   complete?: boolean
+  diagnostics?: ExtractionDiagnostics
 }
 
 export type TrackFilters = {

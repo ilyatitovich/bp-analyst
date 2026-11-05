@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   looksLikeRawTrack,
   normalizeTrack,
+  normalizeTrackDetailed,
   uniqueTracks
 } from '../../../src/lib/extract/normalize'
 import type { Track } from '../../../src/lib/types/track'
@@ -109,6 +110,9 @@ describe('normalizeTrack sanitizes broken rows', () => {
     expect(normalizeTrack({ ...baseRaw, name: '' }, context, 1)).toBeNull()
     expect(normalizeTrack({ ...baseRaw, name: '   ' }, context, 1)).toBeNull()
     expect(looksLikeRawTrack({ ...baseRaw, name: '' })).toBe(false)
+    expect(
+      normalizeTrackDetailed({ ...baseRaw, name: '' }, context, 1)
+    ).toEqual({ ok: false, reason: 'not-raw-track' })
   })
 
   it('rejects tracks with no named artists', () => {
@@ -116,6 +120,9 @@ describe('normalizeTrack sanitizes broken rows', () => {
     expect(
       normalizeTrack({ ...baseRaw, artists: [{ name: '  ' }] }, context, 1)
     ).toBeNull()
+    expect(
+      normalizeTrackDetailed({ ...baseRaw, artists: [] }, context, 1)
+    ).toEqual({ ok: false, reason: 'missing-artists' })
     const { artists, ...withoutArtists } = baseRaw
     void artists
     expect(normalizeTrack(withoutArtists, context, 1)).toBeNull()
@@ -126,6 +133,9 @@ describe('normalizeTrack sanitizes broken rows', () => {
     expect(normalizeTrack({ ...baseRaw, bpm: 0 }, context, 1)).toBeNull()
     expect(normalizeTrack({ ...baseRaw, bpm: -124 }, context, 1)).toBeNull()
     expect(normalizeTrack({ ...baseRaw, bpm: 400 }, context, 1)).toBeNull()
+    expect(
+      normalizeTrackDetailed({ ...baseRaw, bpm: null }, context, 1)
+    ).toEqual({ ok: false, reason: 'invalid-bpm' })
   })
 
   it('trims blank optional fields and keeps a valid track', () => {
