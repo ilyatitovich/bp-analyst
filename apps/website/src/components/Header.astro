@@ -42,19 +42,25 @@ import { GITHUB_REPO_URL } from '../data/downloads'
       position: fixed;
       inset-block-start: 0;
       inset-inline-start: 0;
-      width: 100%;
       z-index: 100;
-      padding-block: var(--space-5);
-      padding-inline: var(--space-5);
+      inline-size: 100%;
+      padding-block: var(--space-4);
+      padding-inline: var(--space-4);
     }
 
     .page__header-inner {
       display: flex;
-      align-items: center;
+      align-items: safe center;
       justify-content: space-between;
       gap: var(--space-4);
       max-inline-size: var(--content-max);
       margin-inline: auto;
+      padding-block: var(--space-3);
+      padding-inline: var(--space-4);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--ui-border);
+      background: color-mix(in oklab, var(--color-ink-900) 92%, transparent);
+      box-shadow: var(--shadow-soft);
     }
 
     .page__brand {
