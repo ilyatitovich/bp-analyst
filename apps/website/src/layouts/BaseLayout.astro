@@ -4,8 +4,7 @@ import Analytics from '../components/Analytics.astro'
 import {
   DOWNLOAD_URLS,
   GITHUB_REPO_URL,
-  SUPPORT_EMAIL,
-  SUPPORT_PAGE_URL
+  SUPPORT_EMAIL
 } from '../data/downloads'
 import '../styles/tokens.css'
 import '../styles/base.css'
@@ -80,7 +79,7 @@ const jsonLd = {
     <slot name="head" />
   </head>
   <body>
-    <a class="skip-link" href="#hero-brand">
+    <a class="skip-link" href="#content">
       {' '}
       Skip to main content{' '}
     </a>
@@ -114,15 +113,7 @@ const jsonLd = {
                 Privacy{' '}
               </a>
             </li>
-            <li>
-              <a
-                class="page__footer-link"
-                href={SUPPORT_PAGE_URL}
-                rel="noopener noreferrer"
-              >
-                Support
-              </a>
-            </li>
+
             <li>
               <a class="page__footer-link" href={`mailto:${SUPPORT_EMAIL}`}>
                 Contact

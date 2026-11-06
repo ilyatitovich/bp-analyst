@@ -35,5 +35,4 @@ export function getInstallCtaLabel(id: BrowserId): string {
 
 export const GITHUB_REPO_URL = 'https://github.com/ilyatitovich/bp-analyst'
 export const GITHUB_README_URL = `${GITHUB_REPO_URL}#install-from-source`
-export const SUPPORT_PAGE_URL = 'https://ilyatitov.vercel.app/support'
 export const SUPPORT_EMAIL = 'ilyatitovdev@gmail.com'

@@ -115,7 +115,8 @@ import { SUPPORT_EMAIL } from '../data/downloads'
     .privacy {
       display: grid;
       gap: var(--space-8);
-      padding-block: calc(var(--space-8) + 4rem) var(--space-10);
+      /* Clear the fixed header (5.5rem matches html scroll-padding-block-start). */
+      padding-block: calc(5.5rem + var(--space-7)) var(--space-9);
       max-inline-size: 42rem;
     }
 
