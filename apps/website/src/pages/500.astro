@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import ErrorPage from '../components/ErrorPage.astro'
+
+interface Props {
+  error: unknown
+}
+
+const { error } = Astro.props
+
+if (error instanceof Error) {
+  console.error('[500]', error.message)
+} else if (error !== undefined) {
+  console.error('[500]', error)
+}
+---
+
+<BaseLayout
+  title="Something went wrong — BP Analyst"
+  description="BP Analyst hit an unexpected error. Try again or return home."
+  robots="noindex, follow"
+>
+  <ErrorPage
+    code="500"
+    title="Something went wrong"
+    lede="An unexpected error stopped this page. Try again in a moment, or head home while we sort it out."
+  />
+</BaseLayout>

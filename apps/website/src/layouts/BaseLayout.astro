@@ -13,11 +13,13 @@ import Header from '../components/Header.astro'
 interface Props {
   title?: string
   description?: string
+  robots?: string
 }
 
 const {
   title = 'BP Analyst — market briefs for Beatport',
-  description = 'Turn any Beatport chart, search, or release into a side-panel market brief. BPM, key, labels, exclusives, and freshness — local analysis, no account.'
+  description = 'Turn any Beatport chart, search, or release into a side-panel market brief. BPM, key, labels, exclusives, and freshness — local analysis, no account.',
+  robots = 'index, follow'
 } = Astro.props
 
 const site = Astro.site ?? new URL('https://bp-analyst.vercel.app')
@@ -62,7 +64,7 @@ const jsonLd = {
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#07090d" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={robots} />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="BP Analyst" />

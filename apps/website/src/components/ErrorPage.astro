@@ -1,0 +1,103 @@
+---
+import Cta from './Cta.astro'
+
+interface Props {
+  code: string
+  title: string
+  lede: string
+}
+
+const { code, title, lede } = Astro.props
+---
+
+<section class="error-page" aria-labelledby="error-title">
+  <div class="error-page__content">
+    <p class="error-page__code">{code}</p>
+    <h1 id="error-title" class="error-page__title" tabindex="-1">
+      {title}
+    </h1>
+    <p class="error-page__lede">{lede}</p>
+    <div class="error-page__actions">
+      <Cta href="/">Back to home</Cta>
+      <Cta href="/#download" variant="secondary">
+        Get the extension
+      </Cta>
+    </div>
+  </div>
+</section>
+
+<style>
+  @layer components {
+    .error-page {
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      min-block-size: calc(100dvh - 8rem);
+      padding-block: calc(5.5rem + var(--space-7)) var(--space-9);
+      text-align: center;
+    }
+
+    .error-page__content {
+      display: grid;
+      gap: var(--space-3);
+      justify-items: center;
+      max-inline-size: 36rem;
+    }
+
+    .error-page__code {
+      margin: 0;
+      color: var(--color-fg-subtle);
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .error-page__title {
+      margin: 0;
+      font-family: var(--font-heading);
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: var(--leading-tight);
+      text-wrap: balance;
+    }
+
+    .error-page__lede {
+      margin: 0;
+      font-size: var(--text-lg);
+      color: var(--color-fg-muted);
+      max-inline-size: 40ch;
+      text-wrap: pretty;
+    }
+
+    .error-page__actions {
+      display: flex;
+      flex-wrap: wrap;
+      flex-wrap: balance;
+      align-items: safe center;
+      justify-content: center;
+      gap: var(--space-3);
+      margin-block-start: var(--space-4);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .error-page__content {
+        animation: error-rise var(--duration-med) var(--ease-out) both;
+      }
+    }
+
+    @keyframes error-rise {
+      from {
+        opacity: 0;
+        translate: 0 0.85rem;
+      }
+
+      to {
+        opacity: 1;
+        translate: 0;
+      }
+    }
+  }
+</style>

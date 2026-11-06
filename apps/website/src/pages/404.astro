@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import ErrorPage from '../components/ErrorPage.astro'
+---
+
+<BaseLayout
+  title="Page not found — BP Analyst"
+  description="That page isn’t on BP Analyst. Head home or grab the extension."
+  robots="noindex, follow"
+>
+  <ErrorPage
+    code="404"
+    title="Page not found"
+    lede="The URL may be mistyped, or the page moved. The market brief still starts from Beatport — or from home."
+  />
+</BaseLayout>
