@@ -10,7 +10,7 @@
     "build": "pnpm --filter @bp-analyst/extension build",
     "build:chrome": "pnpm --filter @bp-analyst/extension build:chrome",
     "prepare:downloads": "node scripts/prepare-downloads.mjs",
-    "build:website": "pnpm prepare:downloads && pnpm --filter @bp-analyst/website build",
+    "build:website": "pnpm --filter @bp-analyst/website build",
     "zip": "pnpm --filter @bp-analyst/extension zip",
     "zip:chrome": "pnpm --filter @bp-analyst/extension zip:chrome",
     "dev:firefox": "pnpm --filter @bp-analyst/extension dev:firefox",
