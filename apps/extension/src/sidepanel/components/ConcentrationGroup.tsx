@@ -2,7 +2,7 @@ import type { Bucket } from '../../lib/analysis/stats'
 import { cx } from '../../lib/utils/cx'
 import { formatShare } from '../../lib/utils/format'
 
-export type ConcentrationItem = Bucket & {
+type ConcentrationItem = Bucket & {
   /** Filter value when display label differs (e.g. scale vs Camelot). */
   value?: string
 }

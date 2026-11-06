@@ -7,7 +7,7 @@ import type { RequestTabCaptureResponse } from './protocol'
  * re-intercept catalog responses. Auto open prefers in-tab capture and only
  * reloads when no content script is present (e.g. tabs open before install).
  */
-export function shouldReloadForRefresh(
+function shouldReloadForRefresh(
   contentScriptAvailable: boolean,
   force = false
 ): boolean {

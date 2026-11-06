@@ -62,6 +62,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: store-packages-${{ github.ref_name }}
+          # WXT writes under .output/; upload-artifact skips dotdirs unless opted in.
+          include-hidden-files: true
           path: |
             apps/extension/.output/beatport-analyst-*-edge.zip
             apps/extension/.output/beatport-analyst-*-firefox.zip
