@@ -1,7 +1,8 @@
 ---
 /**
  * Consent banner for non-essential analytics (GA4 / Yandex Metrika).
- * Analytics scripts must not load until the visitor accepts.
+ * Google tag (if configured) loads in <head> under Consent Mode with storage
+ * denied; Accept upgrades consent. Metrika still loads only after Accept.
  */
 const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID?.trim() ?? ''
 const metrikaId = import.meta.env.PUBLIC_YANDEX_METRIKA_ID?.trim() ?? ''
@@ -25,8 +26,8 @@ const analyticsConfigured = Boolean(gaId || metrikaId)
         </h2>
         <p id="bp-consent-desc" class="consent__desc">
           Optional Google Analytics and/or Yandex Metrika help us understand
-          visits to this marketing site. They are off until you accept. The
-          extension itself does not use these tools. See the{' '}
+          visits to this marketing site. Analytics storage stays off until you
+          accept. The extension itself does not use these tools. See the{' '}
           <a href="/cookies">cookie notice</a> and{' '}
           <a href="/privacy">privacy policy</a> (drafts for counsel review).
         </p>
@@ -54,6 +55,19 @@ const analyticsConfigured = Boolean(gaId || metrikaId)
         var banner = document.getElementById('bp-consent')
         if (!banner) return
 
+        var CONSENT_DENIED = {
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+          analytics_storage: 'denied'
+        }
+        var CONSENT_GRANTED = {
+          ad_storage: 'granted',
+          ad_user_data: 'granted',
+          ad_personalization: 'granted',
+          analytics_storage: 'granted'
+        }
+
         function readChoice() {
           try {
             var raw = localStorage.getItem(STORAGE_KEY)
@@ -68,21 +82,9 @@ const analyticsConfigured = Boolean(gaId || metrikaId)
           } catch (_) {}
         }
 
-        function loadGoogle(id) {
-          if (!id || window.__bpGaLoaded) return
-          window.__bpGaLoaded = true
-          var s = document.createElement('script')
-          s.async = true
-          s.fetchPriority = 'low'
-          s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id
-          document.head.appendChild(s)
-          window.dataLayer = window.dataLayer || []
-          function gtag() {
-            window.dataLayer.push(arguments)
-          }
-          window.gtag = gtag
-          gtag('js', new Date())
-          gtag('config', id)
+        function updateGoogleConsent(state) {
+          if (!gaId || typeof window.gtag !== 'function') return
+          window.gtag('consent', 'update', state)
         }
 
         function loadMetrika(id) {
@@ -119,8 +121,12 @@ const analyticsConfigured = Boolean(gaId || metrikaId)
         }
 
         function enableAnalytics() {
-          loadGoogle(gaId)
+          updateGoogleConsent(CONSENT_GRANTED)
           loadMetrika(metrikaId)
+        }
+
+        function disableAnalytics() {
+          updateGoogleConsent(CONSENT_DENIED)
         }
 
         function hideBanner() {
@@ -136,6 +142,7 @@ const analyticsConfigured = Boolean(gaId || metrikaId)
           enableAnalytics()
           hideBanner()
         } else if (choice === 'rejected') {
+          disableAnalytics()
           hideBanner()
         } else {
           showBanner()
@@ -151,6 +158,7 @@ const analyticsConfigured = Boolean(gaId || metrikaId)
             hideBanner()
           } else if (action === 'reject') {
             writeChoice('rejected')
+            disableAnalytics()
             hideBanner()
           }
         })

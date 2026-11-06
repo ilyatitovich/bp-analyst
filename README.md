@@ -146,8 +146,8 @@ Static Astro output — no `@astrojs/vercel` adapter. Extension zips are generat
 1. Create a **new** Vercel project from this repo (do not reuse an unrelated portfolio project).
 2. Set **Root Directory** to `apps/website`. `apps/website/vercel.json` already sets Install → `pnpm --dir ../.. install --frozen-lockfile`, Build → `pnpm --dir ../.. build:website` (zips Chrome into `public/downloads/` then Astro build), and Output → `dist`. Leave dashboard overrides blank so those apply — a plain `astro build` ships no zip and `/downloads/*.zip` 404s.
 3. Optionally add environment variables (see `apps/website/.env.example`):
-   - `PUBLIC_GA_MEASUREMENT_ID` — GA4 measurement ID
-   - `PUBLIC_YANDEX_METRIKA_ID` — Yandex Metrika counter ID
+   - `PUBLIC_GA_MEASUREMENT_ID` — GA4 (`G-…`) or Google tag / GTM (`GTM-…`); loads under Consent Mode (storage denied until Accept)
+   - `PUBLIC_YANDEX_METRIKA_ID` — Yandex Metrika counter ID (loads only after Accept)
      Leave both unset to ship without analytics scripts.
 4. After the first production URL is known, update `site` in `apps/website/astro.config.ts` (and redeploy) so canonical URLs, Open Graph, and the sitemap match the live domain.
 
