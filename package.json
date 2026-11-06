@@ -30,6 +30,9 @@
     "bench:extract": "pnpm --filter @bp-analyst/extension bench:extract",
     "prepare": "husky"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "license": "ISC",
   "lint-staged": {
     "apps/extension/**/*.{js,mjs,cjs,jsx,ts,tsx}": [
