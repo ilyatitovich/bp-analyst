@@ -79,9 +79,10 @@ export function AboutHelpButton() {
                 label page, a release, anything with tracks in a row.
               </li>
               <li>
-                Click the Beatport Analyst toolbar icon. The first open reloads
-                the Beatport tab so we can read the catalog. That's expected,
-                and only happens once until you hit Refresh.
+                Click the Beatport Analyst toolbar icon. If this tab already has
+                a captured catalog payload, the panel fills in without a reload;
+                otherwise the Beatport tab reloads once so we can read the
+                catalog.
               </li>
               <li>
                 Click around. The brief stats and charts are filters — tap a BPM

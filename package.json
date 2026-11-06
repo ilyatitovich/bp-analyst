@@ -25,6 +25,7 @@
     "knip": "pnpm --filter @bp-analyst/extension knip",
     "test": "pnpm --filter @bp-analyst/extension test",
     "test:e2e": "pnpm --filter @bp-analyst/extension test:e2e",
+    "screenshots:readme": "CAPTURE_SCREENSHOTS=1 pnpm --filter @bp-analyst/extension exec playwright test e2e/screenshots.spec.ts",
     "bench:extract": "pnpm --filter @bp-analyst/extension bench:extract",
     "prepare": "husky"
   },

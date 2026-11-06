@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   publish:
-    name: Zip and submit Edge + Firefox
+    name: Zip three browsers; submit Edge + Firefox
     runs-on: ubuntu-latest
     environment: stores
     defaults:
@@ -52,6 +52,9 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Zip Chrome
+        run: pnpm zip:chrome
+
       - name: Zip Edge
         run: pnpm zip
 
@@ -65,6 +68,7 @@ jobs:
           # WXT writes under .output/; upload-artifact skips dotdirs unless opted in.
           include-hidden-files: true
           path: |
+            apps/extension/.output/beatport-analyst-*-chrome.zip
             apps/extension/.output/beatport-analyst-*-edge.zip
             apps/extension/.output/beatport-analyst-*-firefox.zip
             apps/extension/.output/beatport-analyst-*-sources.zip
@@ -74,10 +78,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            apps/extension/.output/beatport-analyst-*-chrome.zip
             apps/extension/.output/beatport-analyst-*-edge.zip
             apps/extension/.output/beatport-analyst-*-firefox.zip
             apps/extension/.output/beatport-analyst-*-sources.zip
           generate_release_notes: true
+          body: |
+            Chrome, Edge, and Firefox zips are attached (plus Firefox sources).
+
+            Edge Add-ons and Firefox AMO uploads run from this workflow; Chrome Web Store submit is manual. See `CHANGELOG.md` and `PRIVACY.md`.
 
       - name: Submit to Edge and Firefox stores
         run: pnpm submit:stores

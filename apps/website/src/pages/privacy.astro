@@ -1,0 +1,177 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SUPPORT_EMAIL } from '../data/downloads'
+---
+
+<BaseLayout
+  title="Privacy Policy — Beatport Analyst"
+  description="Beatport Analyst keeps track analysis on your device. No extension accounts, no telemetry, no project backend."
+>
+  <article class="privacy">
+    <header class="privacy__header">
+      <p class="privacy__eyebrow">Legal</p>
+      <h1 class="privacy__title">Privacy Policy</h1>
+      <p class="privacy__lede">
+        Beatport Analyst is a local browser extension. Track data stays in your
+        browser. Last updated 6 November 2026.
+      </p>
+    </header>
+
+    <div class="privacy__body">
+      <section>
+        <h2>What data the extension handles</h2>
+        <p>
+          While you use it on Beatport list pages, the extension may temporarily
+          hold track metadata already shown or loaded by Beatport (title,
+          artists, mix, BPM, key, label, genre, dates, exclusive/hype flags,
+          preview URLs), the page URL and title, and your key-notation
+          preference.
+        </p>
+      </section>
+
+      <section>
+        <h2>How data is stored</h2>
+        <p>
+          Live snapshots use browser session storage, keyed per Beatport tab,
+          and clear when the session ends. Key notation is stored in local
+          extension storage on your device. Nothing is synced through cloud sync
+          APIs.
+        </p>
+      </section>
+
+      <section>
+        <h2>How data is used</h2>
+        <p>
+          Only to power the side-panel brief, charts, filters, table, in-panel
+          preview playback, and optional CSV export you trigger. The CSV is
+          saved locally by your browser.
+        </p>
+      </section>
+
+      <section>
+        <h2>Network activity</h2>
+        <p>
+          The extension runs only on <code>*.beatport.com</code>. It does not
+          call a Beatport partner API or any backend belonging to this project.
+          Preview playback may request Beatport media URLs Beatport already
+          exposes for that track.
+        </p>
+      </section>
+
+      <section>
+        <h2>Third-party services</h2>
+        <p>
+          The extension package does not embed analytics, crash reporting, or
+          advertising SDKs. This marketing site may load analytics only when
+          measurement IDs are configured; that is independent of the extension
+          and does not receive extension track snapshots.
+        </p>
+      </section>
+
+      <section>
+        <h2>Data sharing</h2>
+        <p>
+          Track snapshots are not uploaded, sold, or shared with third parties
+          by the extension.
+        </p>
+      </section>
+
+      <section>
+        <h2>Retention and deletion</h2>
+        <p>
+          Session snapshots end when the tab or browser session ends. Clear
+          extension data or uninstall to remove local preferences.
+        </p>
+      </section>
+
+      <section>
+        <h2>Changes</h2>
+        <p>
+          If storage or network behavior changes in a way that affects privacy,
+          this page will be updated with a new “last updated” date.
+        </p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>
+          Privacy questions:
+          <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
+        </p>
+        <p>
+          Canonical markdown copy in the repository:
+          <a href="https://github.com/ilyatitovich/bp-analyst/blob/main/PRIVACY.md">
+            PRIVACY.md
+          </a>
+          .
+        </p>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  @layer components {
+    .privacy {
+      display: grid;
+      gap: var(--space-8);
+      padding-block: calc(var(--space-8) + 4rem) var(--space-10);
+      max-inline-size: 42rem;
+    }
+
+    .privacy__eyebrow {
+      margin: 0;
+      color: var(--color-fg-subtle);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .privacy__title {
+      margin: var(--space-2) 0 0;
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .privacy__lede {
+      margin: var(--space-4) 0 0;
+      color: var(--color-fg-muted);
+      font-size: var(--text-lg);
+      line-height: 1.5;
+    }
+
+    .privacy__body {
+      display: grid;
+      gap: var(--space-7);
+    }
+
+    .privacy__body h2 {
+      margin: 0 0 var(--space-3);
+      font-family: var(--font-heading);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .privacy__body p {
+      margin: 0;
+      color: var(--color-fg-muted);
+      line-height: 1.6;
+    }
+
+    .privacy__body a {
+      color: var(--color-accent);
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+
+    .privacy__body code {
+      font-size: 0.92em;
+      color: var(--color-fg);
+    }
+  }
+</style>

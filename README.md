@@ -4,6 +4,10 @@ A Manifest V3 browser extension for producers doing market reconnaissance on [Be
 
 It is built for reading a market, not for crate digging or harmonic mixing.
 
+![Side panel market brief](docs/screenshots/sidepanel-market-brief.png)
+
+![Side panel track table](docs/screenshots/sidepanel-track-table.png)
+
 ## What it does
 
 - **Reads the current Beatport list** from the page Beatport already loaded (catalog JSON, Next.js data, or DOM fallback).
@@ -18,10 +22,10 @@ No Beatport partner API, no account, no backend. Track data stays in the browser
 
 1. Install the extension (see below).
 2. Open a Beatport track list — Top 100, genre chart, search results, a label page, a release, and similar list views.
-3. Click the **Beatport Analyst** toolbar icon. The side panel opens and the Beatport tab reloads once so the content script can intercept catalog responses.
+3. Click the **Beatport Analyst** toolbar icon. The side panel opens. If the page already has a captured catalog payload, analysis appears without a reload; otherwise the tab reloads once so the MAIN-world hook can intercept catalog responses.
 4. Use the brief and charts to filter, play previews from the table, then **Export CSV** if you want a copy of the visible rows.
 
-Refresh is manual after that: press **Refresh** when the list on Beatport has changed and you want a new snapshot.
+Press **Refresh** when the Beatport list has changed and you want a new snapshot (forced refresh reloads the tab).
 
 If the page is not a track list, or Beatport changed their markup, the panel shows a short help card with a contact address.
 
@@ -124,6 +128,7 @@ apps/
 | --------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | `pnpm test`                                               | Vitest (parsers, stats, filters, CSV)                                             |
 | `pnpm test:e2e`                                           | Playwright E2E against a local Beatport fixture (needs `pnpm build:chrome` first) |
+| `pnpm screenshots:readme`                                 | Regenerate README side-panel screenshots under `docs/screenshots/`                |
 | `pnpm bench:extract`                                      | Extraction + message-size benchmark; writes `apps/extension/docs/BENCHMARKS.md`   |
 | `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build                                                              |
 | `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox`       | Local sideload zip named `beatport-analyst-<version>-<browser>.zip`               |
@@ -146,37 +151,43 @@ Static Astro output — no `@astrojs/vercel` adapter. Extension zips are generat
 
 Sideload zips on the marketing site are independent of store submissions. Publishing to Edge / Firefox does not update `/downloads/` until you redeploy the site (`pnpm build:website` / Vercel).
 
-## Release to Edge and Firefox stores
+## Release pipeline
 
-Chrome Web Store submit is not automated. Edge Add-ons and Firefox AMO updates run from GitHub Actions on version tags only (`.github/workflows/release-stores.yml`).
+Version tags (`v*`) trigger [`.github/workflows/release-stores.yml`](.github/workflows/release-stores.yml):
+
+1. Assert the tag matches `apps/extension/package.json` `version`.
+2. Typecheck and unit-test.
+3. Zip **Chrome**, **Edge**, and **Firefox** (plus Firefox sources).
+4. Attach all three browser zips (and the sources zip) to a GitHub Release.
+5. Submit Edge + Firefox via `pnpm submit:stores`. Chrome Web Store submit stays manual.
 
 ### One-time setup
 
 1. Create a GitHub Environment named `stores` on the repo.
 2. Add these **environment** secrets:
 
-| Secret                 | Source                                                                            |
-| ---------------------- | --------------------------------------------------------------------------------- |
-| `EDGE_PRODUCT_ID`      | Partner Center → extension overview (product GUID)                                |
-| `EDGE_CLIENT_ID`       | Partner Center → Publish API (API v1.1)                                           |
-| `EDGE_API_KEY`         | Partner Center → Publish API (API v1.1)                                           |
-| `FIREFOX_EXTENSION_ID` | AMO GUID — `bp-analyst@local` for the existing listing                            |
-| `FIREFOX_JWT_ISSUER`   | [AMO API Keys](https://addons.mozilla.org/developers/addon/api/key/) (JWT issuer) |
-| `FIREFOX_JWT_SECRET`   | AMO API Keys (JWT secret)                                                         |
+| Secret                 | Source                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| `EDGE_PRODUCT_ID`      | Partner Center → extension overview (product GUID)                                   |
+| `EDGE_CLIENT_ID`       | Partner Center → Publish API (API v1.1)                                              |
+| `EDGE_API_KEY`         | Partner Center → Publish API (API v1.1)                                              |
+| `FIREFOX_EXTENSION_ID` | AMO add-on ID — must match `browser_specific_settings.gecko.id` (`bp-analyst@local`) |
+| `FIREFOX_JWT_ISSUER`   | [AMO API Keys](https://addons.mozilla.org/developers/addon/api/key/) (JWT issuer)    |
+| `FIREFOX_JWT_SECRET`   | AMO API Keys (JWT secret)                                                            |
 
 Edge API keys expire about every **72 days**. Rotate in Partner Center → Publish API, then update `EDGE_API_KEY` (and `EDGE_CLIENT_ID` if regenerated).
 
 ### Cut a release
 
-1. Bump `version` in `apps/extension/package.json` (must match the tag).
+1. Bump `version` in `apps/extension/package.json` (must match the tag) and update [CHANGELOG.md](CHANGELOG.md).
 2. Commit, then tag and push:
 
 ```bash
-git tag v0.1.1
-git push origin v0.1.1
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
-The workflow typechecks, runs unit tests, zips Edge + Firefox (including Firefox sources), attaches artifacts to a GitHub Release, and runs `pnpm submit:stores` (`wxt submit` for Edge + listed Firefox only). Store certification / AMO review still happens asynchronously after upload.
+Store certification / AMO review still happens asynchronously after upload.
 
 Local dry-run (with secrets in `apps/extension/.env.submit`, gitignored):
 
@@ -195,11 +206,26 @@ pnpm --filter @bp-analyst/extension exec wxt submit --dry-run \
 - `sidePanel` — Chromium side panel (Firefox uses the sidebar)
 - Host: `*://*.beatport.com/*` — content script and catalog intercept on Beatport only
 
-No `tabs` permission: the content script announces Beatport tabs so the panel can be enabled per tab without “read your browsing history.” Nothing is sent off-device. Previews play Beatport’s own sample URLs in the side panel.
+No `tabs` permission: the content script announces Beatport tabs so the panel can be enabled per tab without “read your browsing history.” Nothing is sent off-device. Previews play Beatport’s own sample URLs in the side panel. See [PRIVACY.md](PRIVACY.md) (also at [bp-analyst.vercel.app/privacy](https://bp-analyst.vercel.app/privacy)).
+
+## Limitations
+
+- **List coverage can be partial.** Paginated Beatport lists may only expose the rows already loaded. When total counts are known, the panel shows “Based on N of M”; scroll or load more on Beatport, then Refresh, for a fuller sample.
+- **Beatport markup and APIs change.** Extraction uses catalog JSON, `__NEXT_DATA__`, and DOM fallbacks, but a site redesign can break capture until selectors/parsers are updated. Use the help card’s diagnostics when reporting drift.
+- **Not a DJ crate or mixing tool.** There is no harmonic-path planner, playlist sync, or offline library management.
+- **Previews depend on Beatport media URLs** present on the page. Some rows have no preview.
+- **Chrome Web Store** publishing is not automated; Edge and Firefox updates are.
 
 ## Stack
 
 [WXT](https://wxt.dev) (Manifest V3), React 19, TypeScript, Vitest. Targets Chrome 116+, Edge, and Firefox 128+.
+
+## Docs
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — runtime diagram and ADRs
+- [CHANGELOG.md](CHANGELOG.md) — version history
+- [PRIVACY.md](PRIVACY.md) — privacy policy
+- [apps/extension/docs/BENCHMARKS.md](apps/extension/docs/BENCHMARKS.md) — extraction benchmarks
 
 ## Support
 
@@ -207,4 +233,4 @@ If Beatport Analyst is useful, [here are a few ways to support the project](http
 
 ## License
 
-ISC
+[ISC](LICENSE) — Copyright (c) 2025–2026 Ilya Titovich
