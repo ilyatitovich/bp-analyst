@@ -1,13 +1,14 @@
 ---
 import { Font } from 'astro:assets'
-import CookieConsent from '../components/CookieConsent.astro'
 import {
   DOWNLOAD_URLS,
   GITHUB_REPO_URL,
   SUPPORT_EMAIL
 } from '../data/downloads'
+// Establish @layer order before any component styles that use @layer.
 import '../styles/tokens.css'
 import '../styles/base.css'
+import CookieConsent from '../components/CookieConsent.astro'
 import Header from '../components/Header.astro'
 
 interface Props {
