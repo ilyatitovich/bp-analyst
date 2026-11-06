@@ -33,7 +33,7 @@ export function ReportApp() {
   const stats = useMemo(() => computeTrackStats(tracks), [tracks])
   const title = snapshot
     ? buildReportTitle(snapshot.pageTitle)
-    : 'Beatport Analyst report'
+    : 'BP Analyst report'
   const coverage = snapshot
     ? coverageLabel(tracks.length, snapshot.listCount, snapshot.complete)
     : null
@@ -71,8 +71,8 @@ export function ReportApp() {
       <main className="report-empty">
         <p>No Beatport list is loaded.</p>
         <p className="report-muted">
-          Open Beatport Analyst on a chart, label, or genre page, then download
-          the report again.
+          Open BP Analyst on a chart, label, or genre page, then download the
+          report again.
         </p>
       </main>
     )
@@ -81,7 +81,7 @@ export function ReportApp() {
   return (
     <div className="report-shell">
       <div className="report-toolbar">
-        <p>Beatport Analyst</p>
+        <p>BP Analyst</p>
         <button onClick={() => window.print()} type="button">
           Save as PDF
         </button>
@@ -89,7 +89,7 @@ export function ReportApp() {
 
       <article className="report">
         <header className="report-header">
-          <p className="report-eyebrow">Beatport Analyst</p>
+          <p className="report-eyebrow">BP Analyst</p>
           <h1>{title}</h1>
           <p className="report-meta">
             <a href={snapshot.pageUrl}>

@@ -31,7 +31,7 @@ test.describe('built extension against Beatport fixture', () => {
     )
 
     await expect(panel.locator('.header-brand > .eyebrow')).toHaveText(
-      'Beatport Analyst'
+      'BP Analyst'
     )
     await expect(
       panel.getByRole('heading', { name: 'Tech House Top 100' })

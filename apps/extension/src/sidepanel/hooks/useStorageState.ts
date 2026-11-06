@@ -93,38 +93,45 @@ export function useStorageState(options?: { tabId?: number | null }) {
       setExtractionError(null)
     }
 
-    const keys = [
-      STORAGE_KEYS.keyNotation,
+    const sessionKeys = [
       ...(snapshotKey ? [snapshotKey] : []),
       ...(errorKey ? [errorKey] : [])
     ]
 
-    extensionStorage.get(keys).then(stored => {
+    void browser.storage.local.get(STORAGE_KEYS.keyNotation).then(stored => {
       if (!active) return
       setKeyNotationState(
         (stored[STORAGE_KEYS.keyNotation] as KeyNotation | undefined) ??
           DEFAULT_KEY_NOTATION
       )
-      if (!snapshotKey || !errorKey) return
-      setSnapshot(
-        (stored[snapshotKey] as ExtractionSnapshot | undefined) ?? null
-      )
-      setExtractionError(
-        (stored[errorKey] as ExtractionErrorState | undefined) ?? null
-      )
     })
+
+    if (sessionKeys.length > 0) {
+      void extensionStorage.get(sessionKeys).then(stored => {
+        if (!active || !snapshotKey || !errorKey) return
+        setSnapshot(
+          (stored[snapshotKey] as ExtractionSnapshot | undefined) ?? null
+        )
+        setExtractionError(
+          (stored[errorKey] as ExtractionErrorState | undefined) ?? null
+        )
+      })
+    }
 
     const listener: Parameters<
       typeof browser.storage.onChanged.addListener
     >[0] = (changes, areaName) => {
-      if (areaName !== extensionStorageArea) return
-      const keyNotationChange = changes[STORAGE_KEYS.keyNotation]
-      if (keyNotationChange) {
-        setKeyNotationState(
-          (keyNotationChange.newValue as KeyNotation | undefined) ??
-            DEFAULT_KEY_NOTATION
-        )
+      if (areaName === 'local') {
+        const keyNotationChange = changes[STORAGE_KEYS.keyNotation]
+        if (keyNotationChange) {
+          setKeyNotationState(
+            (keyNotationChange.newValue as KeyNotation | undefined) ??
+              DEFAULT_KEY_NOTATION
+          )
+        }
+        return
       }
+      if (areaName !== extensionStorageArea) return
       if (snapshotKey && changes[snapshotKey]) {
         setSnapshot(
           (changes[snapshotKey].newValue as ExtractionSnapshot | undefined) ??
@@ -148,7 +155,7 @@ export function useStorageState(options?: { tabId?: number | null }) {
 
   const setKeyNotation = useCallback((notation: KeyNotation) => {
     setKeyNotationState(notation)
-    void extensionStorage.set({
+    void browser.storage.local.set({
       [STORAGE_KEYS.keyNotation]: notation
     })
   }, [])

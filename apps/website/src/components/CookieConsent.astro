@@ -1,0 +1,251 @@
+---
+/**
+ * Consent banner for non-essential analytics (GA4 / Yandex Metrika).
+ * Analytics scripts must not load until the visitor accepts.
+ */
+const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID?.trim() ?? ''
+const metrikaId = import.meta.env.PUBLIC_YANDEX_METRIKA_ID?.trim() ?? ''
+const analyticsConfigured = Boolean(gaId || metrikaId)
+---
+
+{analyticsConfigured ? (
+  <>
+    <div
+      id="bp-consent"
+      class="consent"
+      hidden
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="bp-consent-title"
+      aria-describedby="bp-consent-desc"
+    >
+      <div class="consent__panel">
+        <h2 id="bp-consent-title" class="consent__title">
+          Analytics cookies
+        </h2>
+        <p id="bp-consent-desc" class="consent__desc">
+          Optional Google Analytics and/or Yandex Metrika help us understand
+          visits to this marketing site. They are off until you accept. The
+          extension itself does not use these tools. See the{' '}
+          <a href="/cookies">cookie notice</a> and{' '}
+          <a href="/privacy">privacy policy</a> (drafts for counsel review).
+        </p>
+        <div class="consent__actions">
+          <button
+            type="button"
+            class="consent__btn consent__btn--reject"
+            data-consent="reject"
+          >
+            Reject
+          </button>
+          <button
+            type="button"
+            class="consent__btn consent__btn--accept"
+            data-consent="accept"
+          >
+            Accept analytics
+          </button>
+        </div>
+      </div>
+    </div>
+    <script is:inline define:vars={{ gaId, metrikaId }}>
+      ;(function () {
+        var STORAGE_KEY = 'bp-analyst-analytics-consent'
+        var banner = document.getElementById('bp-consent')
+        if (!banner) return
+
+        function readChoice() {
+          try {
+            var raw = localStorage.getItem(STORAGE_KEY)
+            if (raw === 'accepted' || raw === 'rejected') return raw
+          } catch (_) {}
+          return null
+        }
+
+        function writeChoice(value) {
+          try {
+            localStorage.setItem(STORAGE_KEY, value)
+          } catch (_) {}
+        }
+
+        function loadGoogle(id) {
+          if (!id || window.__bpGaLoaded) return
+          window.__bpGaLoaded = true
+          var s = document.createElement('script')
+          s.async = true
+          s.fetchPriority = 'low'
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id
+          document.head.appendChild(s)
+          window.dataLayer = window.dataLayer || []
+          function gtag() {
+            window.dataLayer.push(arguments)
+          }
+          window.gtag = gtag
+          gtag('js', new Date())
+          gtag('config', id)
+        }
+
+        function loadMetrika(id) {
+          if (!id || window.__bpYmLoaded) return
+          window.__bpYmLoaded = true
+          ;(function (m, e, t, r, i) {
+            m[i] =
+              m[i] ||
+              function () {
+                ;(m[i].a = m[i].a || []).push(arguments)
+              }
+            m[i].l = 1 * new Date()
+            for (var j = 0; j < document.scripts.length; j++) {
+              if (document.scripts[j].src === r) return
+            }
+            var k = e.createElement(t)
+            var a = e.getElementsByTagName(t)[0]
+            k.async = 1
+            k.src = r
+            k.fetchPriority = 'low'
+            a.parentNode.insertBefore(k, a)
+          })(
+            window,
+            document,
+            'script',
+            'https://mc.yandex.ru/metrika/tag.js',
+            'ym'
+          )
+          window.ym(Number(id), 'init', {
+            clickmap: true,
+            trackLinks: true,
+            accurateTrackBounce: true
+          })
+        }
+
+        function enableAnalytics() {
+          loadGoogle(gaId)
+          loadMetrika(metrikaId)
+        }
+
+        function hideBanner() {
+          banner.hidden = true
+        }
+
+        function showBanner() {
+          banner.hidden = false
+        }
+
+        var choice = readChoice()
+        if (choice === 'accepted') {
+          enableAnalytics()
+          hideBanner()
+        } else if (choice === 'rejected') {
+          hideBanner()
+        } else {
+          showBanner()
+        }
+
+        banner.addEventListener('click', function (event) {
+          var target = event.target
+          if (!(target instanceof HTMLElement)) return
+          var action = target.getAttribute('data-consent')
+          if (action === 'accept') {
+            writeChoice('accepted')
+            enableAnalytics()
+            hideBanner()
+          } else if (action === 'reject') {
+            writeChoice('rejected')
+            hideBanner()
+          }
+        })
+
+        window.bpOpenConsentPreferences = function () {
+          showBanner()
+        }
+
+        document.addEventListener('click', function (event) {
+          var target = event.target
+          if (!(target instanceof HTMLElement)) return
+          if (target.closest('[data-open-consent]')) {
+            event.preventDefault()
+            showBanner()
+          }
+        })
+      })()
+    </script>
+  </>
+) : null}
+
+<style>
+  @layer components {
+    .consent {
+      position: fixed;
+      inset-inline: 0;
+      inset-block-end: 0;
+      z-index: 200;
+      padding: var(--space-4);
+      pointer-events: none;
+    }
+
+    .consent__panel {
+      pointer-events: auto;
+      max-inline-size: 40rem;
+      margin-inline: auto;
+      padding: var(--space-5);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--ui-border-strong);
+      background: var(--color-bg-elevated);
+      box-shadow: var(--shadow-soft);
+      color: var(--color-fg);
+    }
+
+    .consent__title {
+      margin: 0 0 var(--space-2);
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      letter-spacing: -0.02em;
+    }
+
+    .consent__desc {
+      margin: 0 0 var(--space-4);
+      font-size: var(--text-sm);
+      line-height: var(--leading-normal);
+      color: var(--color-fg-muted);
+    }
+
+    .consent__desc a {
+      color: var(--color-accent);
+    }
+
+    .consent__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      justify-content: flex-end;
+    }
+
+    .consent__btn {
+      appearance: none;
+      border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-4);
+      font: inherit;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--ui-border-strong);
+      background: transparent;
+      color: var(--color-fg);
+    }
+
+    .consent__btn--accept {
+      border-color: color-mix(in oklab, var(--color-accent) 50%, transparent);
+      background: color-mix(in oklab, var(--color-accent) 18%, transparent);
+      color: var(--color-fg);
+    }
+
+    .consent__btn:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+
+    .consent__btn:hover {
+      border-color: var(--color-accent);
+    }
+  }
+</style>

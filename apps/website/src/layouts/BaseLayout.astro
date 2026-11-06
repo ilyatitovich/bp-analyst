@@ -1,6 +1,6 @@
 ---
 import { Font } from 'astro:assets'
-import Analytics from '../components/Analytics.astro'
+import CookieConsent from '../components/CookieConsent.astro'
 import {
   DOWNLOAD_URLS,
   GITHUB_REPO_URL,
@@ -16,7 +16,7 @@ interface Props {
 }
 
 const {
-  title = 'Beatport Analyst — market briefs for Beatport',
+  title = 'BP Analyst — market briefs for Beatport',
   description = 'Turn any Beatport chart, search, or release into a side-panel market brief. BPM, key, labels, exclusives, and freshness — local analysis, no account.'
 } = Astro.props
 
@@ -24,11 +24,15 @@ const site = Astro.site ?? new URL('https://bp-analyst.vercel.app')
 const canonicalURL = new URL(Astro.url.pathname, site)
 const ogImageURL = new URL('/logo.png', site)
 const pageTitle = title
+const analyticsConfigured = Boolean(
+  import.meta.env.PUBLIC_GA_MEASUREMENT_ID?.trim() ||
+  import.meta.env.PUBLIC_YANDEX_METRIKA_ID?.trim()
+)
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  'name': 'Beatport Analyst',
+  'name': 'BP Analyst',
   'applicationCategory': 'BrowserApplication',
   'operatingSystem': 'Chrome, Edge, Firefox',
   description,
@@ -61,7 +65,7 @@ const jsonLd = {
     <meta name="robots" content="index, follow" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Beatport Analyst" />
+    <meta property="og:site_name" content="BP Analyst" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
@@ -94,9 +98,16 @@ const jsonLd = {
 
       <footer class="page__footer">
         <div class="page__footer-inner">
-          <p class="page__footer-tagline">
-            Beatport Analyst — market reconnaissance for producers on Beatport.
-          </p>
+          <div class="page__footer-copy">
+            <p class="page__footer-tagline">
+              BP Analyst — market reconnaissance for producers on Beatport.
+            </p>
+            <p class="page__footer-disclaimer">
+              Independent project. Not affiliated with, endorsed by, or
+              sponsored by Beatport or The Beatport Group LLC. Beatport® is a
+              trademark of its respective owner.
+            </p>
+          </div>
           <ul class="page__footer-links">
             <li>
               <a
@@ -109,11 +120,26 @@ const jsonLd = {
             </li>
             <li>
               <a class="page__footer-link" href="/privacy">
-                {' '}
-                Privacy{' '}
+                Privacy
               </a>
             </li>
-
+            <li>
+              <a class="page__footer-link" href="/cookies">
+                Cookies
+              </a>
+            </li>
+            <li>
+              <a class="page__footer-link" href="/terms">
+                Terms
+              </a>
+            </li>
+            {analyticsConfigured ? (
+              <li>
+                <a class="page__footer-link" href="#consent" data-open-consent>
+                  Cookie settings
+                </a>
+              </li>
+            ) : null}
             <li>
               <a class="page__footer-link" href={`mailto:${SUPPORT_EMAIL}`}>
                 Contact
@@ -123,7 +149,7 @@ const jsonLd = {
         </div>
       </footer>
     </div>
-    <Analytics />
+    <CookieConsent />
   </body>
 </html>
 
@@ -201,9 +227,21 @@ const jsonLd = {
       color: var(--color-fg-subtle);
     }
 
+    .page__footer-copy {
+      display: grid;
+      gap: var(--space-2);
+      max-inline-size: 48ch;
+    }
+
     .page__footer-tagline {
       margin: 0;
-      max-inline-size: 40ch;
+      color: var(--color-fg-subtle);
+    }
+
+    .page__footer-disclaimer {
+      margin: 0;
+      font-size: var(--text-xs);
+      line-height: var(--leading-normal);
       color: var(--color-fg-subtle);
     }
 

@@ -42,7 +42,7 @@ export function Header({
     <header className="panel-card header-card">
       <div>
         <div className="header-brand">
-          <p className="eyebrow">Beatport Analyst</p>
+          <p className="eyebrow">BP Analyst</p>
           <AboutHelpButton />
         </div>
         <h1 className="header-title">{title}</h1>

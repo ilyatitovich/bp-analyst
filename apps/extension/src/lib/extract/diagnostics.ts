@@ -58,7 +58,7 @@ export type DiagnosticsReportInput = {
 /** Plain-text report for paste into support email / GitHub issues. */
 export function formatDiagnosticsReport(input: DiagnosticsReportInput): string {
   const lines = [
-    'Beatport Analyst diagnostics',
+    'BP Analyst diagnostics',
     `version: ${input.version}`,
     `pageUrl: ${input.pageUrl || '(unknown)'}`,
     `pageTitle: ${input.pageTitle || '(unknown)'}`

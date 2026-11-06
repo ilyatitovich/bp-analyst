@@ -1,8 +1,10 @@
-# Beatport Analyst
+# BP Analyst
 
 A Manifest V3 browser extension for producers doing market reconnaissance on [Beatport](https://www.beatport.com). Open a chart, genre page, search result, or release list and the side panel summarizes what is actually on that list: BPM, key, labels, exclusives, freshness, mix types, and more.
 
 It is built for reading a market, not for crate digging or harmonic mixing.
+
+**BP Analyst** is an independent project. Not affiliated with, endorsed by, or sponsored by Beatport or The Beatport Group LLC. Beatport® is a trademark of its respective owner.
 
 ![Side panel market brief](docs/screenshots/sidepanel-market-brief.png)
 
@@ -22,7 +24,7 @@ No Beatport partner API, no account, no backend. Track data stays in the browser
 
 1. Install the extension (see below).
 2. Open a Beatport track list — Top 100, genre chart, search results, a label page, a release, and similar list views.
-3. Click the **Beatport Analyst** toolbar icon. The side panel opens. If the page already has a captured catalog payload, analysis appears without a reload; otherwise the tab reloads once so the MAIN-world hook can intercept catalog responses.
+3. Click the **BP Analyst** toolbar icon. The side panel opens. If the page already has a captured catalog payload, analysis appears without a reload; otherwise the tab reloads once so the MAIN-world hook can intercept catalog responses.
 4. Use the brief and charts to filter, play previews from the table, then **Export CSV** if you want a copy of the visible rows.
 
 Press **Refresh** when the Beatport list has changed and you want a new snapshot (forced refresh reloads the tab).
@@ -73,7 +75,7 @@ pnpm typecheck:website
 
 Use root `pnpm build:website` for production/downloadable builds (zips + Astro). Building `apps/website` alone with `astro build` skips regenerating archives.
 
-Optional analytics IDs are listed in `apps/website/.env.example`. Copy to `apps/website/.env` for local builds; leave them empty to skip injection.
+Optional analytics IDs are listed in `apps/website/.env.example`. Copy to `apps/website/.env` for local builds; leave them empty to skip injection. When IDs are set, **GA / Yandex load only after the visitor accepts** the site cookie banner (Reject keeps them off).
 
 ## How It Works
 
@@ -224,12 +226,13 @@ No `tabs` permission: the content script announces Beatport tabs so the panel ca
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — runtime diagram and ADRs
 - [CHANGELOG.md](CHANGELOG.md) — version history
-- [PRIVACY.md](PRIVACY.md) — privacy policy
+- [PRIVACY.md](PRIVACY.md) — privacy policy (**draft for counsel review**)
+- [docs/legal-compliance/](docs/legal-compliance/) — legal compliance audit pack (EU/US/RU)
 - [apps/extension/docs/BENCHMARKS.md](apps/extension/docs/BENCHMARKS.md) — extraction benchmarks
 
 ## Support
 
-If Beatport Analyst is useful, [here are a few ways to support the project](https://ilyatitov.vercel.app/support). Totally optional.
+If BP Analyst is useful, [here are a few ways to support the project](https://ilyatitov.vercel.app/support). Totally optional.
 
 ## License
 

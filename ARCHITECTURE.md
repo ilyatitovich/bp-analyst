@@ -1,6 +1,6 @@
 # Architecture
 
-Beatport Analyst is a Manifest V3 browser extension (WXT + React) that turns the Beatport list you already opened into a local market brief. There is no backend and no partner API.
+BP Analyst is a Manifest V3 browser extension (WXT + React) that turns the Beatport list you already opened into a local market brief. There is no backend and no partner API.
 
 ## Runtime Overview
 

@@ -1,0 +1,148 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SUPPORT_EMAIL } from '../data/downloads'
+---
+
+<BaseLayout
+  title="Terms of Use — BP Analyst"
+  description="Draft terms of use for BP Analyst. For qualified counsel review."
+>
+  <article class="legal">
+    <header class="legal__header">
+      <p class="legal__eyebrow">Legal draft</p>
+      <h1 class="legal__title">Terms of Use</h1>
+      <p class="legal__lede">
+        <strong>Draft for qualified legal counsel review</strong> — not a final
+        counsel-approved contract. Last updated 6 November 2026.
+      </p>
+    </header>
+
+    <div class="legal__body">
+      <section>
+        <h2>The service</h2>
+        <p>
+          BP Analyst is a free browser extension and marketing site provided by
+          Ilya Titov. It helps you analyse Beatport list pages you open in your
+          browser. It is provided “as is” without warranties to the fullest
+          extent permitted by law.
+        </p>
+      </section>
+
+      <section>
+        <h2>No affiliation</h2>
+        <p>
+          BP Analyst is an independent project. It is not affiliated with,
+          endorsed by, or sponsored by Beatport or The Beatport Group LLC.
+          Beatport® and related marks belong to their owners. You must comply
+          with Beatport’s own terms when using Beatport.
+        </p>
+      </section>
+
+      <section>
+        <h2>Acceptable use</h2>
+        <p>
+          Use the extension only on pages you are allowed to access. Do not use
+          it to attack, overload, or circumvent Beatport’s security. CSV exports
+          and reports are for your personal analysis; you are responsible for
+          any further sharing and for respecting third-party rights (including
+          Beatport Content and trademark rules).
+        </p>
+      </section>
+
+      <section>
+        <h2>Privacy</h2>
+        <p>
+          See the <a href="/privacy">Privacy Policy</a> and
+          <a href="/cookies">Cookie Notice</a> drafts.
+        </p>
+      </section>
+
+      <section>
+        <h2>Donations</h2>
+        <p>
+          Optional support links may point to an external page. Donations are
+          voluntary, not a purchase of the extension, and do not create a paid
+          support contract unless separately agreed.
+        </p>
+      </section>
+
+      <section>
+        <h2>Liability</h2>
+        <p>
+          To the maximum extent permitted by applicable law, the author is not
+          liable for indirect or consequential losses arising from use of the
+          extension or site. Mandatory consumer rights in your country of
+          residence remain unaffected where they cannot be waived.
+        </p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>
+          <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
+        </p>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  @layer components {
+    .legal {
+      display: grid;
+      gap: var(--space-8);
+      padding-block: calc(5.5rem + var(--space-7)) var(--space-9);
+      max-inline-size: 42rem;
+    }
+
+    .legal__eyebrow {
+      margin: 0;
+      color: var(--color-fg-subtle);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .legal__title {
+      margin: var(--space-2) 0 0;
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .legal__lede {
+      margin: var(--space-4) 0 0;
+      color: var(--color-fg-muted);
+      font-size: var(--text-lg);
+      line-height: 1.5;
+    }
+
+    .legal__body {
+      display: grid;
+      gap: var(--space-7);
+    }
+
+    .legal__body h2 {
+      margin: 0 0 var(--space-3);
+      font-family: var(--font-heading);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .legal__body p {
+      margin: 0;
+      color: var(--color-fg-muted);
+      line-height: 1.6;
+    }
+
+    .legal__body a {
+      color: var(--color-accent);
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+  }
+</style>

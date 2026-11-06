@@ -51,7 +51,7 @@ export function AboutHelpButton() {
         <div className="about-dialog-panel">
           <div className="about-dialog-header">
             <div>
-              <p className="eyebrow">Beatport Analyst</p>
+              <p className="eyebrow">BP Analyst</p>
               <h2 id={titleId} className="about-dialog-title">
                 About
               </h2>
@@ -79,8 +79,8 @@ export function AboutHelpButton() {
                 label page, a release, anything with tracks in a row.
               </li>
               <li>
-                Click the Beatport Analyst toolbar icon. If this tab already has
-                a captured catalog payload, the panel fills in without a reload;
+                Click the BP Analyst toolbar icon. If this tab already has a
+                captured catalog payload, the panel fills in without a reload;
                 otherwise the Beatport tab reloads once so we can read the
                 catalog.
               </li>
@@ -114,7 +114,7 @@ export function AboutHelpButton() {
 
             <h3>Support the Project</h3>
             <p>
-              If Beatport Analyst is saving you time, here are a few ways to say
+              If BP Analyst is saving you time, here are a few ways to say
               thanks — totally optional.
             </p>
             <SupportMeLink />

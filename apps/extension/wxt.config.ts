@@ -10,14 +10,14 @@ export default defineConfig({
   },
   outDirTemplate: `{{browser}}-mv{{manifestVersion}}{{modeSuffix}}-${version}`,
   manifest: ({ browser }: ConfigEnv) => ({
-    name: 'Beatport Analyst',
+    name: 'BP Analyst',
     description: 'Analyze Beatport lists for BPM, key, and label composition.',
     version,
     minimum_chrome_version: browser === 'firefox' ? undefined : '116',
     permissions: browser === 'firefox' ? ['storage'] : ['storage', 'sidePanel'],
     host_permissions: ['*://*.beatport.com/*'],
     action: {
-      default_title: 'Open Beatport Analyst'
+      default_title: 'Open BP Analyst'
     },
     browser_specific_settings:
       browser === 'firefox'
