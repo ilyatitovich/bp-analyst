@@ -16,6 +16,7 @@
     "dev:firefox": "pnpm --filter @bp-analyst/extension dev:firefox",
     "build:firefox": "pnpm --filter @bp-analyst/extension build:firefox",
     "zip:firefox": "pnpm --filter @bp-analyst/extension zip:firefox",
+    "submit:stores": "pnpm --filter @bp-analyst/extension submit:stores",
     "typecheck": "pnpm --filter @bp-analyst/extension typecheck",
     "typecheck:website": "pnpm --filter @bp-analyst/website typecheck",
     "lint": "pnpm --filter @bp-analyst/extension lint",

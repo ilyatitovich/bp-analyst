@@ -1,6 +1,8 @@
 .cursor/
 node_modules/
 .output/
+.env.submit
+.env.submit.local
 .wxt/
 .astro/
 dist/

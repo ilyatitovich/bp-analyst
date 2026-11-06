@@ -23,6 +23,7 @@ export default defineConfig({
       browser === 'firefox'
         ? {
             gecko: {
+              // Must match AMO GUID (addons.mozilla.org/firefox/addon/beatport-analyst).
               id: 'bp-analyst@local',
               strict_min_version: '128.0',
               data_collection_permissions: {

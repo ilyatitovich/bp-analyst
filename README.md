@@ -127,6 +127,7 @@ apps/
 | `pnpm bench:extract`                                      | Extraction + message-size benchmark; writes `apps/extension/docs/BENCHMARKS.md`   |
 | `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build                                                              |
 | `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox`       | Local sideload zip named `beatport-analyst-<version>-<browser>.zip`               |
+| `pnpm submit:stores`                                      | Upload Edge + Firefox zips via `wxt submit` (needs store secrets; no Chrome)      |
 | `pnpm prepare:downloads`                                  | Zip chrome/edge/firefox into `apps/website/public/downloads/`                     |
 | `pnpm dev:website` / `pnpm build:website`                 | Marketing site preview / prepare downloads + static build                         |
 | `pnpm typecheck:website`                                  | Astro + TypeScript check for `apps/website`                                       |
@@ -142,6 +143,51 @@ Static Astro output — no `@astrojs/vercel` adapter. Extension zips are generat
    - `PUBLIC_YANDEX_METRIKA_ID` — Yandex Metrika counter ID
      Leave both unset to ship without analytics scripts.
 4. After the first production URL is known, update `site` in `apps/website/astro.config.ts` (and redeploy) so canonical URLs, Open Graph, and the sitemap match the live domain.
+
+Sideload zips on the marketing site are independent of store submissions. Publishing to Edge / Firefox does not update `/downloads/` until you redeploy the site (`pnpm build:website` / Vercel).
+
+## Release to Edge and Firefox stores
+
+Chrome Web Store submit is not automated. Edge Add-ons and Firefox AMO updates run from GitHub Actions on version tags only (`.github/workflows/release-stores.yml`).
+
+### One-time setup
+
+1. Create a GitHub Environment named `stores` on the repo.
+2. Add these **environment** secrets:
+
+| Secret                 | Source                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `EDGE_PRODUCT_ID`      | Partner Center → extension overview (product GUID)                                |
+| `EDGE_CLIENT_ID`       | Partner Center → Publish API (API v1.1)                                           |
+| `EDGE_API_KEY`         | Partner Center → Publish API (API v1.1)                                           |
+| `FIREFOX_EXTENSION_ID` | AMO GUID — `bp-analyst@local` for the existing listing                            |
+| `FIREFOX_JWT_ISSUER`   | [AMO API Keys](https://addons.mozilla.org/developers/addon/api/key/) (JWT issuer) |
+| `FIREFOX_JWT_SECRET`   | AMO API Keys (JWT secret)                                                         |
+
+Edge API keys expire about every **72 days**. Rotate in Partner Center → Publish API, then update `EDGE_API_KEY` (and `EDGE_CLIENT_ID` if regenerated).
+
+### Cut a release
+
+1. Bump `version` in `apps/extension/package.json` (must match the tag).
+2. Commit, then tag and push:
+
+```bash
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+The workflow typechecks, runs unit tests, zips Edge + Firefox (including Firefox sources), attaches artifacts to a GitHub Release, and runs `pnpm submit:stores` (`wxt submit` for Edge + listed Firefox only). Store certification / AMO review still happens asynchronously after upload.
+
+Local dry-run (with secrets in `apps/extension/.env.submit`, gitignored):
+
+```bash
+pnpm zip && pnpm zip:firefox
+pnpm --filter @bp-analyst/extension exec wxt submit --dry-run \
+  --edge-zip .output/beatport-analyst-*-edge.zip \
+  --firefox-zip .output/beatport-analyst-*-firefox.zip \
+  --firefox-sources-zip .output/beatport-analyst-*-sources.zip \
+  --firefox-channel listed
+```
 
 ## Permissions
 
