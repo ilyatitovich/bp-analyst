@@ -35,7 +35,7 @@ const jsonLd = {
   'operatingSystem': 'Chrome, Edge, Firefox',
   description,
   'url': canonicalURL.href,
-  'downloadUrl': DOWNLOAD_URLS.chrome,
+  'downloadUrl': new URL(DOWNLOAD_URLS.chrome, site).href,
   'image': ogImageURL.href,
   'offers': {
     '@type': 'Offer',

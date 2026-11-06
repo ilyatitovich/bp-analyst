@@ -49,10 +49,11 @@ WXT will launch the browser with the extension loaded. Open Beatport, then the t
 pnpm build          # Edge
 pnpm build:chrome
 pnpm build:firefox
-pnpm zip            # packaged zip for Edge; also zip:chrome / zip:firefox
+pnpm zip            # packaged zip for Edge; also zip:chrome / zip:firefox (local sideload)
+pnpm prepare:downloads  # chrome/edge/firefox zips → apps/website/public/downloads/
 ```
 
-Download a packaged zip for your current browser from the [marketing site](https://bp-analyst.vercel.app) download section, or directly from [ilyatitov.vercel.app/api/cases/beatport-analyst/download](https://ilyatitov.vercel.app/api/cases/beatport-analyst/download). Unzip it, or load the unpacked output from `apps/extension/.output/` (for example `apps/extension/.output/chrome-mv3-0.1.0` or `apps/extension/.output/edge-mv3-0.1.0`), via the browser’s extension page:
+Download a packaged zip for your current browser from the [marketing site](https://bp-analyst.vercel.app) download section (`/downloads/beatport-analyst-<browser>.zip`). Site archives are built by `pnpm prepare:downloads` (also run automatically by `pnpm build:website`). Unzip it, or load the unpacked output from `apps/extension/.output/` (for example `apps/extension/.output/chrome-mv3-0.1.0` or `apps/extension/.output/edge-mv3-0.1.0`), via the browser’s extension page:
 
 - Chrome: `chrome://extensions` → Developer mode → Load unpacked
 - Edge: `edge://extensions` → Developer mode → Load unpacked
@@ -62,9 +63,11 @@ Download a packaged zip for your current browser from the [marketing site](https
 
 ```bash
 pnpm dev:website       # Astro local preview
-pnpm build:website     # static output → apps/website/dist
+pnpm build:website     # prepare downloads + static output → apps/website/dist
 pnpm typecheck:website
 ```
+
+Use root `pnpm build:website` for production/downloadable builds (zips + Astro). Building `apps/website` alone with `astro build` skips regenerating archives.
 
 Optional analytics IDs are listed in `apps/website/.env.example`. Copy to `apps/website/.env` for local builds; leave them empty to skip injection.
 
@@ -112,7 +115,7 @@ apps/
   website/              # Astro marketing landing (@bp-analyst/website)
     src/pages/          # index + robots
     src/components/     # hero, benefits, features, download, footer, analytics
-    public/             # favicon, logo
+    public/             # favicon, logo, downloads/*.zip (generated)
 ```
 
 ## Scripts
@@ -123,16 +126,17 @@ apps/
 | `pnpm test:e2e`                                           | Playwright E2E against a local Beatport fixture (needs `pnpm build:chrome` first) |
 | `pnpm bench:extract`                                      | Extraction + message-size benchmark; writes `apps/extension/docs/BENCHMARKS.md`   |
 | `pnpm build` / `pnpm build:chrome` / `pnpm build:firefox` | Production MV3 build                                                              |
-| `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox`       | Packaged zip named `beatport-analyst-<version>-<browser>.zip`                     |
-| `pnpm dev:website` / `pnpm build:website`                 | Marketing site local preview / static build                                       |
+| `pnpm zip` / `pnpm zip:chrome` / `pnpm zip:firefox`       | Local sideload zip named `beatport-analyst-<version>-<browser>.zip`               |
+| `pnpm prepare:downloads`                                  | Zip chrome/edge/firefox into `apps/website/public/downloads/`                     |
+| `pnpm dev:website` / `pnpm build:website`                 | Marketing site preview / prepare downloads + static build                         |
 | `pnpm typecheck:website`                                  | Astro + TypeScript check for `apps/website`                                       |
 
 ## Deploy marketing site (Vercel)
 
-Static Astro output — no `@astrojs/vercel` adapter.
+Static Astro output — no `@astrojs/vercel` adapter. Extension zips are generated at build time into `public/downloads/` and shipped with the site (no download API).
 
 1. Create a **new** Vercel project from this repo (do not reuse an unrelated portfolio project).
-2. Set **Root Directory** to `apps/website`. Vercel should auto-detect Astro; build command `astro build` (or `pnpm build`) and output `dist`.
+2. Leave **Root Directory** at the repo root (blank). Set **Install Command** to `pnpm install`, **Build Command** to `pnpm build:website`, and **Output Directory** to `apps/website/dist`.
 3. Optionally add environment variables (see `apps/website/.env.example`):
    - `PUBLIC_GA_MEASUREMENT_ID` — GA4 measurement ID
    - `PUBLIC_YANDEX_METRIKA_ID` — Yandex Metrika counter ID
