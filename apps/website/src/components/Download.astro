@@ -104,7 +104,10 @@ const defaultBrowser = BROWSERS[0]
   if (heroLink) {
     heroLink.dataset.browser = preferred
     heroLink.href = DOWNLOAD_URLS[preferred]
-    heroLink.textContent = getInstallCtaLabel(preferred)
+    const label = getInstallCtaLabel(preferred)
+    const labelEl = heroLink.querySelector('.cta__label')
+    if (labelEl) labelEl.textContent = label
+    else heroLink.textContent = label
     if (browser.method === 'store') {
       heroLink.rel = 'noopener noreferrer'
     } else {

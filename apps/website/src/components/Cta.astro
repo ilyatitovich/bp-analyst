@@ -35,7 +35,9 @@ const heroDownloadAttr =
   data-hero-download={heroDownloadAttr}
   aria-current={ariaCurrent}
 >
-  <slot />
+  <span class="cta__label">
+    <slot />
+  </span>
 </a>
 
 <style>
@@ -67,23 +69,36 @@ const heroDownloadAttr =
     }
 
     .cta--primary {
-      background: var(--color-accent);
-      color: var(--color-ink-950);
+      background: var(--color-accent-fill);
+      /* Color the label, not only the <a> — link UA/cascade can ignore a-color. */
+    }
+
+    .cta--primary .cta__label {
+      color: var(--color-on-accent-fill);
     }
 
     .cta--primary:hover {
-      background: var(--color-accent-strong);
-      color: var(--color-ink-950);
+      background: var(--color-accent-fill-hover);
+    }
+
+    .cta--primary:hover .cta__label {
+      color: var(--color-on-accent-fill);
     }
 
     .cta--secondary {
       background: transparent;
-      color: var(--color-fg);
       border-color: var(--ui-border-strong);
+    }
+
+    .cta--secondary .cta__label {
+      color: var(--color-fg);
     }
 
     .cta--secondary:hover {
       border-color: var(--color-accent-alt);
+    }
+
+    .cta--secondary:hover .cta__label {
       color: var(--color-accent-alt);
     }
   }

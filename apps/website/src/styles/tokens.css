@@ -9,6 +9,7 @@
   --color-fog-500: #8b97a8;
   --color-mint-400: #7ef3ad;
   --color-mint-500: #4ada86;
+  --color-mint-700: #0f7a45;
   --color-cyan-400: #49c7f3;
   --color-cyan-500: #1eaee0;
   --space-1: 0.25rem;
@@ -50,6 +51,14 @@
   --color-fg-subtle: var(--color-fog-500);
   --color-accent: var(--color-mint-400);
   --color-accent-strong: var(--color-mint-500);
+  /* Filled controls: dark mint + light label (WCAG AA on primary CTAs). */
+  --color-accent-fill: var(--color-mint-700);
+  --color-accent-fill-hover: color-mix(
+    in oklab,
+    var(--color-mint-700) 82%,
+    black
+  );
+  --color-on-accent-fill: #fff;
   --color-accent-alt: var(--color-cyan-400);
   --color-focus: var(--color-cyan-400);
   --font-heading: var(--font-display-stack);
