@@ -13,7 +13,7 @@ import { GITHUB_REPO_URL } from '../data/downloads'
         height="36"
         decoding="async"
       />
-      <span>Beatport Analyst</span>
+      <span class="page__brand-title">Beatport Analyst</span>
     </a>
     <nav class="page__nav" aria-label="Page sections">
       <a class="page__nav-link" href="#benefits">
@@ -73,6 +73,19 @@ import { GITHUB_REPO_URL } from '../data/downloads'
       font-weight: 700;
       font-size: var(--text-lg);
       letter-spacing: -0.02em;
+    }
+
+    .page__brand-title {
+      display: none;
+      font-size: var(--text-lg);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    @media (min-width: 48rem) {
+      .page__brand-title {
+        display: block;
+      }
     }
 
     .page__brand-mark {
