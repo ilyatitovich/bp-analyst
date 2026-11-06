@@ -233,4 +233,4 @@ If Beatport Analyst is useful, [here are a few ways to support the project](http
 
 ## License
 
-[ISC](LICENSE) — Copyright (c) 2025–2026 Ilya Titovich
+[ISC](LICENSE) — Copyright (c) 2025–2026 Ilya Titov
