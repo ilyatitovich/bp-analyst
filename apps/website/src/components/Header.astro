@@ -1,5 +1,6 @@
 ---
 import { GITHUB_REPO_URL } from '../data/downloads'
+import GitHub from './icons/GitHub.astro'
 ---
 
 <header class="page__header">
@@ -26,11 +27,13 @@ import { GITHUB_REPO_URL } from '../data/downloads'
         Download
       </a>
       <a
-        class="page__nav-link"
+        class="page__nav-link page__nav-link--icon"
         href={GITHUB_REPO_URL}
+        target="_blank"
         rel="noopener noreferrer"
+        aria-label="GitHub repository"
       >
-        GitHub
+        <GitHub />
       </a>
     </nav>
   </div>
@@ -110,6 +113,20 @@ import { GITHUB_REPO_URL } from '../data/downloads'
 
     .page__nav-link:hover {
       color: var(--color-fg);
+    }
+
+    .page__nav-link--icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-1);
+      margin-block: calc(var(--space-1) * -1);
+    }
+
+    .page__nav-icon {
+      display: block;
+      flex: none;
+      pointer-events: none;
     }
   }
 </style>
