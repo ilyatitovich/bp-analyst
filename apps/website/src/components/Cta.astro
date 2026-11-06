@@ -1,0 +1,87 @@
+---
+interface Props {
+  'href': string
+  'variant'?: 'primary' | 'secondary'
+  'class'?: string
+  'data-browser'?: string
+  'data-hero-download'?: boolean | string | undefined
+  'aria-current'?: 'true' | 'page' | 'step' | 'location' | 'date' | 'time'
+}
+
+const {
+  href,
+  variant = 'primary',
+  'class': className,
+  'data-browser': dataBrowser,
+  'data-hero-download': dataHeroDownload,
+  'aria-current': ariaCurrent
+} = Astro.props
+
+const heroDownloadAttr =
+  dataHeroDownload === undefined || dataHeroDownload === false
+    ? undefined
+    : dataHeroDownload === true
+      ? ''
+      : dataHeroDownload
+---
+
+<a
+  class:list={['cta', `cta--${variant}`, className]}
+  href={href}
+  data-browser={dataBrowser}
+  data-hero-download={heroDownloadAttr}
+  aria-current={ariaCurrent}
+>
+  <slot />
+</a>
+
+<style>
+  @layer components {
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      min-block-size: 2.75rem;
+      padding: 0.7rem 1.25rem;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      font-family: var(--font-copy);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      text-align: center;
+      transition:
+        background-color var(--duration-fast) var(--ease-out),
+        border-color var(--duration-fast) var(--ease-out),
+        color var(--duration-fast) var(--ease-out),
+        translate var(--duration-fast) var(--ease-out);
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+
+    .cta--primary {
+      background: var(--color-accent);
+      color: var(--color-ink-950);
+    }
+
+    .cta--primary:hover {
+      background: var(--color-accent-strong);
+      color: var(--color-ink-950);
+    }
+
+    .cta--secondary {
+      background: transparent;
+      color: var(--color-fg);
+      border-color: var(--ui-border-strong);
+    }
+
+    .cta--secondary:hover {
+      border-color: var(--color-accent-alt);
+      color: var(--color-accent-alt);
+    }
+  }
+</style>

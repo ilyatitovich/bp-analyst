@@ -1,5 +1,6 @@
 ---
 import { BROWSERS, DOWNLOAD_URLS } from '../data/downloads'
+import Cta from './Cta.astro'
 
 const primary = BROWSERS[0]
 ---
@@ -15,14 +16,13 @@ const primary = BROWSERS[0]
       labels, and freshness, right in your browser.
     </p>
     <p class="hero__cta-row">
-      <a
-        class="cta cta--primary"
+      <Cta
         href={DOWNLOAD_URLS[primary.id]}
         data-hero-download
         data-browser={primary.id}
       >
         Download for {primary.label}
-      </a>
+      </Cta>
     </p>
   </div>
 </section>

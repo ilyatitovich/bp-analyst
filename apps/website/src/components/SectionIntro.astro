@@ -1,0 +1,37 @@
+---
+interface Props {
+  titleId: string
+  title: string
+  lede: string
+}
+
+const { titleId, title, lede } = Astro.props
+---
+
+<div class="section-intro">
+  <h2 id={titleId} class="section-intro__title">
+    {title}
+  </h2>
+  <p class="section-intro__lede">{lede}</p>
+</div>
+
+<style>
+  @layer components {
+    .section-intro {
+      display: grid;
+      gap: var(--space-3);
+      margin-block-end: var(--space-6);
+      max-inline-size: 40rem;
+    }
+
+    .section-intro__title {
+      margin: 0;
+    }
+
+    .section-intro__lede {
+      margin: 0;
+      font-size: var(--text-lg);
+      color: var(--color-fg-muted);
+    }
+  }
+</style>

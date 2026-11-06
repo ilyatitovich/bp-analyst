@@ -1,4 +1,6 @@
 ---
+import SectionIntro from './SectionIntro.astro'
+
 const benefits = [
   {
     title: 'Market brief on the list you opened',
@@ -16,14 +18,11 @@ const benefits = [
 ---
 
 <section class="benefits" id="benefits" aria-labelledby="benefits-title">
-  <div class="section-intro">
-    <h2 id="benefits-title" class="section-intro__title">
-      Built for market reconnaissance
-    </h2>
-    <p class="section-intro__lede">
-      For producers scanning a chart — not crate digging, not harmonic mixing.
-    </p>
-  </div>
+  <SectionIntro
+    titleId="benefits-title"
+    title="Built for market reconnaissance"
+    lede="For producers scanning a chart — not crate digging, not harmonic mixing."
+  />
   <ul class="benefits__list">
     {benefits.map(benefit => (
       <li class="benefits__item reveal">
@@ -33,3 +32,58 @@ const benefits = [
     ))}
   </ul>
 </section>
+
+<style>
+  @layer components {
+    .benefits__list {
+      display: grid;
+      gap: var(--space-6);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    @media (min-width: 48rem) {
+      .benefits__list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-7);
+      }
+    }
+
+    .benefits__item {
+      display: grid;
+      gap: var(--space-3);
+      align-content: start;
+      padding-block-start: var(--space-4);
+      border-block-start: 1px solid var(--ui-border);
+    }
+
+    .benefits__item-title {
+      margin: 0;
+      font-size: var(--text-lg);
+    }
+
+    .benefits__item-body {
+      margin: 0;
+      font-size: var(--text-sm);
+      color: var(--color-fg-muted);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      @supports ((animation-timeline: view()) and (animation-range: entry)) {
+        @keyframes reveal-in {
+          from {
+            opacity: 0;
+            translate: 0 0.85rem;
+          }
+        }
+
+        .reveal {
+          animation: reveal-in auto linear both;
+          animation-timeline: view();
+          animation-range: entry 0% entry 40%;
+        }
+      }
+    }
+  }
+</style>

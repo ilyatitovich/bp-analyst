@@ -1,19 +1,17 @@
 ---
 import { BROWSERS, DOWNLOAD_URLS, GITHUB_README_URL } from '../data/downloads'
+import Cta from './Cta.astro'
+import SectionIntro from './SectionIntro.astro'
 
 const defaultBrowser = BROWSERS[0]
 ---
 
 <section class="download" id="download" aria-labelledby="download-title">
-  <div class="section-intro">
-    <h2 id="download-title" class="section-intro__title">
-      Download the zip
-    </h2>
-    <p class="section-intro__lede">
-      Packaged archives for Chromium, Edge, and Firefox. No store listing — load
-      the unpacked build from the zip.
-    </p>
-  </div>
+  <SectionIntro
+    titleId="download-title"
+    title="Download the zip"
+    lede="Packaged archives for Chromium, Edge, and Firefox. No store listing — load the unpacked build from the zip."
+  />
 
   <div class="download__panel" data-download>
     <ul class="download__ctas">
@@ -21,18 +19,15 @@ const defaultBrowser = BROWSERS[0]
         const isDefault = browser.id === defaultBrowser.id
         return (
           <li>
-            <a
-              class:list={[
-                'cta',
-                isDefault ? 'cta--primary' : 'cta--secondary',
-                'download__cta'
-              ]}
+            <Cta
+              class="download__cta"
               href={DOWNLOAD_URLS[browser.id]}
+              variant={isDefault ? 'primary' : 'secondary'}
               data-browser={browser.id}
               aria-current={isDefault ? 'true' : undefined}
             >
               Download for {browser.label}
-            </a>
+            </Cta>
           </li>
         )
       })}
@@ -81,3 +76,43 @@ const defaultBrowser = BROWSERS[0]
     heroLink.textContent = `Download for ${match.label}`
   }
 </script>
+
+<style>
+  @layer components {
+    .download__panel {
+      display: grid;
+      gap: var(--space-5);
+      max-inline-size: 40rem;
+    }
+
+    .download__ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .download__ctas :global(.download__cta) {
+      min-inline-size: 11.5rem;
+    }
+
+    .download__note {
+      margin: 0;
+      font-size: var(--text-sm);
+      color: var(--color-fg-subtle);
+      max-inline-size: 48ch;
+    }
+
+    .download__note a {
+      color: var(--color-accent-alt);
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.18em;
+    }
+
+    .download__note a:hover {
+      color: var(--color-accent);
+    }
+  }
+</style>
