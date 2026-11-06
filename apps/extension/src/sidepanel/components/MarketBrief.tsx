@@ -42,6 +42,8 @@ export function MarketBrief({
     snapshot?.complete
   )
   const selectedMixTypes = new Set(filters.mixTypes)
+  const selectedKeys = new Set(filters.camelotKeys)
+  const selectedArtists = new Set(filters.artistNames)
 
   return (
     <section className="panel-card">
@@ -105,8 +107,11 @@ export function MarketBrief({
           share={stats.keyConcentrationShare}
           items={stats.keyConcentration.map(item => ({
             ...item,
+            value: item.label,
             label: formatTrackKey(item.label, null, keyNotation) ?? item.label
           }))}
+          selected={selectedKeys}
+          onToggle={value => toggleFilter('camelotKeys', value)}
         />
         {scopedFacet === 'label' ? null : (
           <ConcentrationGroup
@@ -120,6 +125,8 @@ export function MarketBrief({
             title="Top 5 artists"
             share={stats.artistConcentrationShare}
             items={stats.artistConcentration}
+            selected={selectedArtists}
+            onToggle={value => toggleFilter('artistNames', value)}
           />
         )}
         <div>
