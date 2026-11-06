@@ -8,7 +8,7 @@ It is built for reading a market, not for crate digging or harmonic mixing.
 
 ![Side panel track table](docs/screenshots/sidepanel-track-table.png)
 
-## What it does
+## What It Does
 
 - **Reads the current Beatport list** from the page Beatport already loaded (catalog JSON, Next.js data, or DOM fallback).
 - **Market brief** — exclusive and hype share, tracks published in the last 7 / 30 days, BPM median and IQR, key concentration, top labels and artists, mix-type and length bands.
@@ -18,7 +18,7 @@ It is built for reading a market, not for crate digging or harmonic mixing.
 
 No Beatport partner API, no account, no backend. Track data stays in the browser.
 
-## How to use
+## How to Use
 
 1. Install the extension (see below).
 2. Open a Beatport track list — Top 100, genre chart, search results, a label page, a release, and similar list views.
@@ -29,7 +29,7 @@ Press **Refresh** when the Beatport list has changed and you want a new snapshot
 
 If the page is not a track list, or Beatport changed their markup, the panel shows a short help card with a contact address.
 
-## Install from source
+## Install From Source
 
 Requires [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) 11.
 
@@ -47,7 +47,7 @@ pnpm dev:firefox   # Firefox (MV3)
 
 WXT will launch the browser with the extension loaded. Open Beatport, then the toolbar icon.
 
-### Production build
+### Production Build
 
 ```bash
 pnpm build          # Edge
@@ -63,7 +63,7 @@ Download a packaged zip for your current browser from the [marketing site](https
 - Edge: `edge://extensions` → Developer mode → Load unpacked
 - Firefox: `about:debugging` → This Firefox → Load Temporary Add-on → pick the built `manifest.json`
 
-### Marketing site
+### Marketing Site
 
 ```bash
 pnpm dev:website       # Astro local preview
@@ -75,7 +75,7 @@ Use root `pnpm build:website` for production/downloadable builds (zips + Astro).
 
 Optional analytics IDs are listed in `apps/website/.env.example`. Copy to `apps/website/.env` for local builds; leave them empty to skip injection.
 
-## How it works
+## How It Works
 
 ```mermaid
 flowchart LR
@@ -102,7 +102,7 @@ Live extraction lives in **session** storage, keyed per Beatport tab, so two cha
 
 The extension only follows lists **you opened**. It does not crawl other charts or call `api.beatport.com`.
 
-## Project layout
+## Project Layout
 
 ```
 apps/
@@ -137,7 +137,7 @@ apps/
 | `pnpm dev:website` / `pnpm build:website`                 | Marketing site preview / prepare downloads + static build                         |
 | `pnpm typecheck:website`                                  | Astro + TypeScript check for `apps/website`                                       |
 
-## Deploy marketing site (Vercel)
+## Deploy Marketing Site (Vercel)
 
 Static Astro output — no `@astrojs/vercel` adapter. Extension zips are generated at build time into `public/downloads/` and shipped with the site (no download API).
 
@@ -151,7 +151,7 @@ Static Astro output — no `@astrojs/vercel` adapter. Extension zips are generat
 
 Sideload zips on the marketing site are independent of store submissions. Publishing to Edge / Firefox does not update `/downloads/` until you redeploy the site (`pnpm build:website` / Vercel).
 
-## Release pipeline
+## Release Pipeline
 
 Version tags (`v*`) trigger [`.github/workflows/release-stores.yml`](.github/workflows/release-stores.yml):
 
@@ -161,7 +161,7 @@ Version tags (`v*`) trigger [`.github/workflows/release-stores.yml`](.github/wor
 4. Attach all three browser zips (and the sources zip) to a GitHub Release.
 5. Submit Edge + Firefox via `pnpm submit:stores`. Chrome Web Store submit stays manual.
 
-### One-time setup
+### One-Time Setup
 
 1. Create a GitHub Environment named `stores` on the repo.
 2. Add these **environment** secrets:
@@ -177,7 +177,7 @@ Version tags (`v*`) trigger [`.github/workflows/release-stores.yml`](.github/wor
 
 Edge API keys expire about every **72 days**. Rotate in Partner Center → Publish API, then update `EDGE_API_KEY` (and `EDGE_CLIENT_ID` if regenerated).
 
-### Cut a release
+### Cut a Release
 
 1. Bump `version` in `apps/extension/package.json` (must match the tag) and update [CHANGELOG.md](CHANGELOG.md).
 2. Commit, then tag and push:

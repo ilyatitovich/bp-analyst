@@ -1,4 +1,4 @@
-# Source code review (Firefox / AMO)
+# Source Code Review (Firefox / AMO)
 
 This archive is the `@bp-analyst/extension` package produced by `wxt zip -b firefox`. It is enough to rebuild the Firefox MV3 add-on without the rest of the monorepo.
 
@@ -29,7 +29,7 @@ That writes:
 - `.output/beatport-analyst-<version>-firefox.zip` — extension package
 - `.output/beatport-analyst-<version>-sources.zip` — this sources archive
 
-## Notes for reviewers
+## Notes for Reviewers
 
 - Build tool: [WXT](https://wxt.dev) (`wxt build -b firefox --mv3`). Bundle output is minified; this archive is the human-readable source.
 - Gecko add-on ID: `bp-analyst@local` (matches the AMO listing GUID).

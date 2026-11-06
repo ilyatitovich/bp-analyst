@@ -20,6 +20,7 @@
     "typecheck": "pnpm --filter @bp-analyst/extension typecheck",
     "typecheck:website": "pnpm --filter @bp-analyst/website typecheck",
     "lint": "pnpm --filter @bp-analyst/extension lint",
+    "lint:remark": "remark . --frail",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "knip": "pnpm --filter @bp-analyst/extension knip",
@@ -46,6 +47,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
-    "prettier-plugin-astro": "^1.1.2"
+    "prettier-plugin-astro": "^1.1.2",
+    "remark-cli": "^12.0.1",
+    "remark-lint-heading-capitalization": "^1.3.1"
   }
 }

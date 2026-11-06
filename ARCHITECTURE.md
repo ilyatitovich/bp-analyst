@@ -2,7 +2,7 @@
 
 Beatport Analyst is a Manifest V3 browser extension (WXT + React) that turns the Beatport list you already opened into a local market brief. There is no backend and no partner API.
 
-## Runtime overview
+## Runtime Overview
 
 ```mermaid
 flowchart LR
@@ -30,7 +30,7 @@ flowchart LR
 | `apps/extension/src/lib/extract/`                      | Pure parsers + merge / coverage / diagnostics.                                                                                                          |
 | `apps/extension/src/lib/analysis/`                     | BPM / Camelot stats and filters (unit-tested).                                                                                                          |
 
-## Extraction fallback
+## Extraction Fallback
 
 Beatport is a site we do not control. Capture is intentionally layered:
 
@@ -40,7 +40,7 @@ Beatport is a site we do not control. Capture is intentionally layered:
 
 `pickLargestSnapshot` and `mergeSnapshots` combine sources so a partial network capture can still be completed by Next data or the DOM. Diagnostics record which source won and why rows were rejected, so drift reports stay actionable without telemetry.
 
-## Cross-browser panel
+## Cross-Browser Panel
 
 Chromium uses the Side Panel API; Firefox uses the sidebar. Shared panel session state lives in extension storage (not module globals) so MV3 worker restarts do not lose “panel open” reckoning. Panel enablement comes from a content-script hello / extraction message (`sender.tab.id`), so the extension does not need the broad `tabs` permission.
 
@@ -48,7 +48,7 @@ Chromium uses the Side Panel API; Firefox uses the sidebar. Shared panel session
 
 ## Architectural Decision Records
 
-### ADR-1: MAIN-world content script for the network hook
+### ADR-1: MAIN-World Content Script for the Network Hook
 
 - **Status:** Accepted (implemented)
 - **Context:** The fetch/XHR hook must run before Beatport’s own scripts. Async script-tag injection raced the first catalog requests and required a `web_accessible_resources` entry.
@@ -57,7 +57,7 @@ Chromium uses the Side Panel API; Firefox uses the sidebar. Shared panel session
 - **Trade-offs:** Guaranteed ordering and no web-accessible resource, in exchange for a floor of Chrome 111+ / Firefox 128+ (already within declared minimums: Chrome 116+, Firefox 128+).
 - **Consequences:** `injectScript` and `web_accessible_resources` are gone. The isolated script still receives payloads through `CustomEvent`.
 
-### ADR-2: Snapshots keyed by tab in `storage.session`
+### ADR-2: Snapshots Keyed by Tab in `storage.session`
 
 - **Status:** Accepted (implemented)
 - **Context:** A single global snapshot key meant two Beatport tabs overwrote each other while the Chromium panel was enabled per tab.
@@ -66,7 +66,7 @@ Chromium uses the Side Panel API; Firefox uses the sidebar. Shared panel session
 - **Trade-offs:** Slightly larger storage footprint vs correct multi-tab use and survival across worker restarts.
 - **Consequences:** Side-panel hooks read the active (or query) tab id. Closing a tab drops its snapshot and error state.
 
-### ADR-3: Cache payloads in the content script; reload only as fallback
+### ADR-3: Cache Payloads in the Content Script; Reload Only as Fallback
 
 - **Status:** Accepted (implemented)
 - **Context:** Reload-on-open was disruptive (scroll, audio) and existed mainly because the hook might have missed earlier fetches.
@@ -77,7 +77,7 @@ Chromium uses the Side Panel API; Firefox uses the sidebar. Shared panel session
 
 ---
 
-## Related docs
+## Related Docs
 
 - [BENCHMARKS.md](apps/extension/docs/BENCHMARKS.md) — extraction and message-size measurements
 - [PRIVACY.md](PRIVACY.md) — what stays on-device

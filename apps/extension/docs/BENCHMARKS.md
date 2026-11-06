@@ -1,8 +1,8 @@
-# Extraction benchmarks
+# Extraction Benchmarks
 
 Measured on 2026-11-05 via `pnpm bench:extract` (Node median of warmed runs).
 
-## Message / storage size
+## Message / Storage Size
 
 Page-level fields (`pageUrl`, `pageTitle`, `extractedAt`, `source`) live on
 `ExtractionSnapshot` only. Replicating them on every `Track` was the prior shape.
@@ -12,7 +12,7 @@ Page-level fields (`pageUrl`, `pageTitle`, `extractedAt`, `source`) live on
 | 100    | 84.8 KB              | 69.1 KB            | 15.7 KB (18.5%)  |
 | 1000   | 854.2 KB             | 697.9 KB           | 156.4 KB (18.3%) |
 
-## Extraction timing
+## Extraction Timing
 
 | Tracks | normalizeRawItems | uniqueTracks | buildSnapshot | next-data extract | NEXT_DATA parse (cold) | NEXT_DATA parse (cached) |
 | ------ | ----------------- | ------------ | ------------- | ----------------- | ---------------------- | ------------------------ |
