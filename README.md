@@ -31,7 +31,7 @@ If the page is not a track list, or Beatport changed their markup, the panel sho
 
 ## Install From Source
 
-Requires [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) 11.
+Requires [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) 12.
 
 ```bash
 pnpm install
