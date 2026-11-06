@@ -4,19 +4,19 @@ import SectionIntro from './SectionIntro.astro'
 const features = [
   {
     title: 'Market brief',
-    body: 'Exclusives, hype, tracks from the last 7 / 30 days, BPM median and IQR, key concentration, top labels and artists, mix types, and length bands.'
+    body: 'Exclusives, hype, tracks from the last 7 / 30 days, BPM median and spread, key concentration, top labels and artists, mix types, and length bands.'
   },
   {
-    title: 'Charts and filters',
-    body: 'BPM histogram, Camelot or scale-key breakdown, genre / label / artist views. Click a bucket to filter the list.'
+    title: 'Charts that filter',
+    body: 'BPM, Camelot or scale key, genre, label, artist. Click a bucket — the list narrows to that slice.'
   },
   {
     title: 'Track table and preview',
-    body: 'Search by title, mix, or artist; Exclusive and Hype chips; sortable columns; in-panel audio preview from Beatport’s own samples.'
+    body: 'Search by title, mix, or artist. Exclusive and Hype chips. Sortable columns. Play Beatport’s own samples in the panel.'
   },
   {
-    title: 'CSV export',
-    body: 'Export the currently visible (filtered) tracks when you want a copy of what’s on screen.'
+    title: 'CSV when you need it',
+    body: 'Export the visible, filtered rows — a clean copy of what’s on screen.'
   }
 ]
 ---
@@ -24,8 +24,8 @@ const features = [
 <section class="features" id="features" aria-labelledby="features-title">
   <SectionIntro
     titleId="features-title"
-    title="What you get in the side panel"
-    lede="Open a Beatport list, click the toolbar icon, and work from one snapshot."
+    title="What’s in the side panel"
+    lede="Open a Beatport track list, click the toolbar icon, and work from one snapshot."
   />
   <ol class="features__list">
     {features.map((feature, index) => (

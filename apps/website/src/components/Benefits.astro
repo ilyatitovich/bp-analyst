@@ -3,16 +3,16 @@ import SectionIntro from './SectionIntro.astro'
 
 const benefits = [
   {
-    title: 'Market brief on the list you opened',
-    body: 'Exclusive and hype share, freshness, BPM spread, key concentration, and top labels — from the Beatport chart or search you already have on screen.'
+    title: 'Brief the list in front of you',
+    body: 'Exclusive and hype share, freshness, BPM spread, key concentration, top labels and artists — from the Beatport page you already loaded.'
   },
   {
-    title: 'Local-only analysis',
-    body: 'Track data stays in your browser session. Nothing is sent to a backend, and closing the browser clears the live snapshot.'
+    title: 'Stays in your browser',
+    body: 'Track data never leaves the session. No backend. Close the browser and the live snapshot is gone.'
   },
   {
-    title: 'No Beatport account required',
-    body: 'No partner API, no login, no crawl of other charts. It only reads the list you opened.'
+    title: 'No account. No crawl.',
+    body: 'No Beatport partner API, no login, no scraping other charts. It only reads the list you opened.'
   }
 ]
 ---
@@ -20,8 +20,8 @@ const benefits = [
 <section class="benefits" id="benefits" aria-labelledby="benefits-title">
   <SectionIntro
     titleId="benefits-title"
-    title="Built for market reconnaissance"
-    lede="For producers scanning a chart — not crate digging, not harmonic mixing."
+    title="Built for reading the market"
+    lede="Not a dig tool. Not a mixing helper. A reconnaissance pass over the list you opened."
   />
   <ul class="benefits__list">
     {benefits.map(benefit => (
