@@ -60,7 +60,9 @@ export function handleBackgroundMessage(
   }
 
   if (message.type === 'REQUEST_REFRESH') {
-    void refreshActiveBeatportPage().then(result => sendResponse(result))
+    void refreshActiveBeatportPage(
+      message.force === undefined ? undefined : { force: message.force }
+    ).then(result => sendResponse(result))
     return true
   }
 

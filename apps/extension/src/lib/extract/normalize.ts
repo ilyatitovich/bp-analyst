@@ -1,5 +1,5 @@
 import { toCamelot } from '../analysis/camelot'
-import { asAllowedPreviewUrl } from '../security/preview-url'
+import { asAllowedPreviewUrl } from '../player/preview'
 import type {
   ExtractAttempt,
   ExtractionSnapshot,

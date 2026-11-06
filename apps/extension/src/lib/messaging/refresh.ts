@@ -1,7 +1,18 @@
 import { browser } from 'wxt/browser'
 import { isBeatportUrl } from '../utils/page'
 import type { RequestTabCaptureResponse } from './protocol'
-import { shouldReloadForRefresh } from './refresh-strategy'
+
+/**
+ * Manual Refresh (force) always reloads so the page-world fetch hook can
+ * re-intercept catalog responses. Auto open prefers in-tab capture and only
+ * reloads when no content script is present (e.g. tabs open before install).
+ */
+export function shouldReloadForRefresh(
+  contentScriptAvailable: boolean,
+  force = false
+): boolean {
+  return force || !contentScriptAvailable
+}
 
 async function findActiveBeatportTab(): Promise<{
   id: number
@@ -38,15 +49,19 @@ async function requestTabCapture(
   }
 }
 
-export async function refreshActiveBeatportPage(): Promise<{
+export async function refreshActiveBeatportPage(options?: {
+  force?: boolean
+}): Promise<{
   reloaded: boolean
   captured?: boolean
 }> {
   const tab = await findActiveBeatportTab()
   if (!tab) return { reloaded: false }
 
-  const capture = await requestTabCapture(tab.id)
-  if (!shouldReloadForRefresh(capture != null)) {
+  const force = Boolean(options?.force)
+  // Forced Refresh skips capture — only a full reload re-hooks catalog fetches.
+  const capture = force ? null : await requestTabCapture(tab.id)
+  if (!shouldReloadForRefresh(capture != null, force)) {
     return { reloaded: false, captured: true }
   }
 

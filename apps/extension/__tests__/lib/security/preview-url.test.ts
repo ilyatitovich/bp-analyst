@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   asAllowedPreviewUrl,
   isAllowedPreviewUrl
-} from '../../../src/lib/security/preview-url'
+} from '../../../src/lib/player/preview'
 
 describe('preview URL allowlist', () => {
   it('accepts Beatport sample CDN hosts over https', () => {

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
-import { resolvedPreviewWindow } from '../../lib/player/preview'
-import { isAllowedPreviewUrl } from '../../lib/security/preview-url'
+import {
+  resolvedPreviewWindow,
+  isAllowedPreviewUrl
+} from '../../lib/player/preview'
 import type { Track } from '../../lib/types/track'
 
 export type PreviewPlayerHandle = {
