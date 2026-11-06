@@ -3,6 +3,7 @@ interface Props {
   'href': string
   'variant'?: 'primary' | 'secondary'
   'class'?: string
+  'rel'?: string
   'data-browser'?: string
   'data-hero-download'?: boolean | string | undefined
   'aria-current'?: 'true' | 'page' | 'step' | 'location' | 'date' | 'time'
@@ -12,6 +13,7 @@ const {
   href,
   variant = 'primary',
   'class': className,
+  rel,
   'data-browser': dataBrowser,
   'data-hero-download': dataHeroDownload,
   'aria-current': ariaCurrent
@@ -28,6 +30,7 @@ const heroDownloadAttr =
 <a
   class:list={['cta', `cta--${variant}`, className]}
   href={href}
+  rel={rel}
   data-browser={dataBrowser}
   data-hero-download={heroDownloadAttr}
   aria-current={ariaCurrent}

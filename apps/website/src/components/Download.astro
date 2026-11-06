@@ -1,79 +1,115 @@
 ---
-import { BROWSERS, DOWNLOAD_URLS, GITHUB_README_URL } from '../data/downloads'
+import {
+  BROWSERS,
+  DOWNLOAD_URLS,
+  GITHUB_README_URL,
+  getInstallCtaLabel
+} from '../data/downloads'
 import Cta from './Cta.astro'
 import SectionIntro from './SectionIntro.astro'
 
 const defaultBrowser = BROWSERS[0]
 ---
 
-<section class="download" id="download" aria-labelledby="download-title">
-  <SectionIntro
-    titleId="download-title"
-    title="Get the extension"
-    lede="Free zip builds for Chrome, Edge, and Firefox. Load unpacked — no store listing required."
-  />
+<section
+  class="download"
+  id="download"
+  aria-labelledby={`download-title-${defaultBrowser.id}`}
+  data-download
+>
+  {BROWSERS.map(browser => {
+    const isDefault = browser.id === defaultBrowser.id
+    const isStore = browser.method === 'store'
+    const titleId = `download-title-${browser.id}`
 
-  <div class="download__panel" data-download>
-    <ul class="download__ctas">
-      {BROWSERS.map(browser => {
-        const isDefault = browser.id === defaultBrowser.id
-        return (
-          <li>
+    return (
+      <div
+        class="download__variant"
+        data-browser={browser.id}
+        hidden={!isDefault}
+      >
+        {isStore ? (
+          <SectionIntro
+            titleId={titleId}
+            title="Get the extension"
+            lede={`Beatport Analyst is on the ${browser.label} store. Install in one click — no zip, no unpacked load.`}
+          />
+        ) : (
+          <SectionIntro
+            titleId={titleId}
+            title="Get the Chrome build"
+            lede="Chrome isn’t on the Web Store yet. Download the zip and load it unpacked."
+          />
+        )}
+
+        <div class="download__panel">
+          <p class="download__cta-row">
             <Cta
               class="download__cta"
               href={DOWNLOAD_URLS[browser.id]}
-              variant={isDefault ? 'primary' : 'secondary'}
+              rel={isStore ? 'noopener noreferrer' : undefined}
               data-browser={browser.id}
-              aria-current={isDefault ? 'true' : undefined}
             >
-              Download for {browser.label}
+              {getInstallCtaLabel(browser.id)}
             </Cta>
-          </li>
-        )
-      })}
-    </ul>
+          </p>
 
-    <p class="download__note" id="download-note">
-      Unzip, then load unpacked (Chrome / Edge) or as a temporary add-on
-      (Firefox). Full install steps are in the{' '}
-      <a href={GITHUB_README_URL} rel="noopener noreferrer">
-        GitHub README
-      </a>
-      .
-    </p>
-  </div>
+          {isStore ? (
+            <p class="download__note">
+              Opens the official {browser.label} listing. After install, open
+              any Beatport track list and click the toolbar icon.
+            </p>
+          ) : (
+            <p class="download__note">
+              Unzip the archive, then load it unpacked from{' '}
+              <code>chrome://extensions</code>. Step-by-step instructions are in
+              the{' '}
+              <a href={GITHUB_README_URL} rel="noopener noreferrer">
+                GitHub README
+              </a>
+              .
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  })}
 </section>
 
 <script>
   import { detectPreferredBrowser } from '../scripts/detect-browser'
-  import { BROWSERS, DOWNLOAD_URLS } from '../data/downloads'
+  import {
+    DOWNLOAD_URLS,
+    getBrowser,
+    getInstallCtaLabel
+  } from '../data/downloads'
 
   const preferred = detectPreferredBrowser()
-  const match = BROWSERS.find(browser => browser.id === preferred)
-  const root = document.querySelector('[data-download]')
+  const browser = getBrowser(preferred)
+  const root = document.querySelector<HTMLElement>('[data-download]')
   const heroLink = document.querySelector<HTMLAnchorElement>(
     '[data-hero-download]'
   )
 
   if (root) {
-    for (const link of root.querySelectorAll<HTMLAnchorElement>(
-      '[data-browser]'
+    for (const variant of root.querySelectorAll<HTMLElement>(
+      '.download__variant'
     )) {
-      const isMatch = link.dataset.browser === preferred
-      link.classList.toggle('cta--primary', isMatch)
-      link.classList.toggle('cta--secondary', !isMatch)
-      if (isMatch) {
-        link.setAttribute('aria-current', 'true')
-      } else {
-        link.removeAttribute('aria-current')
-      }
+      const isMatch = variant.dataset.browser === preferred
+      variant.hidden = !isMatch
     }
+    root.setAttribute('aria-labelledby', `download-title-${preferred}`)
   }
 
-  if (heroLink && match) {
-    heroLink.dataset.browser = match.id
-    heroLink.href = DOWNLOAD_URLS[match.id]
-    heroLink.textContent = `Download for ${match.label}`
+  if (heroLink) {
+    heroLink.dataset.browser = preferred
+    heroLink.href = DOWNLOAD_URLS[preferred]
+    heroLink.textContent = getInstallCtaLabel(preferred)
+    if (browser.method === 'store') {
+      heroLink.rel = 'noopener noreferrer'
+    } else {
+      heroLink.removeAttribute('rel')
+    }
   }
 </script>
 
@@ -86,22 +122,21 @@ const defaultBrowser = BROWSERS[0]
       padding-block: var(--space-7) var(--space-8);
     }
 
+    .download__variant[hidden] {
+      display: none;
+    }
+
     .download__panel {
       display: grid;
       gap: var(--space-6);
       max-inline-size: 40rem;
     }
 
-    .download__ctas {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-3);
+    .download__cta-row {
       margin: 0;
-      padding: 0;
-      list-style: none;
     }
 
-    .download__ctas :global(.download__cta) {
+    .download__cta-row :global(.download__cta) {
       min-inline-size: 11.5rem;
     }
 
@@ -110,6 +145,11 @@ const defaultBrowser = BROWSERS[0]
       font-size: var(--text-sm);
       color: var(--color-fg-subtle);
       max-inline-size: 48ch;
+    }
+
+    .download__note code {
+      font-size: 0.92em;
+      color: var(--color-fg-muted);
     }
 
     .download__note a {

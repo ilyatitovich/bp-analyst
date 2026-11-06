@@ -1,5 +1,5 @@
 ---
-import { BROWSERS, DOWNLOAD_URLS } from '../data/downloads'
+import { BROWSERS, DOWNLOAD_URLS, getInstallCtaLabel } from '../data/downloads'
 import Cta from './Cta.astro'
 
 const primary = BROWSERS[0]
@@ -21,7 +21,7 @@ const primary = BROWSERS[0]
         data-hero-download
         data-browser={primary.id}
       >
-        Download for {primary.label}
+        {getInstallCtaLabel(primary.id)}
       </Cta>
     </p>
   </div>
