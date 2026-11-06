@@ -45,5 +45,7 @@ for (const browser of browsers) {
   const destPath = join(downloadsDir, `beatport-analyst-${browser}.zip`)
 
   copyFileSync(sourcePath, destPath)
-  console.log(`Copied ${sourceName} → public/downloads/beatport-analyst-${browser}.zip`)
+  console.log(
+    `Copied ${sourceName} → public/downloads/beatport-analyst-${browser}.zip`
+  )
 }
